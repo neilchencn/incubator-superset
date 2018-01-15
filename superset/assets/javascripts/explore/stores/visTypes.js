@@ -45,7 +45,7 @@ export const sections = {
     description: t('This section exposes ways to include snippets of SQL in your query'),
   },
   annotations: {
-    label: t('Annotations'),
+    label: t('Annotations and Layers'),
     expanded: true,
     controlSetRows: [
       ['annotation_layers'],
@@ -195,6 +195,50 @@ export const visTypes = {
     },
   },
 
+  time_pivot: {
+    label: t('Time Series - Periodicity Pivot'),
+    showOnExplore: true,
+    requiresTime: true,
+    controlPanelSections: [
+      {
+        label: t('Query'),
+        expanded: true,
+        controlSetRows: [
+          ['metric', 'freq'],
+        ],
+      },
+      {
+        label: t('Chart Options'),
+        expanded: true,
+        controlSetRows: [
+          ['show_legend', 'line_interpolation'],
+          ['color_picker', null],
+        ],
+      },
+      {
+        label: t('X Axis'),
+        controlSetRows: [
+          ['x_axis_label', 'bottom_margin'],
+          ['x_axis_showminmax', 'x_axis_format'],
+        ],
+      },
+      {
+        label: t('Y Axis'),
+        controlSetRows: [
+          ['y_axis_label', 'left_margin'],
+          ['y_axis_showminmax', 'y_log_scale'],
+          ['y_axis_format', 'y_axis_bounds'],
+        ],
+      },
+    ],
+    controlOverrides: {
+      x_axis_format: {
+        choices: D3_TIME_FORMAT_OPTIONS,
+        default: 'smart_date',
+      },
+    },
+  },
+
   dual_line: {
     label: t('Dual Axis Line Chart'),
     requiresTime: true,
@@ -294,6 +338,266 @@ export const visTypes = {
     },
   },
 
+  deck_multi: {
+    label: t('Deck.gl - Multiple Layers'),
+    requiresTime: true,
+    controlPanelSections: [
+      {
+        label: t('Map'),
+        expanded: true,
+        controlSetRows: [
+          ['mapbox_style', 'viewport'],
+          ['deck_slices', null],
+        ],
+      },
+    ],
+  },
+
+  deck_hex: {
+    label: t('Deck.gl - Hexagons'),
+    requiresTime: true,
+    controlPanelSections: [
+      {
+        label: t('Query'),
+        expanded: true,
+        controlSetRows: [
+          ['spatial', 'size'],
+          ['groupby', 'row_limit'],
+        ],
+      },
+      {
+        label: t('Map'),
+        controlSetRows: [
+          ['mapbox_style', 'viewport'],
+          ['color_picker', null],
+          ['grid_size', 'extruded'],
+        ],
+      },
+    ],
+    controlOverrides: {
+      size: {
+        label: t('Height'),
+        description: t('Metric used to control height'),
+      },
+    },
+  },
+
+  deck_grid: {
+    label: t('Deck.gl - Grid'),
+    requiresTime: true,
+    controlPanelSections: [
+      {
+        label: t('Query'),
+        expanded: true,
+        controlSetRows: [
+          ['spatial', 'size'],
+          ['groupby', 'row_limit'],
+        ],
+      },
+      {
+        label: t('Map'),
+        controlSetRows: [
+          ['mapbox_style', 'viewport'],
+          ['color_picker', null],
+          ['grid_size', 'extruded'],
+        ],
+      },
+    ],
+    controlOverrides: {
+      size: {
+        label: t('Height'),
+        description: t('Metric used to control height'),
+        validators: [v.nonEmpty],
+      },
+    },
+  },
+
+  deck_path: {
+    label: t('Deck.gl - Paths'),
+    requiresTime: true,
+    controlPanelSections: [
+      {
+        label: t('Query'),
+        expanded: true,
+        controlSetRows: [
+          ['line_column', 'line_type'],
+          ['row_limit', null],
+        ],
+      },
+      {
+        label: t('Map'),
+        expanded: true,
+        controlSetRows: [
+          ['mapbox_style', 'viewport'],
+          ['color_picker', 'line_width'],
+          ['reverse_long_lat', null],
+        ],
+      },
+      {
+        label: t('Advanced'),
+        controlSetRows: [
+          ['js_columns'],
+          ['js_datapoint_mutator'],
+          ['js_tooltip'],
+          ['js_onclick_href'],
+        ],
+      },
+    ],
+  },
+
+  deck_screengrid: {
+    label: t('Deck.gl - Screen grid'),
+    requiresTime: true,
+    controlPanelSections: [
+      {
+        label: t('Query'),
+        expanded: true,
+        controlSetRows: [
+          ['spatial', 'size'],
+          ['groupby', 'row_limit'],
+        ],
+      },
+      {
+        label: t('Map'),
+        controlSetRows: [
+          ['mapbox_style', 'viewport'],
+        ],
+      },
+      {
+        label: t('Grid'),
+        controlSetRows: [
+          ['grid_size', 'color_picker'],
+        ],
+      },
+    ],
+    controlOverrides: {
+      size: {
+        label: t('Weight'),
+        description: t("Metric used as a weight for the grid's coloring"),
+        validators: [v.nonEmpty],
+      },
+    },
+  },
+
+  deck_geojson: {
+    label: t('Deck.gl - geoJson'),
+    requiresTime: true,
+    controlPanelSections: [
+      {
+        label: t('Query'),
+        expanded: true,
+        controlSetRows: [
+          ['geojson', 'row_limit'],
+        ],
+      },
+      {
+        label: t('Map'),
+        controlSetRows: [
+          ['mapbox_style', 'viewport'],
+        ],
+      },
+      {
+        label: t('GeoJson Settings'),
+        controlSetRows: [
+          ['fill_color_picker', 'stroke_color_picker'],
+          ['filled', 'stroked'],
+          ['extruded', null],
+          ['point_radius_scale', null],
+        ],
+      },
+      {
+        label: t('Advanced'),
+        controlSetRows: [
+          ['js_columns'],
+          ['js_datapoint_mutator'],
+          ['js_tooltip'],
+          ['js_onclick_href'],
+        ],
+      },
+    ],
+  },
+
+  deck_arc: {
+    label: t('Deck.gl - Arc'),
+    requiresTime: true,
+    controlPanelSections: [
+      {
+        label: t('Query'),
+        expanded: true,
+        controlSetRows: [
+          ['start_spatial', 'end_spatial'],
+          ['row_limit', null],
+        ],
+      },
+      {
+        label: t('Map'),
+        controlSetRows: [
+          ['mapbox_style', 'viewport'],
+        ],
+      },
+      {
+        label: t('Arc'),
+        controlSetRows: [
+          ['color_picker', null],
+          ['stroke_width', null],
+        ],
+      },
+    ],
+  },
+
+  deck_scatter: {
+    label: t('Deck.gl - Scatter plot'),
+    requiresTime: true,
+    controlPanelSections: [
+      {
+        label: t('Query'),
+        expanded: true,
+        controlSetRows: [
+          ['spatial', null],
+          ['groupby', 'row_limit'],
+        ],
+      },
+      {
+        label: t('Map'),
+        controlSetRows: [
+          ['mapbox_style', 'viewport'],
+        ],
+      },
+      {
+        label: t('Point Size'),
+        controlSetRows: [
+          ['point_radius_fixed', 'point_unit'],
+          ['multiplier', null],
+        ],
+      },
+      {
+        label: t('Point Color'),
+        controlSetRows: [
+          ['color_picker', null],
+          ['dimension', 'color_scheme'],
+        ],
+      },
+      {
+        label: t('Advanced'),
+        controlSetRows: [
+          ['js_columns'],
+          ['js_datapoint_mutator'],
+          ['js_tooltip'],
+          ['js_onclick_href'],
+        ],
+      },
+    ],
+    controlOverrides: {
+      dimension: {
+        label: t('Categorical Color'),
+        description: t('Pick a dimension from which categorical colors are defined'),
+      },
+      size: {
+        validators: [],
+      },
+    },
+  },
+
   area: {
     label: t('Time Series - Stacked'),
     requiresTime: true,
@@ -339,7 +643,8 @@ export const visTypes = {
         description: t('Use this section if you want a query that aggregates'),
         controlSetRows: [
           ['groupby'],
-          ['metrics', 'percent_metrics'],
+          ['metrics'],
+          ['percent_metrics'],
           ['include_time'],
           ['timeseries_limit_metric', 'order_desc'],
         ],
@@ -401,6 +706,7 @@ export const visTypes = {
     controlPanelSections: [
       {
         label: t('Code'),
+        expanded: true,
         controlSetRows: [
           ['markup_type'],
           ['code'],
@@ -463,7 +769,8 @@ export const visTypes = {
         label: t('Query'),
         expanded: true,
         controlSetRows: [
-          ['series', 'metric', 'limit'],
+          ['series', 'metric'],
+          ['row_limit', null],
         ],
       },
       {
@@ -844,8 +1151,9 @@ export const visTypes = {
       },
       {
         label: t('Options'),
+        expanded: true,
         controlSetRows: [
-          ['select_country'],
+          ['select_country', 'number_format'],
           ['linear_color_scheme'],
         ],
       },
@@ -971,7 +1279,7 @@ export const visTypes = {
         expanded: true,
         controlSetRows: [
           ['all_columns_x', 'all_columns_y'],
-          ['metric'],
+          ['metric', 'row_limit'],
         ],
       },
       {
@@ -1062,9 +1370,8 @@ export const visTypes = {
       {
         label: t('Viewport'),
         controlSetRows: [
-          ['viewport_longitude'],
-          ['viewport_latitude'],
-          ['viewport_zoom'],
+          ['viewport_longitude', 'viewport_latitude'],
+          ['viewport_zoom', null],
         ],
       },
     ],
