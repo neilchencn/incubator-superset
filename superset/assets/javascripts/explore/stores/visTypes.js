@@ -373,6 +373,15 @@ export const visTypes = {
           ['grid_size', 'extruded'],
         ],
       },
+      {
+        label: t('Advanced'),
+        controlSetRows: [
+          ['js_columns'],
+          ['js_data_mutator'],
+          ['js_tooltip'],
+          ['js_onclick_href'],
+        ],
+      },
     ],
     controlOverrides: {
       size: {
@@ -400,6 +409,15 @@ export const visTypes = {
           ['mapbox_style', 'viewport'],
           ['color_picker', null],
           ['grid_size', 'extruded'],
+        ],
+      },
+      {
+        label: t('Advanced'),
+        controlSetRows: [
+          ['js_columns'],
+          ['js_data_mutator'],
+          ['js_tooltip'],
+          ['js_onclick_href'],
         ],
       },
     ],
@@ -437,7 +455,7 @@ export const visTypes = {
         label: t('Advanced'),
         controlSetRows: [
           ['js_columns'],
-          ['js_datapoint_mutator'],
+          ['js_data_mutator'],
           ['js_tooltip'],
           ['js_onclick_href'],
         ],
@@ -467,6 +485,15 @@ export const visTypes = {
         label: t('Grid'),
         controlSetRows: [
           ['grid_size', 'color_picker'],
+        ],
+      },
+      {
+        label: t('Advanced'),
+        controlSetRows: [
+          ['js_columns'],
+          ['js_data_mutator'],
+          ['js_tooltip'],
+          ['js_onclick_href'],
         ],
       },
     ],
@@ -509,7 +536,47 @@ export const visTypes = {
         label: t('Advanced'),
         controlSetRows: [
           ['js_columns'],
-          ['js_datapoint_mutator'],
+          ['js_data_mutator'],
+          ['js_tooltip'],
+          ['js_onclick_href'],
+        ],
+      },
+    ],
+  },
+
+  deck_polygon: {
+    label: t('Deck.gl - Polygon'),
+    requiresTime: true,
+    controlPanelSections: [
+      {
+        label: t('Query'),
+        expanded: true,
+        controlSetRows: [
+          ['line_column', 'line_type'],
+          ['row_limit', null],
+        ],
+      },
+      {
+        label: t('Map'),
+        controlSetRows: [
+          ['mapbox_style', 'viewport'],
+          ['reverse_long_lat', null],
+        ],
+      },
+      {
+        label: t('Polygon Settings'),
+        controlSetRows: [
+          ['fill_color_picker', 'stroke_color_picker'],
+          ['filled', 'stroked'],
+          ['extruded', null],
+          ['point_radius_scale', null],
+        ],
+      },
+      {
+        label: t('Advanced'),
+        controlSetRows: [
+          ['js_columns'],
+          ['js_data_mutator'],
           ['js_tooltip'],
           ['js_onclick_href'],
         ],
@@ -540,6 +607,15 @@ export const visTypes = {
         controlSetRows: [
           ['color_picker', null],
           ['stroke_width', null],
+        ],
+      },
+      {
+        label: t('Advanced'),
+        controlSetRows: [
+          ['js_columns'],
+          ['js_data_mutator'],
+          ['js_tooltip'],
+          ['js_onclick_href'],
         ],
       },
     ],
@@ -581,7 +657,7 @@ export const visTypes = {
         label: t('Advanced'),
         controlSetRows: [
           ['js_columns'],
-          ['js_datapoint_mutator'],
+          ['js_data_mutator'],
           ['js_tooltip'],
           ['js_onclick_href'],
         ],
@@ -684,6 +760,7 @@ export const visTypes = {
         expanded: true,
         controlSetRows: [
           ['groupby', 'metrics'],
+          ['limit'],
           ['column_collection'],
           ['url'],
         ],
@@ -1035,9 +1112,10 @@ export const visTypes = {
       },
       secondary_metric: {
         label: t('Secondary Metric'),
-        description: t('This secondary metric is used to ' +
+        default: null,
+        description: t('[optional] this secondary metric is used to ' +
         'define the color as a ratio against the primary metric. ' +
-        'If the two metrics match, color is mapped level groups'),
+        'When omitted, the color is categorical and based on labels'),
       },
       groupby: {
         label: t('Hierarchy'),
@@ -1461,6 +1539,25 @@ export const visTypes = {
           ['liftvalue_precision'],
         ],
       },
+    ],
+  },
+
+  rose: {
+    label: t('Time Series - Nightingale Rose Chart'),
+    showOnExplore: true,
+    requiresTime: true,
+    controlPanelSections: [
+      sections.NVD3TimeSeries[0],
+      {
+        label: t('Chart Options'),
+        expanded: false,
+        controlSetRows: [
+          ['color_scheme'],
+          ['number_format', 'date_time_format'],
+          ['rich_tooltip', 'rose_area_proportion'],
+        ],
+      },
+      sections.NVD3TimeSeries[1],
     ],
   },
 

@@ -21,6 +21,7 @@ import sys
 import uuid
 import zlib
 
+import bleach
 import celery
 from dateutil.parser import parse
 from flask import flash, Markup, redirect, render_template, request, url_for
@@ -34,6 +35,7 @@ from flask_babel import gettext as __
 from flask_cache import Cache
 import markdown as md
 import numpy
+import pandas as pd
 import parsedatetime
 from past.builtins import basestring
 from pydruid.utils.having import Having
@@ -41,6 +43,7 @@ import pytz
 import sqlalchemy as sa
 from sqlalchemy import event, exc, select
 from sqlalchemy.types import TEXT, TypeDecorator
+
 
 logging.getLogger('MARKDOWN').setLevel(logging.INFO)
 
@@ -240,6 +243,55 @@ def dttm_from_timtuple(d):
         d.tm_year, d.tm_mon, d.tm_mday, d.tm_hour, d.tm_min, d.tm_sec)
 
 
+def decode_dashboards(o):
+    """
+    Function to be passed into json.loads obj_hook parameter
+    Recreates the dashboard object from a json representation.
+    """
+    import superset.models.core as models
+    from superset.connectors.sqla.models import (
+        SqlaTable, SqlMetric, TableColumn,
+    )
+
+    if '__Dashboard__' in o:
+        d = models.Dashboard()
+        d.__dict__.update(o['__Dashboard__'])
+        return d
+    elif '__Slice__' in o:
+        d = models.Slice()
+        d.__dict__.update(o['__Slice__'])
+        return d
+    elif '__TableColumn__' in o:
+        d = TableColumn()
+        d.__dict__.update(o['__TableColumn__'])
+        return d
+    elif '__SqlaTable__' in o:
+        d = SqlaTable()
+        d.__dict__.update(o['__SqlaTable__'])
+        return d
+    elif '__SqlMetric__' in o:
+        d = SqlMetric()
+        d.__dict__.update(o['__SqlMetric__'])
+        return d
+    elif '__datetime__' in o:
+        return datetime.strptime(o['__datetime__'], '%Y-%m-%dT%H:%M:%S')
+    else:
+        return o
+
+
+class DashboardEncoder(json.JSONEncoder):
+    # pylint: disable=E0202
+    def default(self, o):
+        try:
+            vals = {
+                k: v for k, v in o.__dict__.items() if k != '_sa_instance_state'}
+            return {'__{}__'.format(o.__class__.__name__): vals}
+        except Exception:
+            if type(o) == datetime:
+                return {'__datetime__': o.replace(microsecond=0).isoformat()}
+            return json.JSONEncoder.default(self, o)
+
+
 def parse_human_timedelta(s):
     """
     Returns ``datetime.datetime`` from natural language time deltas
@@ -310,11 +362,7 @@ def json_iso_dttm_ser(obj, pessimistic=False):
     val = base_json_conv(obj)
     if val is not None:
         return val
-    if isinstance(obj, datetime):
-        obj = obj.isoformat()
-    elif isinstance(obj, date):
-        obj = obj.isoformat()
-    elif isinstance(obj, time):
+    if isinstance(obj, (datetime, date, time, pd.Timestamp)):
         obj = obj.isoformat()
     else:
         if pessimistic:
@@ -348,7 +396,7 @@ def json_int_dttm_ser(obj):
     val = base_json_conv(obj)
     if val is not None:
         return val
-    if isinstance(obj, datetime):
+    if isinstance(obj, (datetime, pd.Timestamp)):
         obj = datetime_to_epoch(obj)
     elif isinstance(obj, date):
         obj = (obj - EPOCH.date()).total_seconds() * 1000
@@ -386,11 +434,18 @@ def error_msg_from_exception(e):
 
 
 def markdown(s, markup_wrap=False):
+    safe_markdown_tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'b', 'i',
+                          'strong', 'em', 'tt', 'p', 'br', 'span',
+                          'div', 'blockquote', 'code', 'hr', 'ul', 'ol',
+                          'li', 'dd', 'dt', 'img', 'a']
+    safe_markdown_attrs = {'img': ['src', 'alt', 'title'],
+                           'a': ['href', 'alt', 'title']}
     s = md.markdown(s or '', [
         'markdown.extensions.tables',
         'markdown.extensions.fenced_code',
         'markdown.extensions.codehilite',
     ])
+    s = bleach.clean(s, safe_markdown_tags, safe_markdown_attrs)
     if markup_wrap:
         s = Markup(s)
     return s
