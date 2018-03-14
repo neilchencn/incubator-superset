@@ -46,7 +46,7 @@ SUPERSET_CELERY_WORKERS = 32
 
 SUPERSET_WEBSERVER_ADDRESS = '0.0.0.0'
 SUPERSET_WEBSERVER_PORT = 8088
-SUPERSET_WEBSERVER_TIMEOUT = 60
+SUPERSET_WEBSERVER_TIMEOUT = 1000
 EMAIL_NOTIFICATIONS = False
 CUSTOM_SECURITY_MANAGER = None
 SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -76,7 +76,8 @@ QUERY_SEARCH_LIMIT = 1000
 WTF_CSRF_ENABLED = True
 
 # Add endpoints that need to be exempt from CSRF protection
-WTF_CSRF_EXEMPT_LIST = []
+WTF_CSRF_EXEMPT_LIST = ['bi.futuredial.com',
+                        'bi.futuredial.com/login', '/login']
 
 # Whether to run the web server in debug mode or not
 DEBUG = False
@@ -92,7 +93,7 @@ ENABLE_PROXY_FIX = False
 # GLOBALS FOR APP Builder
 # ------------------------------
 # Uncomment to setup Your App name
-APP_NAME = 'Superset'
+APP_NAME = 'Futuredial BI'
 
 # Uncomment to setup an App icon
 APP_ICON = '/static/assets/images/superset-logo@2x.png'
@@ -179,8 +180,18 @@ IMG_UPLOAD_URL = '/static/uploads/'
 # IMG_SIZE = (300, 200, True)
 
 CACHE_DEFAULT_TIMEOUT = 60 * 60 * 24
-CACHE_CONFIG = {'CACHE_TYPE': 'null'}
-TABLE_NAMES_CACHE_CONFIG = {'CACHE_TYPE': 'null'}
+CACHE_CONFIG = {
+    'CACHE_TYPE': 'redis',
+    'CACHE_REDIS_HOST': 'localhost',
+    'CACHE_REDIS_PORT': '6379',
+    'CACHE_REDIS_URL': 'redis://localhost:6379'
+}
+TABLE_NAMES_CACHE_CONFIG = {
+    'CACHE_TYPE': 'redis',
+    'CACHE_REDIS_HOST': 'localhost',
+    'CACHE_REDIS_PORT': '6379',
+    'CACHE_REDIS_URL': 'redis://localhost:6379'
+}
 
 # CORS Options
 ENABLE_CORS = False
@@ -274,7 +285,8 @@ CELERY_CONFIG = CeleryConfig
 """
 CELERY_CONFIG = None
 SQL_CELERY_DB_FILE_PATH = os.path.join(DATA_DIR, 'celerydb.sqlite')
-SQL_CELERY_RESULTS_DB_FILE_PATH = os.path.join(DATA_DIR, 'celery_results.sqlite')
+SQL_CELERY_RESULTS_DB_FILE_PATH = os.path.join(
+    DATA_DIR, 'celery_results.sqlite')
 
 # static http headers to be served by your Superset server.
 # This header prevents iFrames from other domains and
@@ -288,7 +300,7 @@ HTTP_HEADERS = {'X-Frame-Options': 'SAMEORIGIN'}
 DEFAULT_DB_ID = None
 
 # Timeout duration for SQL Lab synchronous queries
-SQLLAB_TIMEOUT = 30
+SQLLAB_TIMEOUT = 600
 
 # SQLLAB_DEFAULT_DBID
 SQLLAB_DEFAULT_DBID = None
@@ -345,7 +357,7 @@ if not CACHE_DEFAULT_TIMEOUT:
 # Whether to bump the logging level to ERRROR on the flask_appbiulder package
 # Set to False if/when debugging FAB related issues like
 # permission management
-SILENCE_FAB = True
+SILENCE_FAB = False
 
 # The link to a page containing common errors and their resolutions
 # It will be appended at the bottom of sql_lab errors.
@@ -359,7 +371,10 @@ BLUEPRINTS = []
 # Provide a callable that receives a tracking_url and returns another
 # URL. This is used to translate internal Hadoop job tracker URL
 # into a proxied one
-TRACKING_URL_TRANSFORMER = lambda x: x  # noqa: E731
+
+
+def TRACKING_URL_TRANSFORMER(x): return x  # noqa: E731
+
 
 # Interval between consecutive polls when using Hive Engine
 HIVE_POLL_INTERVAL = 5

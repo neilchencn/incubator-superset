@@ -20,7 +20,7 @@ import traceback
 import uuid
 
 from dateutil import relativedelta as rdelta
-from flask import escape, request
+from flask import escape, request, g
 from flask_babel import lazy_gettext as _
 import geohash
 from markdown import markdown
@@ -32,8 +32,9 @@ import simplejson as json
 from six import string_types, text_type
 from six.moves import cPickle as pkl, reduce
 
-from superset import app, cache, get_manifest_file, utils
+from superset import app, cache, get_manifest_file, utils, db
 from superset.utils import DTTM_ALIAS, merge_extra_filters
+from flask_appbuilder.security.sqla import models as ab_models
 
 config = app.config
 stats_logger = config.get('STATS_LOGGER')
@@ -113,7 +114,8 @@ class BaseViz(object):
         """Returns a dict or scalar that can be passed to DataFrame.fillna"""
         if columns is None:
             return self.default_fillna
-        columns_dict = {col.column_name: col for col in self.datasource.columns}
+        columns_dict = {
+            col.column_name: col for col in self.datasource.columns}
         fillna = {
             c: self.get_fillna_for_col(columns_dict.get(c))
             for c in columns
@@ -231,6 +233,21 @@ class BaseViz(object):
             'druid_time_origin': form_data.get('druid_time_origin', ''),
         }
         filters = form_data.get('filters', [])
+
+        username = g.user.username
+        user = (
+            db.session.query(ab_models.User)
+            .filter_by(username=username)
+            .one()
+        )
+
+        companies = []
+        for role in user.roles:
+            for perm in role.permissions:
+                if 'company_access' in perm.permission.name:
+                    companies.append(perm.view_menu.name)
+
+        filters.append({'col': 'company', 'val': companies, 'op': 'in'})
         d = {
             'granularity': granularity,
             'from_dttm': from_dttm,
@@ -1166,7 +1183,7 @@ class NVD3DualLineViz(NVD3Viz):
             raise Exception(_('Pick a metric for right axis!'))
         if m1 == m2:
             raise Exception(_('Please choose different metrics'
-                            ' on left and right axis'))
+                              ' on left and right axis'))
         return d
 
     def to_series(self, df, classed=''):
@@ -1933,12 +1950,15 @@ class BaseDeckGLViz(BaseViz):
             raise ValueError(_('Bad spatial key'))
 
         if spatial.get('type') == 'latlong':
-            df[key] = list(zip(df[spatial.get('lonCol')], df[spatial.get('latCol')]))
+            df[key] = list(zip(df[spatial.get('lonCol')],
+                               df[spatial.get('latCol')]))
         elif spatial.get('type') == 'delimited':
-            df[key] = (df[spatial.get('lonlatCol')].str.split(spatial.get('delimiter')))
+            df[key] = (df[spatial.get('lonlatCol')].str.split(
+                spatial.get('delimiter')))
             if spatial.get('reverseCheckbox'):
                 df[key] = [
-                    tuple(reversed(o)) if isinstance(o, (list, tuple)) else (0, 0)
+                    tuple(reversed(o)) if isinstance(
+                        o, (list, tuple)) else (0, 0)
                     for o in df[key]
                 ]
             del df[spatial.get('lonlatCol')]

@@ -12,6 +12,7 @@ from sqlalchemy import or_
 from superset import conf, db, sm
 from superset.connectors.connector_registry import ConnectorRegistry
 from superset.models import core as models
+from superset.models import dictionary as dicts
 
 READ_ONLY_MODEL_VIEWS = {
     'DatabaseAsync',
@@ -33,7 +34,7 @@ ADMIN_ONLY_VIEW_MENUS = {
     'Manage',
     'SQL Lab',
     'Queries',
-    'Refresh Druid Metadata',
+    'Refresh Metadata',
     'ResetPasswordView',
     'RoleModelView',
     'Security',
@@ -171,8 +172,16 @@ def set_role(role_name, pvm_check):
 
 def create_custom_permissions():
     # Global perms
+    logging.info('2 custom perm')
     merge_perm(sm, 'all_datasource_access', 'all_datasource_access')
     merge_perm(sm, 'all_database_access', 'all_database_access')
+
+    logging.info('custom company perm')
+    companies = db.session.query(dicts.Company).all()
+    logging.info(companies)
+    for c in companies:
+        merge_perm(sm, 'company_access', '{}'.format(c.field_name))
+        logging.info(c.field_name)
 
 
 def create_missing_perms():
@@ -230,7 +239,7 @@ def clean_perms():
 
 def sync_role_definitions():
     """Inits the Superset application with security roles and such"""
-    logging.info('Syncing role definition')
+    logging.info('Syncing role definition111')
 
     get_or_create_main_db()
     create_custom_permissions()

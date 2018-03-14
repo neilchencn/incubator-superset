@@ -23,10 +23,10 @@ from . import models
 class DruidColumnInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
     datamodel = SQLAInterface(models.DruidColumn)
 
-    list_title = _('List Druid Column')
-    show_title = _('Show Druid Column')
-    add_title = _('Add Druid Column')
-    edit_title = _('Edit Druid Column')
+    list_title = _('List Column')
+    show_title = _('Show Column')
+    add_title = _('Add Column')
+    edit_title = _('Edit Column')
 
     list_widget = ListWidgetWithCheckboxes
 
@@ -56,8 +56,7 @@ class DruidColumnInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
             'of the explore view.'),
         'dimension_spec_json': utils.markdown(
             'this field can be used to specify  '
-            'a `dimensionSpec` as documented [here]'
-            '(http://druid.io/docs/latest/querying/dimensionspecs.html). '
+            'a `dimensionSpec`. '
             'Make sure to input valid JSON and that the '
             '`outputName` matches the `column_name` defined '
             'above.',
@@ -75,7 +74,8 @@ class DruidColumnInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
             if not isinstance(dimension_spec, dict):
                 raise ValueError('Dimension Spec must be a JSON object')
             if 'outputName' not in dimension_spec:
-                raise ValueError('Dimension Spec does not contain `outputName`')
+                raise ValueError(
+                    'Dimension Spec does not contain `outputName`')
             if 'dimension' not in dimension_spec:
                 raise ValueError('Dimension Spec is missing `dimension`')
             # `outputName` should be the same as the `column_name`
@@ -97,10 +97,10 @@ appbuilder.add_view_no_menu(DruidColumnInlineView)
 class DruidMetricInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
     datamodel = SQLAInterface(models.DruidMetric)
 
-    list_title = _('List Druid Metric')
-    show_title = _('Show Druid Metric')
-    add_title = _('Add Druid Metric')
-    edit_title = _('Edit Druid Metric')
+    list_title = _('List Metric')
+    show_title = _('Show Metric')
+    add_title = _('Add Metric')
+    edit_title = _('Edit Metric')
 
     list_columns = ['metric_name', 'verbose_name', 'metric_type']
     edit_columns = [
@@ -114,8 +114,7 @@ class DruidMetricInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
     description_columns = {
         'metric_type': utils.markdown(
             'use `postagg` as the metric type if you are defining a '
-            '[Druid Post Aggregation]'
-            '(http://druid.io/docs/latest/querying/post-aggregations.html)',
+            '[Post Aggregation]',
             True),
         'is_restricted': _('Whether the access to this metric is restricted '
                            'to certain roles. Only roles with the permission '
@@ -128,7 +127,7 @@ class DruidMetricInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
         'verbose_name': _('Verbose Name'),
         'metric_type': _('Type'),
         'json': _('JSON'),
-        'datasource': _('Druid Datasource'),
+        'datasource': _('Datasource'),
         'warning_text': _('Warning Message'),
     }
 
@@ -147,10 +146,10 @@ appbuilder.add_view_no_menu(DruidMetricInlineView)
 class DruidClusterModelView(SupersetModelView, DeleteMixin, YamlExportMixin):  # noqa
     datamodel = SQLAInterface(models.DruidCluster)
 
-    list_title = _('List Druid Cluster')
-    show_title = _('Show Druid Cluster')
-    add_title = _('Add Druid Cluster')
-    edit_title = _('Edit Druid Cluster')
+    list_title = _('List Cluster')
+    show_title = _('Show Cluster')
+    add_title = _('Add Cluster')
+    edit_title = _('Edit Cluster')
 
     add_columns = [
         'verbose_name', 'coordinator_host', 'coordinator_port',
@@ -182,8 +181,8 @@ class DruidClusterModelView(SupersetModelView, DeleteMixin, YamlExportMixin):  #
 
 appbuilder.add_view(
     DruidClusterModelView,
-    name='Druid Clusters',
-    label=__('Druid Clusters'),
+    name='Clusters',
+    label=__('Clusters'),
     icon='fa-cubes',
     category='Sources',
     category_label=__('Sources'),
@@ -194,10 +193,10 @@ appbuilder.add_view(
 class DruidDatasourceModelView(DatasourceModelView, DeleteMixin, YamlExportMixin):  # noqa
     datamodel = SQLAInterface(models.DruidDatasource)
 
-    list_title = _('List Druid Datasource')
-    show_title = _('Show Druid Datasource')
-    add_title = _('Add Druid Datasource')
-    edit_title = _('Edit Druid Datasource')
+    list_title = _('List Datasource')
+    show_title = _('Show Datasource')
+    add_title = _('Add Datasource')
+    edit_title = _('Edit Datasource')
 
     list_columns = [
         'datasource_link', 'cluster', 'changed_by_', 'modified']
@@ -285,8 +284,8 @@ class DruidDatasourceModelView(DatasourceModelView, DeleteMixin, YamlExportMixin
 
 appbuilder.add_view(
     DruidDatasourceModelView,
-    'Druid Datasources',
-    label=__('Druid Datasources'),
+    'Datasources',
+    label=__('Datasources'),
     category='Sources',
     category_label=__('Sources'),
     icon='fa-cube')
@@ -298,7 +297,7 @@ class Druid(BaseSupersetView):
     @has_access
     @expose('/refresh_datasources/')
     def refresh_datasources(self, refreshAll=True):
-        """endpoint that refreshes druid datasources metadata"""
+        """endpoint that refreshes datasources metadata"""
         session = db.session()
         DruidCluster = ConnectorRegistry.sources['druid'].cluster_class
         for cluster in session.query(DruidCluster).all():
@@ -341,8 +340,8 @@ appbuilder.add_link(
     category_icon='fa-database',
     icon='fa-refresh')
 appbuilder.add_link(
-    'Refresh Druid Metadata',
-    label=__('Refresh Druid Metadata'),
+    'Refresh Metadata',
+    label=__('Refresh Metadata'),
     href='/druid/refresh_datasources/',
     category='Sources',
     category_label=__('Sources'),

@@ -32,6 +32,7 @@ export const D3_TIME_FORMAT_OPTIONS = [
   ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M:%S | 2019-01-14 01:32:10'],
   ['%d-%m-%Y %H:%M:%S', '%Y-%m-%d %H:%M:%S | 14-01-2019 01:32:10'],
   ['%H:%M:%S', '%H:%M:%S | 01:32:10'],
+  ['%b, %d', '%b, %d | Mar, 17'],
 ];
 
 const timeColumnOption = {
@@ -658,16 +659,12 @@ export const controls = {
     type: 'SelectControl',
     freeForm: true,
     label: t('Time Granularity'),
-    default: 'one day',
+    default: '1 day',
     choices: formatSelectOptions([
       'all',
-      '5 seconds',
-      '30 seconds',
-      '1 minute',
-      '5 minutes',
-      '1 hour',
-      '6 hour',
       '1 day',
+      '2 days',
+      '3 days',
       '7 days',
       'week',
       'week_starting_sunday',
@@ -1269,14 +1266,14 @@ export const controls = {
 
   show_druid_time_granularity: {
     type: 'CheckboxControl',
-    label: t('Show Druid Granularity Dropdown'),
+    label: t('Show Granularity Dropdown'),
     default: false,
-    description: t('Check to include Druid Granularity dropdown'),
+    description: t('Check to include Granularity dropdown'),
   },
 
   show_druid_time_origin: {
     type: 'CheckboxControl',
-    label: t('Show Druid Time Origin'),
+    label: t('Show Time Origin'),
     default: false,
     description: t('Check to include Time Origin dropdown'),
   },

@@ -12,9 +12,10 @@ import random
 import textwrap
 
 import pandas as pd
-from sqlalchemy import BigInteger, Date, DateTime, Float, String, Text
+from sqlalchemy import BigInteger, Date, DateTime, Float, String, Text, Integer
 import geohash
 import polyline
+from collections import OrderedDict
 
 from superset import app, db, utils
 from superset.connectors.connector_registry import ConnectorRegistry
@@ -283,7 +284,7 @@ def load_world_bank_health_n_pop():
                         "TUV", "IMY", "KNA", "ASM", "ADO", "AMA", "PLW",
                     ],
                     "op": "not in"}],
-                )),
+            )),
         Slice(
             slice_name="Rural Breakdown",
             viz_type='sunburst',
@@ -916,7 +917,8 @@ def load_random_time_series_data():
     print("-" * 80)
 
     print("Creating table [random_time_series] reference")
-    obj = db.session.query(TBL).filter_by(table_name='random_time_series').first()
+    obj = db.session.query(TBL).filter_by(
+        table_name='random_time_series').first()
     if not obj:
         obj = TBL(table_name='random_time_series')
     obj.main_dttm_col = 'ds'
@@ -951,7 +953,8 @@ def load_random_time_series_data():
 
 def load_country_map_data():
     """Loading data for map with country map"""
-    csv_path = os.path.join(DATA_FOLDER, 'birth_france_data_for_country_map.csv')
+    csv_path = os.path.join(
+        DATA_FOLDER, 'birth_france_data_for_country_map.csv')
     data = pd.read_csv(csv_path, encoding="utf-8")
     data['date'] = datetime.datetime.now().date()
     data.to_sql(  # pylint: disable=no-member
@@ -979,7 +982,8 @@ def load_country_map_data():
     print("Done loading table!")
     print("-" * 80)
     print("Creating table reference")
-    obj = db.session.query(TBL).filter_by(table_name='birth_france_by_region').first()
+    obj = db.session.query(TBL).filter_by(
+        table_name='birth_france_by_region').first()
     if not obj:
         obj = TBL(table_name='birth_france_by_region')
     obj.main_dttm_col = 'date'
@@ -1026,7 +1030,8 @@ def load_long_lat_data():
     pdf['radius_miles'] = [random.uniform(1, 3) for _ in range(len(pdf))]
     pdf['geohash'] = pdf[['LAT', 'LON']].apply(
         lambda x: geohash.encode(*x), axis=1)
-    pdf['delimited'] = pdf['LAT'].map(str).str.cat(pdf['LON'].map(str), sep=',')
+    pdf['delimited'] = pdf['LAT'].map(
+        str).str.cat(pdf['LON'].map(str), sep=',')
     pdf.to_sql(  # pylint: disable=no-member
         'long_lat',
         db.engine,
@@ -1090,7 +1095,6 @@ def load_long_lat_data():
 
 
 def load_multiformat_time_series_data():
-
     """Loading time series data from a zip file in the repo"""
     with gzip.open(os.path.join(DATA_FOLDER, 'multiformat_time_series.json.gz')) as f:
         pdf = pd.read_json(f)
@@ -1115,7 +1119,8 @@ def load_multiformat_time_series_data():
     print("Done loading table!")
     print("-" * 80)
     print("Creating table [multiformat_time_series] reference")
-    obj = db.session.query(TBL).filter_by(table_name='multiformat_time_series').first()
+    obj = db.session.query(TBL).filter_by(
+        table_name='multiformat_time_series').first()
     if not obj:
         obj = TBL(table_name='multiformat_time_series')
     obj.main_dttm_col = 'ds'
@@ -1441,62 +1446,62 @@ def load_deck_dash():
     polygon_tbl = db.session.query(TBL) \
                     .filter_by(table_name='sf_population_polygons').first()
     slice_data = {
-            "datasource": "11__table",
-            "viz_type": "deck_polygon",
-            "slice_id": 41,
-            "granularity_sqla": None,
-            "time_grain_sqla": None,
-            "since": "7 days ago",
-            "until": "now",
-            "line_column": "contour",
-            "line_type": "json",
-            "mapbox_style": "mapbox://styles/mapbox/light-v9",
-            "viewport": {
-                "longitude": -122.43388541747726,
-                "latitude": 37.752020331384834,
-                "zoom": 11.133995608594631,
-                "bearing": 37.89506450385642,
-                "pitch": 60,
-                "width": 667,
-                "height": 906,
-                "altitude": 1.5,
-                "maxZoom": 20,
-                "minZoom": 0,
-                "maxPitch": 60,
-                "minPitch": 0,
-                "maxLatitude": 85.05113,
-                "minLatitude": -85.05113
-            },
-            "reverse_long_lat": False,
-            "fill_color_picker": {
-                "r": 3,
-                "g": 65,
-                "b": 73,
-                "a": 1
-            },
-            "stroke_color_picker": {
-                "r": 0,
-                "g": 122,
-                "b": 135,
-                "a": 1
-            },
-            "filled": True,
-            "stroked": False,
-            "extruded": True,
-            "point_radius_scale": 100,
-            "js_columns": [
-                "population",
-                "area"
-            ],
-            "js_datapoint_mutator": "(d) => {\n    d.elevation = d.extraProps.population/d.extraProps.area/10\n \
+        "datasource": "11__table",
+        "viz_type": "deck_polygon",
+        "slice_id": 41,
+        "granularity_sqla": None,
+        "time_grain_sqla": None,
+        "since": "7 days ago",
+        "until": "now",
+        "line_column": "contour",
+        "line_type": "json",
+        "mapbox_style": "mapbox://styles/mapbox/light-v9",
+        "viewport": {
+            "longitude": -122.43388541747726,
+            "latitude": 37.752020331384834,
+            "zoom": 11.133995608594631,
+            "bearing": 37.89506450385642,
+            "pitch": 60,
+            "width": 667,
+            "height": 906,
+            "altitude": 1.5,
+            "maxZoom": 20,
+            "minZoom": 0,
+            "maxPitch": 60,
+            "minPitch": 0,
+            "maxLatitude": 85.05113,
+            "minLatitude": -85.05113
+        },
+        "reverse_long_lat": False,
+        "fill_color_picker": {
+            "r": 3,
+            "g": 65,
+            "b": 73,
+            "a": 1
+        },
+        "stroke_color_picker": {
+            "r": 0,
+            "g": 122,
+            "b": 135,
+            "a": 1
+        },
+        "filled": True,
+        "stroked": False,
+        "extruded": True,
+        "point_radius_scale": 100,
+        "js_columns": [
+            "population",
+            "area"
+        ],
+        "js_datapoint_mutator": "(d) => {\n    d.elevation = d.extraProps.population/d.extraProps.area/10\n \
              d.fillColor = [d.extraProps.population/d.extraProps.area/60,140,0]\n \
              return d;\n}",
-            "js_tooltip": "",
-            "js_onclick_href": "",
-            "where": "",
-            "having": "",
-            "filters": []
-        }
+        "js_tooltip": "",
+        "js_onclick_href": "",
+        "where": "",
+        "having": "",
+        "filters": []
+    }
 
     print("Creating Polygon slice")
     slc = Slice(
@@ -1510,59 +1515,60 @@ def load_deck_dash():
     slices.append(slc)
 
     slice_data = {
-            "datasource": "10__table",
-            "viz_type": "deck_arc",
-            "slice_id": 42,
-            "granularity_sqla": "date",
-            "time_grain_sqla": "Time Column",
-            "since": "2014-01-01",
-            "until": "now",
-            "start_spatial": {
-                "type": "latlong",
-                "latCol": "LATITUDE",
-                "lonCol": "LONGITUDE"
-            },
-            "end_spatial": {
-                "type": "latlong",
-                "latCol": "LATITUDE_DEST",
-                "lonCol": "LONGITUDE_DEST"
-            },
-            "row_limit": 5000,
-            "mapbox_style": "mapbox://styles/mapbox/light-v9",
-            "viewport": {
-                "altitude": 1.5,
-                "bearing": 8.546256357301871,
-                "height": 642,
-                "latitude": 44.596651438714254,
-                "longitude": -91.84340711201104,
-                "maxLatitude": 85.05113,
-                "maxPitch": 60,
-                "maxZoom": 20,
-                "minLatitude": -85.05113,
-                "minPitch": 0,
-                "minZoom": 0,
-                "pitch": 60,
-                "width": 997,
-                "zoom": 2.929837070560775
-            },
-            "color_picker": {
-                "r": 0,
-                "g": 122,
-                "b": 135,
-                "a": 1
-            },
-            "stroke_width": 1,
-            "where": "",
-            "having": "",
-            "filters": []
-        }
+        "datasource": "10__table",
+        "viz_type": "deck_arc",
+        "slice_id": 42,
+        "granularity_sqla": "date",
+        "time_grain_sqla": "Time Column",
+        "since": "2014-01-01",
+        "until": "now",
+        "start_spatial": {
+            "type": "latlong",
+            "latCol": "LATITUDE",
+            "lonCol": "LONGITUDE"
+        },
+        "end_spatial": {
+            "type": "latlong",
+            "latCol": "LATITUDE_DEST",
+            "lonCol": "LONGITUDE_DEST"
+        },
+        "row_limit": 5000,
+        "mapbox_style": "mapbox://styles/mapbox/light-v9",
+        "viewport": {
+            "altitude": 1.5,
+            "bearing": 8.546256357301871,
+            "height": 642,
+            "latitude": 44.596651438714254,
+            "longitude": -91.84340711201104,
+            "maxLatitude": 85.05113,
+            "maxPitch": 60,
+            "maxZoom": 20,
+            "minLatitude": -85.05113,
+            "minPitch": 0,
+            "minZoom": 0,
+            "pitch": 60,
+            "width": 997,
+            "zoom": 2.929837070560775
+        },
+        "color_picker": {
+            "r": 0,
+            "g": 122,
+            "b": 135,
+            "a": 1
+        },
+        "stroke_width": 1,
+        "where": "",
+        "having": "",
+        "filters": []
+    }
 
     print("Creating Arc slice")
     slc = Slice(
         slice_name="Arcs",
         viz_type='deck_arc',
         datasource_type='table',
-        datasource_id=db.session.query(TBL).filter_by(table_name='flights').first().id,
+        datasource_id=db.session.query(TBL).filter_by(
+            table_name='flights').first().id,
         params=get_slice_json(slice_data),
     )
     merge_slice(slc)
@@ -1620,7 +1626,8 @@ def load_deck_dash():
         slice_name="Path",
         viz_type='deck_path',
         datasource_type='table',
-        datasource_id=db.session.query(TBL).filter_by(table_name='bart_lines').first().id,
+        datasource_id=db.session.query(TBL).filter_by(
+            table_name='bart_lines').first().id,
         params=get_slice_json(slice_data),
     )
     merge_slice(slc)
@@ -1707,7 +1714,8 @@ def load_flights():
         airports = pd.read_csv(f, encoding='latin-1')
     airports = airports.set_index('IATA_CODE')
 
-    pdf['ds'] = pdf.YEAR.map(str) + '-0' + pdf.MONTH.map(str) + '-0' + pdf.DAY.map(str)
+    pdf['ds'] = pdf.YEAR.map(str) + '-0' + \
+        pdf.MONTH.map(str) + '-0' + pdf.DAY.map(str)
     pdf.ds = pd.to_datetime(pdf.ds)
     del pdf['YEAR']
     del pdf['MONTH']
@@ -1819,6 +1827,90 @@ def load_bart_lines():
     if not tbl:
         tbl = TBL(table_name=tbl_name)
     tbl.description = "BART lines"
+    tbl.database = get_or_create_main_db()
+    db.session.merge(tbl)
+    db.session.commit()
+    tbl.fetch_metadata()
+
+
+def load_dictionarys():
+    Order = OrderedDict(
+        [('1', 'iRT'), ('2', 'GreenT'), ('25', 'DSED'), ('27', 'DSE')])
+    with open(os.path.join(DATA_FOLDER, 'dict.json')) as f:
+        jd = json.load(f)
+
+    for k, v in Order.items():
+        names = []
+        des = []
+        ids = []
+        idx = 0
+        if jd.has_key(k):
+            tbl_name = Order[k]
+            for n, d in jd[k].items():
+                names.append(n)
+                des.append(d)
+                ids.append(idx + 1)
+                idx += 1
+            df = pd.DataFrame(dict(id=ids, field_name=names, describe=des))
+            df.to_sql(
+                tbl_name,
+                db.engine,
+                if_exists='append',
+                chunksize=500,
+                dtype={
+                    'id': Integer(),
+                    'field_name': String(255),
+                    'describe': String(255),
+                },
+                index=False
+            )
+            print("Creating table {} reference".format(tbl_name))
+            tbl = db.session.query(TBL).filter_by(table_name=tbl_name).first()
+            if not tbl:
+                tbl = TBL(table_name=tbl_name)
+            tbl.description = "dictionary"
+            tbl.database = get_or_create_main_db()
+            db.session.merge(tbl)
+            db.session.commit()
+            tbl.fetch_metadata()
+
+
+def byteify(input):
+    if isinstance(input, dict):
+        return {byteify(key): byteify(value) for key, value in input.iteritems()}
+    elif isinstance(input, list):
+        return [byteify(element) for element in input]
+    elif isinstance(input, unicode):
+        return input.encode('utf-8')
+    else:
+        return input
+
+
+def load_companies():
+    tbl_name = 'company'
+    with open(os.path.join(DATA_FOLDER, 'company.json')) as f:
+        data = [v for d, v in byteify(json.load(f)).items()]
+
+    with open(os.path.join(DATA_FOLDER, 'bs_company.json')) as bs:
+        data += [v for d, v in byteify(json.load(bs)).items()]
+
+    df = pd.DataFrame(dict(id=range(1, len(data) + 1), field_name=data))
+    df.to_sql(
+        tbl_name,
+        db.engine,
+        if_exists='append',
+        chunksize=500,
+        index=False,
+        dtype={
+            'id': Integer(),
+            'field_name': String(255),
+        }
+    )
+    print("Creating table {} reference".format(tbl_name))
+    tbl = db.session.query(TBL).filter_by(table_name=tbl_name).first()
+    if not tbl:
+        tbl = TBL(table_name=tbl_name)
+    tbl.description = "company list"
     tbl.database = get_or_create_main_db()
     db.session.merge(tbl)
     db.session.commit()
