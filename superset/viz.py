@@ -246,8 +246,11 @@ class BaseViz(object):
             for perm in role.permissions:
                 if 'company_access' in perm.permission.name:
                     companies.append(perm.view_menu.name)
+        if len(companies) <= 0:
+            filters=[{'col': 'company', 'val': '-1', 'op': '=='}]
+        else:
+            filters.append({'col': 'company', 'val': companies, 'op': 'in'})
 
-        filters.append({'col': 'company', 'val': companies, 'op': 'in'})
         d = {
             'granularity': granularity,
             'from_dttm': from_dttm,
