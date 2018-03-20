@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Gravatar from 'react-gravatar';
 import moment from 'moment';
 import { Panel } from 'react-bootstrap';
 import { t } from '../../locales';
@@ -10,18 +9,6 @@ const propTypes = {
 };
 const UserInfo = ({ user }) => (
   <div>
-    <a href="https://en.gravatar.com/">
-      <Gravatar
-        email={user.email}
-        width="100%"
-        height=""
-        size="220"
-        alt={t('Profile picture provided by Gravatar')}
-        className="img-rounded"
-        style={{ borderRadius: 15 }}
-      />
-    </a>
-    <hr />
     <Panel>
       <h3>
         <strong>{user.firstName} {user.lastName}</strong>
@@ -31,7 +18,11 @@ const UserInfo = ({ user }) => (
       </h4>
       <hr />
       <p>
-        <i className="fa fa-clock-o" /> {t('joined')} {moment(user.createdOn, 'YYYYMMDD').fromNow()}
+        <i className="fa fa-clock-o" />
+        {' '}
+        {t('joined')}
+        {' '}
+        {moment(user.createdOn, 'YYYYMMDD').fromNow()}
       </p>
       <p className="email">
         <i className="fa fa-envelope-o" /> {user.email}
