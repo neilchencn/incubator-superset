@@ -67,6 +67,7 @@ READ_ONLY_PERMISSION = {
 ALPHA_ONLY_PERMISSIONS = set([
     'muldelete',
     'all_datasource_access',
+    'all_company_access',
 ])
 
 OBJECT_SPEC_PERMISSIONS = set([
@@ -74,6 +75,7 @@ OBJECT_SPEC_PERMISSIONS = set([
     'schema_access',
     'datasource_access',
     'metric_access',
+    'company_access',
 ])
 
 
@@ -175,13 +177,7 @@ def create_custom_permissions():
     logging.info('2 custom perm')
     merge_perm(sm, 'all_datasource_access', 'all_datasource_access')
     merge_perm(sm, 'all_database_access', 'all_database_access')
-
-    logging.info('custom company perm')
-    companies = db.session.query(dicts.Company).all()
-    logging.info(companies)
-    for c in companies:
-        merge_perm(sm, 'company_access', '{}'.format(c.field_name))
-        logging.info(c.field_name)
+    merge_perm(sm, 'all_company_access', 'all_company_access')
 
 
 def create_missing_perms():
@@ -218,6 +214,12 @@ def create_missing_perms():
     for metric in metrics:
         if metric.is_restricted:
             merge_pv('metric_access', metric.perm)
+
+    logging.info('Create missing company perm')
+    companies = db.session.query(dicts.Company).all()
+
+    for c in companies:
+        merge_pv('company_access', '{}'.format(c.field_name))
 
 
 def clean_perms():
