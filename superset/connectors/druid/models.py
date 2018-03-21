@@ -1228,14 +1228,15 @@ class DruidDatasource(Model, BaseDatasource):
         return query_str
 
     def query(self, query_obj):
+
         qry_start_dttm = datetime.now()
         client = self.cluster.get_pydruid_client()
         query_str = self.get_query_str(
             client=client, query_obj=query_obj, phase=2)
         df = client.export_pandas()
 
-        if df is None or df.size == 0:
-            raise Exception(_('No data was returned.'))
+        # if df is None or df.size == 0:
+        #     raise Exception(_('No data was returned.'))
         df.columns = [
             DTTM_ALIAS if c == 'timestamp' else c for c in df.columns]
 

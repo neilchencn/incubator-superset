@@ -242,14 +242,18 @@ class BaseViz(object):
         )
 
         companies = []
+        has_all_company_access = False
         for role in user.roles:
             for perm in role.permissions:
-                if 'company_access' in perm.permission.name:
+                if 'all_company_access' in perm.permission.name:
+                    has_all_company_access = True
+                if not has_all_company_access and 'company_access' in perm.permission.name:
                     companies.append(perm.view_menu.name)
-        if len(companies) <= 0:
-            filters=[{'col': 'company', 'val': '-1', 'op': '=='}]
-        else:
+
+        if not has_all_company_access:
             filters.append({'col': 'company', 'val': companies, 'op': 'in'})
+            if len(companies) <= 0:
+                filters = [{'col': 'company', 'val': '-1', 'op': '=='}]
 
         d = {
             'granularity': granularity,
@@ -309,7 +313,7 @@ class BaseViz(object):
 
         df = payload.get('df')
         if df is not None and len(df.index) == 0:
-            raise Exception('No data')
+            raise Exception('No data was returned')
         payload['data'] = self.get_data(df)
 
         del payload['df']
@@ -416,6 +420,8 @@ class BaseViz(object):
 
     def get_csv(self):
         df = self.get_df()
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            df = pd.DataFrame()
         include_index = not isinstance(df.index, pd.RangeIndex)
         return df.to_csv(index=include_index, **config.get('CSV_EXPORT'))
 
@@ -480,6 +486,9 @@ class TableViz(BaseViz):
         return d
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         fd = self.form_data
         if (
                 not self.should_be_timeseries() and
@@ -545,6 +554,9 @@ class TimeTableViz(BaseViz):
         return d
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         fd = self.form_data
         values = self.metrics
         columns = None
@@ -593,6 +605,9 @@ class PivotTableViz(BaseViz):
         return d
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         if (
                 self.form_data.get('granularity') == 'all' and
                 DTTM_ALIAS in df):
@@ -632,6 +647,9 @@ class MarkupViz(BaseViz):
         return None
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         markup_type = self.form_data.get('markup_type')
         code = self.form_data.get('code', '')
         if markup_type == 'markdown':
@@ -668,6 +686,9 @@ class WordCloudViz(BaseViz):
 
     def get_data(self, df):
         # Ordering the columns
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         df = df[[self.form_data.get('series'), self.form_data.get('metric')]]
         # Labeling the columns for uniform json schema
         df.columns = ['text', 'size']
@@ -694,6 +715,9 @@ class TreemapViz(BaseViz):
         return result
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         df = df.set_index(self.form_data.get('groupby'))
         chart_data = [{'name': metric, 'children': self._nest(metric, df)}
                       for metric in df.columns]
@@ -712,6 +736,8 @@ class CalHeatmapViz(BaseViz):
 
     def get_data(self, df):
         form_data = self.form_data
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
 
         df.columns = ['timestamp', 'metric']
         timestamps = {str(obj['timestamp'].value / 10**9):
@@ -792,6 +818,9 @@ class BoxPlotViz(NVD3Viz):
 
     def get_data(self, df):
         form_data = self.form_data
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         df = df.fillna(0)
 
         # conform to NVD3 names
@@ -887,6 +916,9 @@ class BubbleViz(NVD3Viz):
         df['group'] = df[[self.series]]
 
         series = defaultdict(list)
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         for row in df.to_dict(orient='records'):
             series[row['group']].append(row)
         chart_data = []
@@ -932,6 +964,9 @@ class BulletViz(NVD3Viz):
         return d
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         df = df.fillna(0)
         df['metric'] = df[[self.metric]]
         values = df['metric'].values
@@ -966,6 +1001,9 @@ class BigNumberViz(BaseViz):
 
     def get_data(self, df):
         form_data = self.form_data
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         df.sort_values(by=df.columns[0], inplace=True)
         compare_lag = form_data.get('compare_lag')
         return {
@@ -995,6 +1033,9 @@ class BigNumberTotalViz(BaseViz):
 
     def get_data(self, df):
         form_data = self.form_data
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         df.sort_values(by=df.columns[0], inplace=True)
         return {
             'data': df.values.tolist(),
@@ -1062,6 +1103,9 @@ class NVD3TimeSeriesViz(NVD3Viz):
 
     def process_data(self, df, aggregate=False):
         fd = self.form_data
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         df = df.fillna(0)
         if fd.get('granularity') == 'all':
             raise Exception(_('Pick a time granularity for your time series'))
@@ -1156,6 +1200,9 @@ class NVD3TimeSeriesViz(NVD3Viz):
                 df2, classed='superset', title_suffix='---')
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         df = self.process_data(df)
         chart_data = self.to_series(df)
 
@@ -1225,6 +1272,9 @@ class NVD3DualLineViz(NVD3Viz):
 
     def get_data(self, df):
         fd = self.form_data
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         df = df.fillna(0)
 
         if self.form_data.get('granularity') == 'all':
@@ -1263,6 +1313,9 @@ class NVD3TimePivotViz(NVD3TimeSeriesViz):
         return d
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         fd = self.form_data
         df = self.process_data(df)
         freq = to_offset(fd.get('freq'))
@@ -1316,6 +1369,9 @@ class DistributionPieViz(NVD3Viz):
     is_timeseries = False
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         df = df.pivot_table(
             index=self.groupby,
             values=[self.metrics[0]])
@@ -1345,6 +1401,9 @@ class HistogramViz(BaseViz):
         return d
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         """Returns the chart data"""
         chart_data = df[df.columns[0]].values.tolist()
         return chart_data
@@ -1375,6 +1434,9 @@ class DistributionBarViz(DistributionPieViz):
 
     def get_data(self, df):
         fd = self.form_data
+
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
 
         row = df.groupby(self.groupby).sum()[self.metrics[0]].copy()
         row.sort_values(ascending=False, inplace=True)
@@ -1430,6 +1492,9 @@ class SunburstViz(BaseViz):
         '@<a href="https://bl.ocks.org/kerryrodden/7090426">bl.ocks.org</a>')
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         fd = self.form_data
         cols = fd.get('groupby')
         metric = fd.get('metric')
@@ -1467,6 +1532,9 @@ class SankeyViz(BaseViz):
         return qry
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         df.columns = ['source', 'target', 'value']
         recs = df.to_dict(orient='records')
 
@@ -1515,6 +1583,9 @@ class DirectedForceViz(BaseViz):
         return qry
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         df.columns = ['source', 'target', 'value']
         return df.to_dict(orient='records')
 
@@ -1537,6 +1608,8 @@ class ChordViz(BaseViz):
 
     def get_data(self, df):
         df.columns = ['source', 'target', 'value']
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
 
         # Preparing a symetrical matrix like d3.chords calls for
         nodes = list(set(df['source']) | set(df['target']))
@@ -1569,6 +1642,9 @@ class CountryMapViz(BaseViz):
         return qry
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         fd = self.form_data
         cols = [fd.get('entity')]
         metric = fd.get('metric')
@@ -1597,6 +1673,9 @@ class WorldMapViz(BaseViz):
         return qry
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         from superset.data import countries
         fd = self.form_data
         cols = [fd.get('entity')]
@@ -1662,6 +1741,9 @@ class FilterBoxViz(BaseViz):
         return qry
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         d = {}
         filters = [g for g in self.form_data['groupby']]
         for flt in filters:
@@ -1718,6 +1800,9 @@ class ParallelCoordinatesViz(BaseViz):
         return d
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         return df.to_dict(orient='records')
 
 
@@ -1740,6 +1825,9 @@ class HeatmapViz(BaseViz):
         return d
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         fd = self.form_data
         x = fd.get('all_columns_x')
         y = fd.get('all_columns_y')
@@ -1839,6 +1927,9 @@ class MapboxViz(BaseViz):
         return d
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         fd = self.form_data
         label_col = fd.get('mapbox_label')
         custom_metric = label_col and len(label_col) >= 1
@@ -1910,6 +2001,9 @@ class DeckGLMultiLayer(BaseViz):
         return None
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         fd = self.form_data
         # Late imports to avoid circular import issues
         from superset.models.core import Slice
@@ -2000,6 +2094,9 @@ class BaseDeckGLViz(BaseViz):
         return {col: d.get(col) for col in cols}
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         for key in self.spatial_control_keys:
             df = self.process_spatial_data_obj(key, df)
 
@@ -2049,6 +2146,9 @@ class DeckScatterViz(BaseDeckGLViz):
         }
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         fd = self.form_data
         self.point_radius_fixed = fd.get('point_radius_fixed')
         self.fixed_value = None
@@ -2178,6 +2278,9 @@ class DeckArc(BaseDeckGLViz):
         }
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         d = super(DeckArc, self).get_data(df)
         arcs = d['features']
 
@@ -2215,6 +2318,9 @@ class EventFlowViz(BaseViz):
         return query
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         return df.to_dict(orient='records')
 
 
@@ -2228,6 +2334,9 @@ class PairedTTestViz(BaseViz):
     is_timeseries = True
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         """
         Transform received data frame into an object of the form:
         {
@@ -2286,6 +2395,9 @@ class RoseViz(NVD3TimeSeriesViz):
     is_timeseries = True
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         data = super(RoseViz, self).get_data(df)
         result = {}
         for datum in data:
@@ -2421,6 +2533,9 @@ class PartitionViz(NVD3TimeSeriesViz):
         } for i in procs[level][dims].columns]
 
     def get_data(self, df):
+        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+            raise Exception(_('No data was returned'))
+
         fd = self.form_data
         groups = fd.get('groupby', [])
         time_op = fd.get('time_series_option', 'not_time')
