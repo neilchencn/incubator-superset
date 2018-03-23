@@ -193,6 +193,11 @@ TABLE_NAMES_CACHE_CONFIG = {
     'CACHE_REDIS_URL': 'redis://localhost:6379'
 }
 
+# CACHE_CONFIG = {
+#     'CACHE_TYPE': 'null'}
+
+# TABLE_NAMES_CACHE_CONFIG = {
+#     'CACHE_TYPE': 'null'}
 # CORS Options
 ENABLE_CORS = False
 CORS_OPTIONS = {}
