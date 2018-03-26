@@ -1480,6 +1480,7 @@ def load_deck_dash():
     polygon_tbl = db.session.query(TBL) \
                     .filter_by(table_name='sf_population_polygons').first()
     slice_data = {
+
             "datasource": "11__table",
             "viz_type": "deck_polygon",
             "slice_id": 41,
@@ -1595,6 +1596,7 @@ def load_deck_dash():
             "having": "",
             "filters": []
         }
+
 
     print("Creating Arc slice")
     slc = Slice(

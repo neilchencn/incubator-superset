@@ -38,7 +38,6 @@ from superset import app, cache, get_manifest_file, utils, db
 from superset.utils import DTTM_ALIAS, merge_extra_filters
 from flask_appbuilder.security.sqla import models as ab_models
 
-
 config = app.config
 stats_logger = config.get('STATS_LOGGER')
 
@@ -314,6 +313,7 @@ class BaseViz(object):
         payload = self.get_df_payload(query_obj)
 
         df = payload.get('df')
+
         if self.status != utils.QueryStatus.FAILED:
             if df is not None and df.empty:
                 payload['error'] = 'No data'
@@ -1935,8 +1935,10 @@ class MapboxViz(BaseViz):
         return d
 
     def get_data(self, df):
+
         if df is None:
             return None
+
         fd = self.form_data
         label_col = fd.get('mapbox_label')
         custom_metric = label_col and len(label_col) >= 1
@@ -2053,6 +2055,7 @@ class BaseDeckGLViz(BaseViz):
         if spatial is None:
             raise ValueError(_('Bad spatial key'))
         if spatial.get('type') == 'latlong':
+
             df[key] = list(zip(
                 pd.to_numeric(df[spatial.get('lonCol')], errors='coerce'),
                 pd.to_numeric(df[spatial.get('latCol')], errors='coerce'),
@@ -2106,8 +2109,10 @@ class BaseDeckGLViz(BaseViz):
         return {col: d.get(col) for col in cols}
 
     def get_data(self, df):
+
         if df is None:
             return None
+
         for key in self.spatial_control_keys:
             df = self.process_spatial_data_obj(key, df)
 

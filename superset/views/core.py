@@ -362,7 +362,9 @@ class CsvToDatabaseView(SimpleFormView):
                 os.remove(os.path.join(config['UPLOAD_FOLDER'], csv_filename))
             except OSError:
                 pass
+
             message = 'Table name {} already exists. Please pick another'.format(
+
                 form.name.data) if isinstance(e, IntegrityError) else text_type(e)
             flash(
                 message,
@@ -2437,7 +2439,9 @@ class Superset(BaseSupersetView):
         schema = utils.js_string_to_python(schema)
         mydb = db.session.query(models.Database).filter_by(
             id=database_id).one()
+
         payload_columns = []
+
         indexes = []
         primary_key = []
         foreign_keys = []
@@ -2858,6 +2862,7 @@ class Superset(BaseSupersetView):
         """User profile page"""
         if not username and g.user:
             username = g.user.username
+
         payload = {
             'user': bootstrap_user_data(username, include_perms=True),
             'common': self.common_bootsrap_payload(),

@@ -95,6 +95,7 @@ export const visTypes = {
       {
         label: t('Query'),
         expanded: true,
+
         controlSetRows: [
           ['metrics'],
           ['groupby'],
@@ -472,6 +473,7 @@ export const visTypes = {
       {
         label: t('Query'),
         expanded: true,
+
         controlSetRows: [
           ['spatial', 'size'],
           ['row_limit', null],
@@ -518,6 +520,7 @@ export const visTypes = {
       },
       {
         label: t('Map'),
+
         controlSetRows: [
           ['mapbox_style', 'viewport'],
           // TODO ['autozoom', null],
@@ -592,6 +595,7 @@ export const visTypes = {
       },
       {
         label: t('Map'),
+
         controlSetRows: [
           ['mapbox_style', 'viewport'],
           ['autozoom', null],
@@ -631,6 +635,7 @@ export const visTypes = {
       {
         label: t('Query'),
         expanded: true,
+        
         controlSetRows: [
           ['spatial', 'row_limit'],
         ],
@@ -653,6 +658,7 @@ export const visTypes = {
       },
       {
         label: t('Point Color'),
+
         controlSetRows: [
           ['color_picker', 'legend_position'],
           ['dimension', 'color_scheme'],
@@ -908,6 +914,7 @@ export const visTypes = {
       },
       {
         label: t('Chart Options'),
+
         expanded: true,
         controlSetRows: [
           ['color_scheme'],
@@ -927,11 +934,13 @@ export const visTypes = {
       },
       {
         label: t('Chart Options'),
+
         expanded: true,
         controlSetRows: [
           ['color_scheme'],
           ['show_legend', null],
         ],
+
       },
       {
         label: t('Bubbles'),
@@ -1046,6 +1055,7 @@ export const visTypes = {
       },
       {
         label: t('Chart Options'),
+
         expanded: true,
         controlSetRows: [
           ['color_scheme'],
@@ -1082,10 +1092,12 @@ export const visTypes = {
       },
       {
         label: t('Chart Options'),
+
         expanded: true,
         controlSetRows: [
           ['color_scheme'],
         ],
+
       },
     ],
     controlOverrides: {
@@ -1121,6 +1133,7 @@ export const visTypes = {
       },
       {
         label: t('Chart Options'),
+
         expanded: true,
         controlSetRows: [
           ['color_scheme'],
@@ -1165,6 +1178,7 @@ export const visTypes = {
       },
       {
         label: t('Chart Options'),
+
         expanded: true,
         controlSetRows: [
           ['y_axis_format', null],
@@ -1369,6 +1383,7 @@ export const visTypes = {
       sections.NVD3TimeSeries[0],
       {
         label: t('Chart Options'),
+
         expanded: true,
         controlSetRows: [
           ['series_height', 'horizon_color_scale'],

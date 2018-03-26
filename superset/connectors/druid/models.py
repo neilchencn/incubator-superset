@@ -164,8 +164,10 @@ class DruidCluster(Model, AuditMixinNullable, ImportMixin):
         session = db.session
         ds_list = (
             session.query(DruidDatasource)
+
             .filter(DruidDatasource.cluster_name == self.cluster_name)
             .filter(DruidDatasource.datasource_name.in_(datasource_names))
+
         )
         ds_map = {ds.name: ds for ds in ds_list}
         for ds_name in datasource_names:
@@ -601,6 +603,7 @@ class DruidDatasource(Model, BaseDatasource):
             (v1nums[0] == v2nums[0] and v1nums[1] > v2nums[1]) or
             (v1nums[0] == v2nums[0] and v1nums[1] == v2nums[1] and
                 v1nums[2] > v2nums[2])
+
         )
 
     def latest_metadata(self):

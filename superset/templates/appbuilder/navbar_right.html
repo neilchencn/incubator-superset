@@ -1,6 +1,7 @@
  {% set locale = session['locale'] %} {% if not locale %} {% set locale = 'en' %} {% endif %} {% if not current_user.is_anonymous()
 %}
 <li class="dropdown">
+
     <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)">
         <div class="f16">
             <i class="flag {{languages[locale].get('flag')}}"></i>&nbsp;
