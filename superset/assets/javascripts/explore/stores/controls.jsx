@@ -1,5 +1,9 @@
 import React from 'react';
-import { formatSelectOptionsForRange, formatSelectOptions } from '../../modules/utils';
+import {
+  formatSelectOptionsForRange,
+  formatSelectOptions,
+  mainMetric,
+} from '../../modules/utils';
 import * as v from '../validators';
 import { colorPrimary, ALL_COLOR_SCHEMES, spectrums } from '../../modules/colors';
 import { defaultViewport } from '../../modules/geo';
@@ -12,6 +16,7 @@ const D3_FORMAT_DOCS = 'D3 format syntax: https://github.com/d3/d3-format';
 
 // input choices & options
 const D3_FORMAT_OPTIONS = [
+  ['.1s', '.1s | 12k'],
   ['.3s', '.3s | 12.3k'],
   ['.3%', '.3% | 1234543.210%'],
   ['.4r', '.4r | 12350'],
@@ -56,7 +61,7 @@ const groupByControl = {
   default: [],
   includeTime: false,
   description: t('One or many controls to group by'),
-  optionRenderer: c => <ColumnOption column={c} />,
+  optionRenderer: c => <ColumnOption column={c} showType />,
   valueRenderer: c => <ColumnOption column={c} />,
   valueKey: 'column_name',
   mapStateToProps: (state, control) => {
@@ -82,6 +87,7 @@ const jsFunctionInfo = (
     </a>.
   </div>
 );
+
 function jsFunctionControl(label, description, extraDescr = null, height = 100, defaultText = '') {
   return {
     type: 'TextAreaControl',
@@ -97,6 +103,11 @@ function jsFunctionControl(label, description, extraDescr = null, height = 100, 
         {extraDescr}
       </div>
     ),
+    mapStateToProps: state => ({
+      warning: !state.common.conf.ENABLE_JAVASCRIPT_CONTROLS ?
+        t('This functionality is disabled in your environment for security reasons.') : null,
+      readOnly: !state.common.conf.ENABLE_JAVASCRIPT_CONTROLS,
+    }),
   };
 }
 
@@ -124,9 +135,12 @@ export const controls = {
     label: t('Metrics'),
     validators: [v.nonEmpty],
     valueKey: 'metric_name',
-    optionRenderer: m => <MetricOption metric={m} />,
+    optionRenderer: m => <MetricOption metric={m} showType />,
     valueRenderer: m => <MetricOption metric={m} />,
-    default: c => c.options && c.options.length > 0 ? [c.options[0].metric_name] : null,
+    default: (c) => {
+      const metric = mainMetric(c.options);
+      return metric ? [metric] : null;
+    },
     mapStateToProps: state => ({
       options: (state.datasource) ? state.datasource.metrics : [],
     }),
@@ -138,7 +152,7 @@ export const controls = {
     multi: true,
     label: t('Percentage Metrics'),
     valueKey: 'metric_name',
-    optionRenderer: m => <MetricOption metric={m} />,
+    optionRenderer: m => <MetricOption metric={m} showType />,
     valueRenderer: m => <MetricOption metric={m} />,
     mapStateToProps: state => ({
       options: (state.datasource) ? state.datasource.metrics : [],
@@ -174,6 +188,20 @@ export const controls = {
     default: colorPrimary,
     renderTrigger: true,
   },
+  legend_position: {
+    label: t('Legend Position'),
+    description: t('Choose the position of the legend'),
+    type: 'SelectControl',
+    clearable: false,
+    default: 'Top right',
+    choices: [
+      ['tl', 'Top left'],
+      ['tr', 'Top right'],
+      ['bl', 'Bottom left'],
+      ['br', 'Bottom right'],
+    ],
+    renderTrigger: true,
+  },
 
   fill_color_picker: {
     label: t('Fill Color'),
@@ -197,9 +225,9 @@ export const controls = {
     clearable: false,
     description: t('Choose the metric'),
     validators: [v.nonEmpty],
-    optionRenderer: m => <MetricOption metric={m} />,
+    optionRenderer: m => <MetricOption metric={m} showType />,
     valueRenderer: m => <MetricOption metric={m} />,
-    default: c => c.options && c.options.length > 0 ? c.options[0].metric_name : null,
+    default: c => mainMetric(c.options),
     valueKey: 'metric_name',
     mapStateToProps: state => ({
       options: (state.datasource) ? state.datasource.metrics : [],
@@ -214,7 +242,7 @@ export const controls = {
     clearable: true,
     description: t('Choose a metric for right axis'),
     valueKey: 'metric_name',
-    optionRenderer: m => <MetricOption metric={m} />,
+    optionRenderer: m => <MetricOption metric={m} showType />,
     valueRenderer: m => <MetricOption metric={m} />,
     mapStateToProps: state => ({
       options: (state.datasource) ? state.datasource.metrics : [],
@@ -224,6 +252,7 @@ export const controls = {
   stacked_style: {
     type: 'SelectControl',
     label: t('Stacked Style'),
+    renderTrigger: true,
     choices: [
       ['stack', 'stack'],
       ['stream', 'stream'],
@@ -332,6 +361,14 @@ export const controls = {
     default: false,
   },
 
+  autozoom: {
+    type: 'CheckboxControl',
+    label: t('Auto Zoom'),
+    default: true,
+    renderTrigger: true,
+    description: t('When checked, the map will zoom to your data after each query'),
+  },
+
   show_perc: {
     type: 'CheckboxControl',
     label: t('Show percentage'),
@@ -376,6 +413,7 @@ export const controls = {
     type: 'CheckboxControl',
     label: t('Sort Bars'),
     default: false,
+    renderTrigger: true,
     description: t('Sort bars by x labels.'),
   },
 
@@ -507,8 +545,11 @@ export const controls = {
     label: t('Columns'),
     default: [],
     description: t('Columns to display'),
+    optionRenderer: c => <ColumnOption column={c} showType />,
+    valueRenderer: c => <ColumnOption column={c} />,
+    valueKey: 'column_name',
     mapStateToProps: state => ({
-      choices: (state.datasource) ? state.datasource.all_cols : [],
+      options: (state.datasource) ? state.datasource.columns : [],
     }),
   },
 
@@ -737,7 +778,7 @@ export const controls = {
       return null;
     },
     clearable: false,
-    optionRenderer: c => <ColumnOption column={c} />,
+    optionRenderer: c => <ColumnOption column={c} showType />,
     valueRenderer: c => <ColumnOption column={c} />,
     valueKey: 'column_name',
     mapStateToProps: (state) => {
@@ -829,6 +870,7 @@ export const controls = {
   treemap_ratio: {
     type: 'TextControl',
     label: t('Ratio'),
+    renderTrigger: true,
     isFloat: true,
     default: 0.5 * (1 + Math.sqrt(5)),  // d3 default, golden ratio
     description: t('Target aspect ratio for treemap tiles.'),
@@ -849,7 +891,7 @@ export const controls = {
     freeForm: true,
     label: t('Row limit'),
     validators: [v.integer],
-    default: 50000,
+    default: 10000,
     choices: formatSelectOptions(ROW_LIMIT_OPTIONS),
   },
 
@@ -859,8 +901,11 @@ export const controls = {
     label: t('Series limit'),
     validators: [v.integer],
     choices: formatSelectOptions(SERIES_LIMITS),
-    default: 50,
-    description: t('Limits the number of time series that get displayed'),
+    description: t(
+      'Limits the number of time series that get displayed. A sub query ' +
+      '(or an extra phase where sub queries are not supported) is applied to limit ' +
+      'the number of time series that get fetched and displayed. This feature is useful ' +
+      'when grouping by high cardinality dimension(s).'),
   },
 
   timeseries_limit_metric: {
@@ -893,6 +938,7 @@ export const controls = {
     type: 'TextControl',
     label: t('Multiplier'),
     isFloat: true,
+    renderTrigger: true,
     default: 1,
     description: t('Factor to multiply the metric by'),
   },
@@ -954,7 +1000,7 @@ export const controls = {
     description: t('Metric assigned to the [X] axis'),
     default: null,
     validators: [v.nonEmpty],
-    optionRenderer: m => <MetricOption metric={m} />,
+    optionRenderer: m => <MetricOption metric={m} showType />,
     valueRenderer: m => <MetricOption metric={m} />,
     valueKey: 'metric_name',
     mapStateToProps: state => ({
@@ -968,7 +1014,7 @@ export const controls = {
     default: null,
     validators: [v.nonEmpty],
     description: t('Metric assigned to the [Y] axis'),
-    optionRenderer: m => <MetricOption metric={m} />,
+    optionRenderer: m => <MetricOption metric={m} showType />,
     valueRenderer: m => <MetricOption metric={m} />,
     valueKey: 'metric_name',
     mapStateToProps: state => ({
@@ -981,7 +1027,7 @@ export const controls = {
     label: t('Bubble Size'),
     default: null,
     validators: [v.nonEmpty],
-    optionRenderer: m => <MetricOption metric={m} />,
+    optionRenderer: m => <MetricOption metric={m} showType />,
     valueRenderer: m => <MetricOption metric={m} />,
     valueKey: 'metric_name',
     mapStateToProps: state => ({
@@ -1162,6 +1208,7 @@ export const controls = {
     type: 'SelectControl',
     label: t('Label Type'),
     default: 'key',
+    renderTrigger: true,
     choices: [
       ['key', 'Category Name'],
       ['value', 'Value'],
@@ -1236,10 +1283,16 @@ export const controls = {
   },
 
   show_brush: {
-    type: 'CheckboxControl',
-    label: t('Range Filter'),
+    type: 'SelectControl',
+    label: t('Show Range Filter'),
     renderTrigger: true,
-    default: false,
+    clearable: false,
+    default: 'auto',
+    choices: [
+      ['yes', 'Yes'],
+      ['no', 'No'],
+      ['auto', 'Auto'],
+    ],
     description: t('Whether to display the time range interactive selector'),
   },
 
@@ -1298,6 +1351,22 @@ export const controls = {
     label: t('Table Filter'),
     default: false,
     description: t('Whether to apply filter when table cell is clicked'),
+  },
+
+  align_pn: {
+    type: 'CheckboxControl',
+    label: t('Align +/-'),
+    renderTrigger: true,
+    default: false,
+    description: t('Whether to align the background chart for +/- values'),
+  },
+
+  color_pn: {
+    type: 'CheckboxControl',
+    label: t('Color +/-'),
+    renderTrigger: true,
+    default: true,
+    description: t('Whether to color +/- values'),
   },
 
   show_bubbles: {
@@ -1661,6 +1730,7 @@ export const controls = {
     default: [],
     description: 'Annotation Layers',
     renderTrigger: true,
+    tabOverride: 'data',
   },
 
   having_filters: {
@@ -1827,6 +1897,30 @@ export const controls = {
       'lower values are pruned first'),
   },
 
+  min_radius: {
+    type: 'TextControl',
+    label: t('Minimum Radius'),
+    isFloat: true,
+    validators: [v.nonEmpty],
+    renderTrigger: true,
+    default: 2,
+    description:
+    t('Minimum radius size of the circle, in pixels. As the zoom level changes, this ' +
+      'insures that the circle respects this minimum radius.'),
+  },
+
+  max_radius: {
+    type: 'TextControl',
+    label: t('Maximum Radius'),
+    isFloat: true,
+    validators: [v.nonEmpty],
+    renderTrigger: true,
+    default: 250,
+    description:
+    t('Maxium radius size of the circle, in pixels. As the zoom level changes, this ' +
+      'insures that the circle respects this maximum radius.'),
+  },
+
   partition_threshold: {
     type: 'TextControl',
     label: t('Partition Threshold'),
@@ -1934,6 +2028,14 @@ export const controls = {
     label: t('Filled'),
     renderTrigger: true,
     description: t('Whether to fill the objects'),
+    default: false,
+  },
+
+  normalized: {
+    type: 'CheckboxControl',
+    label: t('Normalized'),
+    renderTrigger: true,
+    description: t('Whether to normalize the histogram'),
     default: false,
   },
 };

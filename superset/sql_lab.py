@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -16,7 +17,7 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
-from superset import app, dataframe, db, results_backend, utils
+from superset import app, dataframe, db, results_backend, sm, utils
 from superset.db_engine_specs import LimitMethod
 from superset.jinja_context import get_template_processor
 from superset.models.sql_lab import Query
@@ -96,7 +97,7 @@ def convert_results_to_df(cursor_description, data):
     if data:
         first_row = data[0]
         has_dict_col = any([isinstance(c, dict) for c in first_row])
-        df_data = list(data) if has_dict_col else np.array(data)
+        df_data = list(data) if has_dict_col else np.array(data, dtype=object)
     else:
         df_data = []
 
@@ -193,6 +194,11 @@ def execute_sql(
         msg = 'Template rendering failed: ' + utils.error_msg_from_exception(e)
         return handle_error(msg)
 
+    # Hook to allow environment-specific mutation (usually comments) to the SQL
+    SQL_QUERY_MUTATOR = config.get('SQL_QUERY_MUTATOR')
+    if SQL_QUERY_MUTATOR:
+        executed_sql = SQL_QUERY_MUTATOR(executed_sql, user_name, sm, database)
+
     query.executed_sql = executed_sql
     query.status = QueryStatus.RUNNING
     query.start_running_time = utils.now_as_float()
@@ -272,7 +278,10 @@ def execute_sql(
         key = '{}'.format(uuid.uuid4())
         logging.info('Storing results in results backend, key: {}'.format(key))
         json_payload = json.dumps(payload, default=utils.json_iso_dttm_ser)
-        results_backend.set(key, utils.zlib_compress(json_payload))
+        cache_timeout = database.cache_timeout
+        if cache_timeout is None:
+            cache_timeout = config.get('CACHE_DEFAULT_TIMEOUT', 0)
+        results_backend.set(key, utils.zlib_compress(json_payload), cache_timeout)
         query.results_key = key
         query.end_result_backend_time = utils.now_as_float()
 

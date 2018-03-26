@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """A collection of ORM sqlalchemy models for Superset"""
 from __future__ import absolute_import
 from __future__ import division
@@ -200,25 +201,30 @@ class Slice(Model, AuditMixinNullable, ImportMixin):
         form_data.update({
             'slice_id': self.id,
             'viz_type': self.viz_type,
-            'datasource': str(self.datasource_id) + '__' + self.datasource_type,
+            'datasource': '{}__{}'.format(
+                self.datasource_id, self.datasource_type),
         })
         if self.cache_timeout:
             form_data['cache_timeout'] = self.cache_timeout
         return form_data
 
+    def get_explore_url(self, base_url='/superset/explore', overrides=None):
+        overrides = overrides or {}
+        form_data = {'slice_id': self.id}
+        form_data.update(overrides)
+        params = parse.quote(json.dumps(form_data))
+        return (
+            '{base_url}/?form_data={params}'.format(**locals()))
+
     @property
     def slice_url(self):
         """Defines the url to access the slice"""
-        return (
-            '/superset/explore/{obj.datasource_type}/'
-            '{obj.datasource_id}/?form_data={params}'.format(
-                obj=self, params=parse.quote(json.dumps(self.form_data))))
+        return self.get_explore_url()
 
     @property
-    def slice_id_url(self):
-        return (
-            '/superset/{slc.datasource_type}/{slc.datasource_id}/{slc.id}/'
-        ).format(slc=self)
+    def explore_json_url(self):
+        """Defines the url to access the slice"""
+        return self.get_explore_url('/superset/explore_json')
 
     @property
     def edit_url(self):
@@ -561,6 +567,7 @@ class Database(Model, AuditMixinNullable, ImportMixin):
     allow_ctas = Column(Boolean, default=False)
     allow_dml = Column(Boolean, default=False)
     force_ctas_schema = Column(String(250))
+    allow_multi_schema_metadata_fetch = Column(Boolean, default=True)
     extra = Column(Text, default=textwrap.dedent("""\
     {
         "metadata_params": {},
@@ -587,6 +594,8 @@ class Database(Model, AuditMixinNullable, ImportMixin):
         return {
             'name': self.database_name,
             'backend': self.backend,
+            'allow_multi_schema_metadata_fetch':
+                self.allow_multi_schema_metadata_fetch,
         }
 
     @property
@@ -669,6 +678,10 @@ class Database(Model, AuditMixinNullable, ImportMixin):
         if configuration:
             params['connect_args'] = {'configuration': configuration}
 
+        DB_CONNECTION_MUTATOR = config.get('DB_CONNECTION_MUTATOR')
+        if DB_CONNECTION_MUTATOR:
+            url, params = DB_CONNECTION_MUTATOR(
+                url, params, effective_username, sm)
         return create_engine(url, **params)
 
     def get_reserved_words(self):
@@ -701,11 +714,11 @@ class Database(Model, AuditMixinNullable, ImportMixin):
 
     def select_star(
             self, table_name, schema=None, limit=100, show_cols=False,
-            indent=True, latest_partition=True):
+            indent=True, latest_partition=True, cols=None):
         """Generates a ``select *`` statement in the proper dialect"""
         return self.db_engine_spec.select_star(
             self, table_name, schema=schema, limit=limit, show_cols=show_cols,
-            indent=indent, latest_partition=latest_partition)
+            indent=indent, latest_partition=latest_partition, cols=cols)
 
     def wrap_sql_limit(self, sql, limit=1000):
         qry = (
@@ -727,6 +740,8 @@ class Database(Model, AuditMixinNullable, ImportMixin):
 
     def all_table_names(self, schema=None, force=False):
         if not schema:
+            if not self.allow_multi_schema_metadata_fetch:
+                return []
             tables_dict = self.db_engine_spec.fetch_result_sets(
                 self, 'table', force=force)
             return tables_dict.get('', [])
@@ -735,6 +750,8 @@ class Database(Model, AuditMixinNullable, ImportMixin):
 
     def all_view_names(self, schema=None, force=False):
         if not schema:
+            if not self.allow_multi_schema_metadata_fetch:
+                return []
             views_dict = self.db_engine_spec.fetch_result_sets(
                 self, 'view', force=force)
             return views_dict.get('', [])
@@ -860,9 +877,10 @@ class Log(Model):
             user_id = None
             if g.user:
                 user_id = g.user.get_id()
-            d = request.args.to_dict()
-            post_data = request.form.to_dict() or {}
-            d.update(post_data)
+            d = request.form.to_dict() or {}
+            # request parameters can overwrite post body
+            request_params = request.args.to_dict()
+            d.update(request_params)
             d.update(kwargs)
             slice_id = d.get('slice_id')
 

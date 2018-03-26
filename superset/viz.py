@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """This module contains the 'Viz' objects
 
 These objects represent the backend of all the visualizations that
@@ -23,6 +24,7 @@ from dateutil import relativedelta as rdelta
 from flask import escape, request, g
 from flask_babel import lazy_gettext as _
 import geohash
+from geopy.point import Point
 from markdown import markdown
 import numpy as np
 import pandas as pd
@@ -77,8 +79,7 @@ class BaseViz(object):
         self._some_from_cache = False
         self._any_cache_key = None
         self._any_cached_dttm = None
-
-        self.run_extra_queries()
+        self._extra_chart_data = None
 
     def run_extra_queries(self):
         """Lyfecycle method to use when more than one query is needed
@@ -151,14 +152,12 @@ class BaseViz(object):
         # If the datetime format is unix, the parse will use the corresponding
         # parsing logic.
         if df is None or df.empty:
-            self.status = utils.QueryStatus.FAILED
-            if not self.error_message:
-                self.error_message = 'No data.'
             return pd.DataFrame()
         else:
             if DTTM_ALIAS in df.columns:
                 if timestamp_format in ('epoch_s', 'epoch_ms'):
-                    df[DTTM_ALIAS] = pd.to_datetime(df[DTTM_ALIAS], utc=False)
+                    df[DTTM_ALIAS] = pd.to_datetime(
+                        df[DTTM_ALIAS], utc=False, unit=timestamp_format[6:])
                 else:
                     df[DTTM_ALIAS] = pd.to_datetime(
                         df[DTTM_ALIAS], utc=False, format=timestamp_format)
@@ -301,22 +300,27 @@ class BaseViz(object):
         for k in ['from_dttm', 'to_dttm']:
             del cache_dict[k]
 
-        for k in ['since', 'until', 'datasource']:
+        for k in ['since', 'until']:
             cache_dict[k] = self.form_data.get(k)
 
+        cache_dict['datasource'] = self.datasource.uid
         json_data = self.json_dumps(cache_dict, sort_keys=True)
         return hashlib.md5(json_data.encode('utf-8')).hexdigest()
 
     def get_payload(self, query_obj=None):
         """Returns a payload of metadata and data"""
+        self.run_extra_queries()
         payload = self.get_df_payload(query_obj)
 
         df = payload.get('df')
-        if df is not None and len(df.index) == 0:
-            raise Exception('No data was returned')
-        payload['data'] = self.get_data(df)
 
-        del payload['df']
+        if self.status != utils.QueryStatus.FAILED:
+            if df is not None and df.empty:
+                payload['error'] = 'No data'
+            else:
+                payload['data'] = self.get_data(df)
+        if 'df' in payload:
+            del payload['df']
         return payload
 
     def get_df_payload(self, query_obj=None):
@@ -336,9 +340,11 @@ class BaseViz(object):
                 try:
                     cache_value = pkl.loads(cache_value)
                     df = cache_value['df']
-                    is_loaded = True
-                    self._any_cache_key = cache_key
+                    self.query = cache_value['query']
                     self._any_cached_dttm = cache_value['dttm']
+                    self._any_cache_key = cache_key
+                    self.status = utils.QueryStatus.SUCCESS
+                    is_loaded = True
                 except Exception as e:
                     logging.exception(e)
                     logging.error('Error reading cache: ' +
@@ -348,8 +354,9 @@ class BaseViz(object):
         if query_obj and not is_loaded:
             try:
                 df = self.get_df(query_obj)
-                stats_logger.incr('loaded_from_source')
-                is_loaded = True
+                if self.status != utils.QueryStatus.FAILED:
+                    stats_logger.incr('loaded_from_source')
+                    is_loaded = True
             except Exception as e:
                 logging.exception(e)
                 if not self.error_message:
@@ -366,6 +373,7 @@ class BaseViz(object):
                     cache_value = dict(
                         dttm=cached_dttm,
                         df=df if df is not None else None,
+                        query=self.query,
                     )
                     cache_value = pkl.dumps(
                         cache_value, protocol=pkl.HIGHEST_PROTOCOL)
@@ -1179,7 +1187,6 @@ class NVD3TimeSeriesViz(NVD3Viz):
     def run_extra_queries(self):
         fd = self.form_data
         time_compare = fd.get('time_compare')
-        self.extra_chart_data = None
         if time_compare:
             query_object = self.query_obj()
             delta = utils.parse_human_timedelta(time_compare)
@@ -1194,10 +1201,11 @@ class NVD3TimeSeriesViz(NVD3Viz):
             query_object['to_dttm'] -= delta
 
             df2 = self.get_df_payload(query_object).get('df')
-            df2[DTTM_ALIAS] += delta
-            df2 = self.process_data(df2)
-            self.extra_chart_data = self.to_series(
-                df2, classed='superset', title_suffix='---')
+            if df2 is not None:
+                df2[DTTM_ALIAS] += delta
+                df2 = self.process_data(df2)
+                self._extra_chart_data = self.to_series(
+                    df2, classed='superset', title_suffix='---')
 
     def get_data(self, df):
         if df is None or (isinstance(df, pd.DataFrame) and df.empty):
@@ -1206,8 +1214,8 @@ class NVD3TimeSeriesViz(NVD3Viz):
         df = self.process_data(df)
         chart_data = self.to_series(df)
 
-        if self.extra_chart_data:
-            chart_data += self.extra_chart_data
+        if self._extra_chart_data:
+            chart_data += self._extra_chart_data
             chart_data = sorted(chart_data, key=lambda x: x['key'])
 
         return chart_data
@@ -1927,8 +1935,9 @@ class MapboxViz(BaseViz):
         return d
 
     def get_data(self, df):
-        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-            raise Exception(_('No data was returned'))
+
+        if df is None:
+            return None
 
         fd = self.form_data
         label_col = fd.get('mapbox_label')
@@ -2045,13 +2054,20 @@ class BaseDeckGLViz(BaseViz):
         spatial = self.form_data.get(key)
         if spatial is None:
             raise ValueError(_('Bad spatial key'))
-
         if spatial.get('type') == 'latlong':
-            df[key] = list(zip(df[spatial.get('lonCol')],
-                               df[spatial.get('latCol')]))
+
+            df[key] = list(zip(
+                pd.to_numeric(df[spatial.get('lonCol')], errors='coerce'),
+                pd.to_numeric(df[spatial.get('latCol')], errors='coerce'),
+            ))
         elif spatial.get('type') == 'delimited':
-            df[key] = (df[spatial.get('lonlatCol')].str.split(
-                spatial.get('delimiter')))
+
+            def tupleify(s):
+                p = Point(s)
+                return (p.latitude, p.longitude)
+
+            df[key] = df[spatial.get('lonlatCol')].apply(tupleify)
+
             if spatial.get('reverseCheckbox'):
                 df[key] = [
                     tuple(reversed(o)) if isinstance(
@@ -2064,7 +2080,6 @@ class BaseDeckGLViz(BaseViz):
             df[key] = list(zip(latlong.apply(lambda x: x[0]),
                                latlong.apply(lambda x: x[1])))
             del df[spatial.get('geohashCol')]
-
         return df
 
     def query_obj(self):
@@ -2094,8 +2109,9 @@ class BaseDeckGLViz(BaseViz):
         return {col: d.get(col) for col in cols}
 
     def get_data(self, df):
-        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-            raise Exception(_('No data was returned'))
+
+        if df is None:
+            return None
 
         for key in self.spatial_control_keys:
             df = self.process_spatial_data_obj(key, df)
@@ -2124,9 +2140,11 @@ class DeckScatterViz(BaseDeckGLViz):
     viz_type = 'deck_scatter'
     verbose_name = _('Deck.gl - Scatter plot')
     spatial_control_keys = ['spatial']
+    is_timeseries = True
 
     def query_obj(self):
         fd = self.form_data
+        self.is_timeseries = fd.get('time_grain_sqla') or fd.get('granularity')
         self.point_radius_fixed = (
             fd.get('point_radius_fixed') or {'type': 'fix', 'value': 500})
         return super(DeckScatterViz, self).query_obj()
@@ -2143,6 +2161,7 @@ class DeckScatterViz(BaseDeckGLViz):
             'radius': self.fixed_value if self.fixed_value else d.get(self.metric),
             'cat_color': d.get(self.dim) if self.dim else None,
             'position': d.get('spatial'),
+            '__timestamp': d.get(DTTM_ALIAS) or d.get('__time'),
         }
 
     def get_data(self, df):

@@ -1,10 +1,17 @@
+# -*- coding: utf-8 -*-
 # pylint: disable=invalid-unary-operand-type
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from collections import OrderedDict
 from copy import deepcopy
 from datetime import datetime, timedelta
 import json
 import logging
 from multiprocessing.pool import ThreadPool
+import re
 
 from dateutil.parser import parse as dparse
 from flask import escape, Markup
@@ -28,11 +35,12 @@ from sqlalchemy.orm import backref, relationship
 
 from superset import conf, db, import_util, sm, utils
 from superset.connectors.base.models import BaseColumn, BaseDatasource, BaseMetric
+from superset.exceptions import MetricPermException
 from superset.models.helpers import (
     AuditMixinNullable, ImportMixin, QueryResult, set_perm,
 )
 from superset.utils import (
-    DimSelector, DTTM_ALIAS, flasher, MetricPermException,
+    DimSelector, DTTM_ALIAS, flasher,
 )
 
 DRUID_TZ = conf.get('DRUID_TZ')
@@ -102,24 +110,30 @@ class DruidCluster(Model, AuditMixinNullable, ImportMixin):
             'backend': 'druid',
         }
 
+    @staticmethod
+    def get_base_url(host, port):
+        if not re.match('http(s)?://', host):
+            host = 'http://' + host
+        return '{0}:{1}'.format(host, port)
+
+    def get_base_coordinator_url(self):
+        base_url = self.get_base_url(
+            self.coordinator_host, self.coordinator_port)
+        return '{base_url}/{self.coordinator_endpoint}'.format(**locals())
+
     def get_pydruid_client(self):
         cli = PyDruid(
-            'http://{0}:{1}/'.format(self.broker_host, self.broker_port),
+            self.get_base_url(self.broker_host, self.broker_port),
             self.broker_endpoint)
         return cli
 
     def get_datasources(self):
-        endpoint = (
-            'http://{obj.coordinator_host}:{obj.coordinator_port}/'
-            '{obj.coordinator_endpoint}/datasources'
-        ).format(obj=self)
-
+        endpoint = self.get_base_coordinator_url() + '/datasources'
         return json.loads(requests.get(endpoint).text)
 
     def get_druid_version(self):
-        endpoint = (
-            'http://{obj.coordinator_host}:{obj.coordinator_port}/status'
-        ).format(obj=self)
+        endpoint = self.get_base_url(
+            self.coordinator_host, self.coordinator_port) + '/status'
         return json.loads(requests.get(endpoint).text)['version']
 
     def refresh_datasources(
@@ -144,16 +158,17 @@ class DruidCluster(Model, AuditMixinNullable, ImportMixin):
 
     def refresh(self, datasource_names, merge_flag, refreshAll):
         """
-        Fetches metadata for the specified datasources andm
+        Fetches metadata for the specified datasources and
         merges to the Superset database
         """
         session = db.session
         ds_list = (
             session.query(DruidDatasource)
-            .filter(or_(DruidDatasource.datasource_name == name
-                        for name in datasource_names))
-        )
 
+            .filter(DruidDatasource.cluster_name == self.cluster_name)
+            .filter(DruidDatasource.datasource_name.in_(datasource_names))
+
+        )
         ds_map = {ds.name: ds for ds in ds_list}
         for ds_name in datasource_names:
             datasource = ds_map.get(ds_name, None)
@@ -444,6 +459,7 @@ class DruidDatasource(Model, BaseDatasource):
     # Columns
     datasource_name = Column(String(255))
     is_hidden = Column(Boolean, default=False)
+    filter_select_enabled = Column(Boolean, default=True)  # override default
     fetch_values_from = Column(String(100))
     cluster_name = Column(
         String(250), ForeignKey('clusters.cluster_name'))
@@ -586,7 +602,8 @@ class DruidDatasource(Model, BaseDatasource):
             v1nums[0] > v2nums[0] or
             (v1nums[0] == v2nums[0] and v1nums[1] > v2nums[1]) or
             (v1nums[0] == v2nums[0] and v1nums[1] == v2nums[1] and
-             v1nums[2] > v2nums[2])
+                v1nums[2] > v2nums[2])
+
         )
 
     def latest_metadata(self):
@@ -872,8 +889,8 @@ class DruidDatasource(Model, BaseDatasource):
     def resolve_postagg(postagg, post_aggs, agg_names, visited_postaggs, metrics_dict):
         mconf = postagg.json_obj
         required_fields = set(
-            DruidDatasource.recursive_get_fields(mconf)
-            + mconf.get('fieldNames', []))
+            DruidDatasource.recursive_get_fields(mconf) +
+            mconf.get('fieldNames', []))
         # Check if the fields are already in aggs
         # or is a previous postagg
         required_fields = set([
@@ -1058,10 +1075,7 @@ class DruidDatasource(Model, BaseDatasource):
         if not is_timeseries:
             granularity = 'all'
 
-        if (
-                granularity == 'all' or
-                timeseries_limit is None or
-                timeseries_limit == 0):
+        if granularity == 'all':
             phase = 1
         inner_from_dttm = inner_from_dttm or from_dttm
         inner_to_dttm = inner_to_dttm or to_dttm
@@ -1106,6 +1120,7 @@ class DruidDatasource(Model, BaseDatasource):
         order_direction = 'descending' if order_desc else 'ascending'
 
         if columns:
+            columns.append('__time')
             del qry['post_aggregations']
             del qry['aggregations']
             qry['dimensions'] = columns
@@ -1143,7 +1158,8 @@ class DruidDatasource(Model, BaseDatasource):
 
             client.topn(**pre_qry)
             logging.info('Phase 1 Complete')
-            query_str += '// Two phase query\n// Phase 1\n'
+            if phase == 2:
+                query_str += '// Two phase query\n// Phase 1\n'
             query_str += json.dumps(
                 client.query_builder.last_query.query_dict, indent=2)
             query_str += '\n'

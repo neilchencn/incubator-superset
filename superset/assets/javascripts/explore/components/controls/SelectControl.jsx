@@ -114,7 +114,8 @@ export default class SelectControl extends React.PureComponent {
   render() {
     //  Tab, comma or Enter will trigger a new option created for FreeFormSelect
     const placeholder =
-      this.props.placeholder || t('Select %s', this.state.options.length);
+      this.props.placeholder || t('%s option(s)', this.state.options.length);
+
     const selectProps = {
       multi: this.props.multi,
       name: `select-${this.props.name}`,

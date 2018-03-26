@@ -2368,6 +2368,20 @@
       "default": false,
       "description": "Whether to apply filter when table cell is clicked"
     },
+    "align_pn": {
+      "type": "CheckboxControl",
+      "label": "Align +/-",
+      "renderTrigger": true,
+      "default": false,
+      "description": "Whether to align the background chart for +/- values"
+    },
+    "color_pn": {
+      "type": "CheckboxControl",
+      "label": "Color +/-",
+      "renderTrigger": true,
+      "default": true,
+      "description": "Whether to color +/- values"
+    },
     "show_bubbles": {
       "type": "CheckboxControl",
       "label": "Show Bubbles",
@@ -2894,8 +2908,8 @@
           "googleCategory20c"
         ],
         [
-          "fdColor10c",
-          "fdColor10c"
+          "lyftColors",
+          "lyftColors"
         ]
       ],
       "description": "The color scheme for rendering chart",

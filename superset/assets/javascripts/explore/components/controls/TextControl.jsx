@@ -13,6 +13,7 @@ const propTypes = {
   ]),
   isFloat: PropTypes.bool,
   isInt: PropTypes.bool,
+  disabled: PropTypes.bool,
 };
 
 const defaultProps = {
@@ -21,6 +22,7 @@ const defaultProps = {
   value: '',
   isInt: false,
   isFloat: false,
+  disabled: false,
 };
 
 export default class TextControl extends React.Component {
@@ -29,11 +31,11 @@ export default class TextControl extends React.Component {
     this.onChange = this.onChange.bind(this);
   }
   onChange(event) {
-    let value = event.target.value || '';
+    let value = event.target.value;
 
     // Validation & casting
     const errors = [];
-    if (this.props.isFloat) {
+    if (value !== '' && this.props.isFloat) {
       const error = v.numeric(value);
       if (error) {
         errors.push(error);
@@ -41,7 +43,7 @@ export default class TextControl extends React.Component {
         value = parseFloat(value);
       }
     }
-    if (this.props.isInt) {
+    if (value !== '' && this.props.isInt) {
       const error = v.integer(value);
       if (error) {
         errors.push(error);
@@ -52,7 +54,8 @@ export default class TextControl extends React.Component {
     this.props.onChange(value, errors);
   }
   render() {
-    const value = this.props.value ? this.props.value.toString() : '';
+    const { value: rawValue } = this.props;
+    const value = typeof rawValue !== 'undefined' && rawValue !== null ? rawValue.toString() : '';
     return (
       <div>
         <ControlHeader {...this.props} />
@@ -63,6 +66,7 @@ export default class TextControl extends React.Component {
             onChange={this.onChange}
             onFocus={this.props.onFocus}
             value={value}
+            disabled={this.props.disabled}
           />
         </FormGroup>
       </div>
