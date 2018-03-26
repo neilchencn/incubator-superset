@@ -10,11 +10,12 @@ import json
 import os
 import random
 import textwrap
-
+import sqlite3
 import pandas as pd
-from sqlalchemy import BigInteger, Date, DateTime, Float, String, Text
+from sqlalchemy import BigInteger, Date, DateTime, Float, String, Text, Integer
 import geohash
 import polyline
+from collections import OrderedDict
 
 from superset import app, db, utils
 from superset.connectors.connector_registry import ConnectorRegistry
@@ -283,7 +284,7 @@ def load_world_bank_health_n_pop():
                         "TUV", "IMY", "KNA", "ASM", "ADO", "AMA", "PLW",
                     ],
                     "op": "not in"}],
-                )),
+            )),
         Slice(
             slice_name="Rural Breakdown",
             viz_type='sunburst',
@@ -944,7 +945,8 @@ def load_random_time_series_data():
     print("-" * 80)
 
     print("Creating table [random_time_series] reference")
-    obj = db.session.query(TBL).filter_by(table_name='random_time_series').first()
+    obj = db.session.query(TBL).filter_by(
+        table_name='random_time_series').first()
     if not obj:
         obj = TBL(table_name='random_time_series')
     obj.main_dttm_col = 'ds'
@@ -979,7 +981,8 @@ def load_random_time_series_data():
 
 def load_country_map_data():
     """Loading data for map with country map"""
-    csv_path = os.path.join(DATA_FOLDER, 'birth_france_data_for_country_map.csv')
+    csv_path = os.path.join(
+        DATA_FOLDER, 'birth_france_data_for_country_map.csv')
     data = pd.read_csv(csv_path, encoding="utf-8")
     data['dttm'] = datetime.datetime.now().date()
     data.to_sql(  # pylint: disable=no-member
@@ -1007,7 +1010,8 @@ def load_country_map_data():
     print("Done loading table!")
     print("-" * 80)
     print("Creating table reference")
-    obj = db.session.query(TBL).filter_by(table_name='birth_france_by_region').first()
+    obj = db.session.query(TBL).filter_by(
+        table_name='birth_france_by_region').first()
     if not obj:
         obj = TBL(table_name='birth_france_by_region')
     obj.main_dttm_col = 'dttm'
@@ -1054,7 +1058,8 @@ def load_long_lat_data():
     pdf['radius_miles'] = [random.uniform(1, 3) for _ in range(len(pdf))]
     pdf['geohash'] = pdf[['LAT', 'LON']].apply(
         lambda x: geohash.encode(*x), axis=1)
-    pdf['delimited'] = pdf['LAT'].map(str).str.cat(pdf['LON'].map(str), sep=',')
+    pdf['delimited'] = pdf['LAT'].map(
+        str).str.cat(pdf['LON'].map(str), sep=',')
     pdf.to_sql(  # pylint: disable=no-member
         'long_lat',
         db.engine,
@@ -1118,7 +1123,6 @@ def load_long_lat_data():
 
 
 def load_multiformat_time_series_data():
-
     """Loading time series data from a zip file in the repo"""
     with gzip.open(os.path.join(DATA_FOLDER, 'multiformat_time_series.json.gz')) as f:
         pdf = pd.read_json(f)
@@ -1143,7 +1147,8 @@ def load_multiformat_time_series_data():
     print("Done loading table!")
     print("-" * 80)
     print("Creating table [multiformat_time_series] reference")
-    obj = db.session.query(TBL).filter_by(table_name='multiformat_time_series').first()
+    obj = db.session.query(TBL).filter_by(
+        table_name='multiformat_time_series').first()
     if not obj:
         obj = TBL(table_name='multiformat_time_series')
     obj.main_dttm_col = 'ds'
@@ -1525,12 +1530,12 @@ def load_deck_dash():
             "js_datapoint_mutator": "(d) => {\n    d.elevation = d.extraProps.population/d.extraProps.area/10\n \
              d.fillColor = [d.extraProps.population/d.extraProps.area/60,140,0]\n \
              return d;\n}",
-            "js_tooltip": "",
-            "js_onclick_href": "",
-            "where": "",
-            "having": "",
-            "filters": []
-        }
+        "js_tooltip": "",
+        "js_onclick_href": "",
+        "where": "",
+        "having": "",
+        "filters": []
+    }
 
     print("Creating Polygon slice")
     slc = Slice(
@@ -1596,7 +1601,8 @@ def load_deck_dash():
         slice_name="Arcs",
         viz_type='deck_arc',
         datasource_type='table',
-        datasource_id=db.session.query(TBL).filter_by(table_name='flights').first().id,
+        datasource_id=db.session.query(TBL).filter_by(
+            table_name='flights').first().id,
         params=get_slice_json(slice_data),
     )
     merge_slice(slc)
@@ -1654,7 +1660,8 @@ def load_deck_dash():
         slice_name="Path",
         viz_type='deck_path',
         datasource_type='table',
-        datasource_id=db.session.query(TBL).filter_by(table_name='bart_lines').first().id,
+        datasource_id=db.session.query(TBL).filter_by(
+            table_name='bart_lines').first().id,
         params=get_slice_json(slice_data),
     )
     merge_slice(slc)
@@ -1748,7 +1755,8 @@ def load_flights():
         airports = pd.read_csv(f, encoding='latin-1')
     airports = airports.set_index('IATA_CODE')
 
-    pdf['ds'] = pdf.YEAR.map(str) + '-0' + pdf.MONTH.map(str) + '-0' + pdf.DAY.map(str)
+    pdf['ds'] = pdf.YEAR.map(str) + '-0' + \
+        pdf.MONTH.map(str) + '-0' + pdf.DAY.map(str)
     pdf.ds = pd.to_datetime(pdf.ds)
     del pdf['YEAR']
     del pdf['MONTH']
@@ -1860,6 +1868,138 @@ def load_bart_lines():
     if not tbl:
         tbl = TBL(table_name=tbl_name)
     tbl.description = "BART lines"
+    tbl.database = get_or_create_main_db()
+    db.session.merge(tbl)
+    db.session.commit()
+    tbl.fetch_metadata()
+
+
+def load_dictionarys():
+    Order = OrderedDict(
+        [('1', 'iRT'), ('2', 'GreenT'), ('25', 'DSED'), ('27', 'DSE')])
+    with open(os.path.join(DATA_FOLDER, 'dict.json')) as f:
+        jd = json.load(f)
+
+    for k, v in Order.items():
+        names = []
+        des = []
+        ids = []
+        idx = 0
+        if jd.has_key(k):
+            tbl_name = Order[k]
+            for n, d in jd[k].items():
+                names.append(n)
+                des.append(d)
+                ids.append(idx + 1)
+                idx += 1
+            df = pd.DataFrame(dict(id=ids, field_name=names, describe=des))
+            df = clean_df_db_dups(df, tbl_name, db.engine, dup_cols=['field_name','describe'])
+            df.to_sql(
+                tbl_name,
+                db.engine,
+                if_exists='append',
+                chunksize=500,
+                dtype={
+                    'id': Integer(),
+                    'field_name': String(255),
+                    'describe': String(255),
+                },
+                index=False
+            )
+            print("Creating table {} reference".format(tbl_name))
+            tbl = db.session.query(TBL).filter_by(table_name=tbl_name).first()
+            if not tbl:
+                tbl = TBL(table_name=tbl_name)
+            tbl.description = "dictionary"
+            tbl.database = get_or_create_main_db()
+            db.session.merge(tbl)
+            db.session.commit()
+            tbl.fetch_metadata()
+
+
+def byteify(input):
+    if isinstance(input, dict):
+        return {byteify(key): byteify(value) for key, value in input.iteritems()}
+    elif isinstance(input, list):
+        return [byteify(element) for element in input]
+    elif isinstance(input, unicode):
+        return input.encode('utf-8')
+    else:
+        return input
+
+
+def clean_df_db_dups(df, tablename, engine, dup_cols=[],
+                     filter_continuous_col=None, filter_categorical_col=None):
+    """
+    Remove rows from a dataframe that already exist in a database
+    Required:
+        df : dataframe to remove duplicate rows from
+        engine: SQLAlchemy engine object
+        tablename: tablename to check duplicates in
+        dup_cols: list or tuple of column names to check for duplicate row values
+    Optional:
+        filter_continuous_col: the name of the continuous data column for BETWEEEN min/max filter
+                               can be either a datetime, int, or float data type
+                               useful for restricting the database table size to check
+        filter_categorical_col : the name of the categorical data column for Where = value check
+                                 Creates an "IN ()" check on the unique values in this column
+    Returns
+        Unique list of values from dataframe compared to database table
+    """
+    args = 'SELECT %s FROM %s' % (
+        ', '.join(['"{0}"'.format(col) for col in dup_cols]), tablename)
+    args_contin_filter, args_cat_filter = None, None
+    if filter_continuous_col is not None:
+        if df[filter_continuous_col].dtype == 'datetime64[ns]':
+            args_contin_filter = """ "%s" BETWEEN Convert(datetime, '%s')
+                                          AND Convert(datetime, '%s')""" % (filter_continuous_col,
+                                                                            df[filter_continuous_col].min(), df[filter_continuous_col].max())
+
+    if filter_categorical_col is not None:
+        args_cat_filter = ' "%s" in(%s)' % (filter_categorical_col,
+                                            ', '.join(["'{0}'".format(value) for value in df[filter_categorical_col].unique()]))
+
+    if args_contin_filter and args_cat_filter:
+        args += ' Where ' + args_contin_filter + ' AND' + args_cat_filter
+    elif args_contin_filter:
+        args += ' Where ' + args_contin_filter
+    elif args_cat_filter:
+        args += ' Where ' + args_cat_filter
+
+    df.drop_duplicates(dup_cols, keep='last', inplace=True)
+    df = pd.merge(df, pd.read_sql(args, engine),
+                  how='left', on=dup_cols, indicator=True)
+    df = df[df['_merge'] == 'left_only']
+    df.drop(['_merge'], axis=1, inplace=True)
+    return df
+
+
+def load_companies():
+    tbl_name = 'company'
+    with open(os.path.join(DATA_FOLDER, 'company.json')) as f:
+        data = [v for d, v in byteify(json.load(f)).items()]
+
+    with open(os.path.join(DATA_FOLDER, 'bs_company.json')) as bs:
+        data += [v for d, v in byteify(json.load(bs)).items()]
+
+    df = pd.DataFrame(dict(id=range(1, len(data) + 1), field_name=data))
+    df = clean_df_db_dups(df, tbl_name, db.engine, dup_cols=['field_name'])
+    df.to_sql(
+        tbl_name,
+        db.engine,
+        if_exists='append',
+        chunksize=500,
+        index=False,
+        dtype={
+            'id': Integer(),
+            'field_name': String(255),
+        }
+    )
+    print("Creating table {} reference".format(tbl_name))
+    tbl = db.session.query(TBL).filter_by(table_name=tbl_name).first()
+    if not tbl:
+        tbl = TBL(table_name=tbl_name)
+    tbl.description = "company list"
     tbl.database = get_or_create_main_db()
     db.session.merge(tbl)
     db.session.commit()

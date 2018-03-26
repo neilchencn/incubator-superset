@@ -8,15 +8,12 @@ import { expect } from 'chai';
 import { user } from './fixtures';
 import UserInfo from '../../../javascripts/profile/components/UserInfo';
 
-
 describe('UserInfo', () => {
   const mockedProps = {
     user,
   };
   it('is valid', () => {
-    expect(
-      React.isValidElement(<UserInfo {...mockedProps} />),
-    ).to.equal(true);
+    expect(React.isValidElement(<UserInfo {...mockedProps} />)).to.equal(true);
   });
   it('renders a Gravatar', () => {
     const wrapper = mount(<UserInfo {...mockedProps} />);

@@ -1,0 +1,42 @@
+{% extends "superset/base.html" %} {% block content %}
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h4 class="panel-title">Data Field Dictionary</h4>
+    </div>
+    <div class="panel-body">
+        <ul class="nav nav-tabs" role="tablist">
+            {%for d in dict.keys() %}
+            <li role="presentation" {%if loop.first%}class="active" {%endif%}>
+                <a href="#{{d}}" aria-controls="{{d}}" role="tab" data-toggle="tab">{{d}}</a>
+            </li>
+            {%endfor%}
+        </ul>
+
+        <!-- Tab panes -->
+
+        <div class="tab-content">
+            {%for d,v in dict.items() %}
+            <div role="tabpanel" class="tab-pane {%if loop.first %} active{%endif%}" id="{{d}}">
+                <table class="table table-bordered">
+                    <thead>
+                        <th width="25%">Name</th>
+                        <th width="75%">Definition</th>
+                    </thead>
+                    <tbody>
+                        {%for f,df in v.items()%}
+                        <tr>
+                            <td>{{f}}</td>
+                            <td>{{df}}</td>
+                        </tr>
+                        {%endfor%}
+                    </tbody>
+                </table>
+            </div>
+            {%endfor%}
+        </div>
+
+    </div>
+</div>
+
+
+{% endblock %}

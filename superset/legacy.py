@@ -9,7 +9,8 @@ import re
 
 from superset import frontend_config
 
-FORM_DATA_KEY_WHITELIST = list(frontend_config.get('controls').keys()) + ['slice_id']
+FORM_DATA_KEY_WHITELIST = list(
+    frontend_config.get('controls').keys()) + ['slice_id']
 
 
 def cast_filter_data(form_data):
@@ -31,7 +32,8 @@ def cast_filter_data(form_data):
                 if prefix == 'flt':
                     # transfer old strings in filter value to list
                     splitted = filter_pattern.split(fd[val_str])[1::2]
-                    values = [types.replace("'", '').strip() for types in splitted]
+                    values = [types.replace("'", '').strip()
+                              for types in splitted]
                     f['val'] = values
                     flts.append(f)
                 if prefix == 'having':

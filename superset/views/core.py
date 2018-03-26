@@ -16,7 +16,7 @@ from urllib import parse
 from flask import (
     flash, g, Markup, redirect, render_template, request, Response, url_for,
 )
-from flask_appbuilder import expose, SimpleFormView
+from flask_appbuilder import expose, SimpleFormView, BaseView
 from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.security.decorators import has_access_api
@@ -42,7 +42,9 @@ from superset.exceptions import SupersetException, SupersetSecurityException
 from superset.forms import CsvToDatabaseForm
 from superset.legacy import cast_form_data
 import superset.models.core as models
+import superset.models.dictionary as dicts
 from superset.models.sql_lab import Query
+
 from superset.sql_parse import SupersetQuery
 from superset.utils import (
     has_access, merge_extra_filters, merge_request_params, QueryStatus,
@@ -152,6 +154,7 @@ class SliceFilter(SupersetFilter):
             return query
         perms = self.get_view_menus('datasource_access')
         # TODO(bogdan): add `schema_access` support here
+        print(perms)
         return query.filter(self.model.perm.in_(perms))
 
 
@@ -306,14 +309,14 @@ appbuilder.add_link(
     category_icon='fa-wrench')
 
 
-appbuilder.add_view(
-    DatabaseView,
-    'Databases',
-    label=__('Databases'),
-    icon='fa-database',
-    category='Sources',
-    category_label=__('Sources'),
-    category_icon='fa-database')
+# appbuilder.add_view(
+#     DatabaseView,
+#     'Databases',
+#     label=__('Databases'),
+#     icon='fa-database',
+#     category='Sources',
+#     category_label=__('Sources'),
+#     category_icon='fa-database')
 
 
 class DatabaseAsync(DatabaseView):
@@ -345,7 +348,8 @@ class CsvToDatabaseView(SimpleFormView):
 
     def form_post(self, form):
         csv_file = form.csv_file.data
-        form.csv_file.data.filename = secure_filename(form.csv_file.data.filename)
+        form.csv_file.data.filename = secure_filename(
+            form.csv_file.data.filename)
         csv_filename = form.csv_file.data.filename
         try:
             csv_file.save(os.path.join(config['UPLOAD_FOLDER'], csv_filename))
@@ -479,14 +483,21 @@ class SliceModelView(SupersetModelView, DeleteMixin):  # noqa
     @has_access
     def add(self):
         datasources = ConnectorRegistry.get_all_datasources(db.session)
-        datasources = [
-            {'value': str(d.id) + '__' + d.type, 'label': repr(d)}
-            for d in datasources
-        ]
+        # datasources = [
+        #     {'value': str(d.id) + '__' + d.type, 'label': repr(d)}
+        #     for d in datasources
+        # ]
+        _temp = []
+
+        for d in datasources:
+            if d.type == 'druid':
+                _temp.append({'value': str(d.id) + '__' +
+                              d.type, 'label': repr(d)})
+
         return self.render_template(
             'superset/add_slice.html',
             bootstrap_data=json.dumps({
-                'datasources': sorted(datasources, key=lambda d: d['label']),
+                'datasources': sorted(_temp, key=lambda d: d['label']),
             }),
         )
 
@@ -677,6 +688,206 @@ appbuilder.add_view(
     icon='fa-list-ol')
 
 
+class IRTView(SupersetModelView, DeleteMixin):
+    datamodel = SQLAInterface(dicts.IRT)
+
+    list_title = _('List iRT Data Fields Dictionary')
+    show_title = _('Show iRT Data Fields Dictionary')
+    add_title = _('Add iRT Data Fields Dictionary')
+    edit_title = _('Edit iRT Data Fields Dictionary')
+    list_columns = ['field_name', 'describe']
+    # order_columns = ['field_name']
+    edit_columns = [
+        'field_name', 'describe']
+    # show_columns = edit_columns + ['table_names']
+    # search_columns = ('field_name', 'describe')
+    add_columns = edit_columns
+    # base_order = ('desc')
+
+    label_columns = {
+        'field_name': _('Name'),
+        'describe': _('Definition'),
+    }
+
+    # def pre_add(self, obj):
+    #     check_ownership(obj)
+
+    # def pre_update(self, obj):
+    #     check_ownership(obj)
+    #     self.pre_add(obj)
+
+    # def pre_delete(self, obj):
+    #     check_ownership(obj)
+
+
+class GreenTView(SupersetModelView, DeleteMixin):
+    datamodel = SQLAInterface(dicts.GreenT)
+    list_title = _('List GreenT Data Fields Dictionary')
+    show_title = _('Show GreenT Data Fields Dictionary')
+    add_title = _('Add GreenT Data Fields Dictionary')
+    edit_title = _('Edit GreenT Data Fields Dictionary')
+    list_columns = ['field_name', 'describe']
+    # list_columns = ['field_name', 'describe']
+    # order_columns = ['field_name']
+    # edit_columns = [
+    #     'field_name', 'describe']
+    # show_columns = edit_columns + ['table_names']
+    # search_columns = ('field_name', 'describe')
+    # add_columns = edit_columns
+    # base_order = ('desc')
+
+    label_columns = {
+        'field_name': _('Name'),
+        'describe': _('Definition'),
+    }
+
+    # def pre_add(self, obj):
+    #     check_ownership(obj)
+
+    # def pre_update(self, obj):
+    #     check_ownership(obj)
+    #     self.pre_add(obj)
+
+    # def pre_delete(self, obj):
+    #     check_ownership(obj)
+
+
+class DSEDView(SupersetModelView, DeleteMixin):
+    datamodel = SQLAInterface(dicts.DSED)
+    list_title = _('List DSED Data Fields Dictionary')
+    show_title = _('Show DSED Data Fields Dictionary')
+    add_title = _('Add DSED Data Fields Dictionary')
+    edit_title = _('Edit DSED Data Fields Dictionary')
+    list_columns = ['field_name', 'describe']
+    # list_columns = ['field_name', 'describe']
+    # order_columns = ['field_name']
+    # edit_columns = [
+    #     'field_name', 'describe']
+    # show_columns = edit_columns + ['table_names']
+    # search_columns = ('field_name', 'describe')
+    # add_columns = edit_columns
+    # base_order = ('desc')
+
+    label_columns = {
+        'field_name': _('Name'),
+        'describe': _('Definition'),
+    }
+
+    # def pre_add(self, obj):
+    #     check_ownership(obj)
+
+    # def pre_update(self, obj):
+    #     check_ownership(obj)
+    #     self.pre_add(obj)
+
+    # def pre_delete(self, obj):
+    #     check_ownership(obj)
+
+
+class DSEView(SupersetModelView, DeleteMixin):
+    datamodel = SQLAInterface(dicts.DSE)
+
+    list_title = _('List DSE Data Fields Dictionary')
+    show_title = _('Show DSE Data Fields Dictionary')
+    add_title = _('Add DSE Data Fields Dictionary')
+    edit_title = _('Edit DSE Data Fields Dictionary')
+    list_columns = ['field_name', 'describe']
+
+    # list_columns = ['field_name', 'describe']
+    # order_columns = ['field_name']
+    edit_columns = [
+        'field_name', 'describe']
+    show_columns = edit_columns + ['table_names']
+    # search_columns = ('field_name', 'describe')
+    add_columns = edit_columns
+    # base_order = ( 'desc')
+
+    label_columns = {
+        'field_name': _('Name'),
+        'describe': _('Definition'),
+    }
+
+    # def pre_add(self, obj):
+    #     check_ownership(obj)
+
+    # def pre_update(self, obj):
+    #     check_ownership(obj)
+    #     self.pre_add(obj)
+
+    # def pre_delete(self, obj):
+    #     check_ownership(obj)
+
+
+class CompanyView(SupersetModelView, DeleteMixin):
+    datamodel = SQLAInterface(dicts.Company)
+
+    label_columns = {
+        'field_name': _('Company Name'),
+    }
+    # list_columns = ['field_name']
+    # order_columns = ['field_name']
+    # edit_columns = ['field_name']
+    # show_columns = edit_columns + ['table_names']
+    # search_columns = ('field_name')
+    # add_columns = edit_columns
+    # base_order = ('changed_on', 'desc')
+
+    # label_columns = {
+    #     'field_name': _('Name'),
+    # }
+
+    # def pre_add(self, obj):
+    #     check_ownership(obj)
+
+    # def pre_update(self, obj):
+    #     check_ownership(obj)
+    #     self.pre_add(obj)
+
+    # def pre_delete(self, obj):
+    #     check_ownership(obj)
+
+
+appbuilder.add_view(
+    IRTView,
+    'iRT',
+    category="Sources",
+    label=__('iRT Data Fields Dictionary'),
+    category_label=__('Sources'),
+    icon='fa-list-alt')
+
+appbuilder.add_view(
+    GreenTView,
+    'GreenT',
+    category="Sources",
+    label=__('GreenT Data Fields Dictionary'),
+    category_label=__('Sources'),
+    icon='fa-list-alt')
+
+appbuilder.add_view(
+    DSEDView,
+    'DSED',
+    category="Sources",
+    label=__('DSED Data Fields Dictionary'),
+    category_label=__('Sources'),
+    icon='fa-list-alt')
+
+appbuilder.add_view(
+    DSEView,
+    'DSE',
+    category="Sources",
+    label=__('DSE Data Fields Dictionary'),
+    category_label=__('Sources'),
+    icon='fa-list-alt')
+
+appbuilder.add_view(
+    CompanyView,
+    'Company',
+    category="Sources",
+    label=__('Company'),
+    category_label=__('Sources'),
+    icon='fa-list-alt')
+
+
 @app.route('/health')
 def health():
     return 'OK'
@@ -761,6 +972,7 @@ appbuilder.add_view_no_menu(R)
 
 class Superset(BaseSupersetView):
     """The base views for Superset!"""
+
     def json_response(self, obj, status=200):
         return Response(
             json.dumps(obj, default=utils.json_int_dttm_ser),
@@ -771,8 +983,13 @@ class Superset(BaseSupersetView):
     @expose('/datasources/')
     def datasources(self):
         datasources = ConnectorRegistry.get_all_datasources(db.session)
-        datasources = [o.short_data for o in datasources]
-        datasources = sorted(datasources, key=lambda o: o['name'])
+        # datasources = [o.short_data for o in datasources]
+        _temp = []
+
+        for o in datasources:
+            if o.type == 'druid':
+                _temp.append(o.short_data)
+        datasources = sorted(_temp, key=lambda o: o['name'])
         return self.json_response(datasources)
 
     @has_access_api
@@ -806,7 +1023,8 @@ class Superset(BaseSupersetView):
                         dbs['name'], ds_name, schema=schema['name'])
                     db_ds_names.add(fullname)
 
-        existing_datasources = ConnectorRegistry.get_all_datasources(db.session)
+        existing_datasources = ConnectorRegistry.get_all_datasources(
+            db.session)
         datasources = [
             d for d in existing_datasources if d.full_name in db_ds_names]
         role = sm.find_role(role_name)
@@ -974,7 +1192,8 @@ class Superset(BaseSupersetView):
 
         url_id = request.args.get('r')
         if url_id:
-            saved_url = db.session.query(models.Url).filter_by(id=url_id).first()
+            saved_url = db.session.query(
+                models.Url).filter_by(id=url_id).first()
             if saved_url:
                 url_str = parse.unquote_plus(
                     saved_url.url.split('?')[1][10:], encoding='utf-8', errors=None)
@@ -1191,7 +1410,8 @@ class Superset(BaseSupersetView):
         f = request.files.get('file')
         if request.method == 'POST' and f:
             current_tt = int(time.time())
-            data = json.loads(f.stream.read(), object_hook=utils.decode_dashboards)
+            data = json.loads(
+                f.stream.read(), object_hook=utils.decode_dashboards)
             # TODO: import DRUID datasources
             for table in data['datasources']:
                 type(table).import_obj(table, import_time=current_tt)
@@ -1278,12 +1498,14 @@ class Superset(BaseSupersetView):
 
         if action == 'overwrite' and not slice_overwrite_perm:
             return json_error_response(
-                _('You don\'t have the rights to ') + _('alter this ') + _('chart'),
+                _('You don\'t have the rights to ') +
+                _('alter this ') + _('chart'),
                 status=400)
 
         if action == 'saveas' and not slice_add_perm:
             return json_error_response(
-                _('You don\'t have the rights to ') + _('create a ') + _('chart'),
+                _('You don\'t have the rights to ') +
+                _('create a ') + _('chart'),
                 status=400)
 
         if action in ('saveas', 'overwrite'):
@@ -1405,7 +1627,8 @@ class Superset(BaseSupersetView):
             dash_add_perm = self.can_access('can_add', 'DashboardModelView')
             if not dash_add_perm:
                 return json_error_response(
-                    _('You don\'t have the rights to ') + _('create a ') + _('dashboard'),
+                    _('You don\'t have the rights to ') +
+                    _('create a ') + _('dashboard'),
                     status=400)
 
             dash = models.Dashboard(
@@ -1604,7 +1827,8 @@ class Superset(BaseSupersetView):
         slice_ids = [int(d['slice_id']) for d in positions]
         dashboard.slices = [o for o in dashboard.slices if o.id in slice_ids]
         positions = sorted(data['positions'], key=lambda x: int(x['slice_id']))
-        dashboard.position_json = json.dumps(positions, indent=4, sort_keys=True)
+        dashboard.position_json = json.dumps(
+            positions, indent=4, sort_keys=True)
         md = dashboard.params_dict
         dashboard.css = data['css']
         dashboard.dashboard_title = data['dashboard_title']
@@ -1670,7 +1894,8 @@ class Superset(BaseSupersetView):
                 db_engine.patch()
 
                 masked_url = database.get_password_masked_url_from_uri(uri)
-                logging.info('Superset.testconn(). Masked URL: {0}'.format(masked_url))
+                logging.info(
+                    'Superset.testconn(). Masked URL: {0}'.format(masked_url))
 
                 configuration.update(
                     db_engine.get_configuration_for_impersonation(uri,
@@ -1841,7 +2066,7 @@ class Superset(BaseSupersetView):
         if not user_id:
             user_id = g.user.id
         Slice = models.Slice  # noqa
-        FavStar = models.FavStar # noqa
+        FavStar = models.FavStar  # noqa
         qry = (
             db.session.query(Slice,
                              FavStar.dttm).join(
@@ -2210,7 +2435,8 @@ class Superset(BaseSupersetView):
     @log_this
     def table(self, database_id, table_name, schema):
         schema = utils.js_string_to_python(schema)
-        mydb = db.session.query(models.Database).filter_by(id=database_id).one()
+        mydb = db.session.query(models.Database).filter_by(
+            id=database_id).one()
         payload_columns = []
         indexes = []
         primary_key = []
@@ -2224,7 +2450,8 @@ class Superset(BaseSupersetView):
             return json_error_response(utils.error_msg_from_exception(e))
         keys = []
         if primary_key and primary_key.get('constrained_columns'):
-            primary_key['column_names'] = primary_key.pop('constrained_columns')
+            primary_key['column_names'] = primary_key.pop(
+                'constrained_columns')
             primary_key['type'] = 'pk'
             keys += [primary_key]
         for fk in foreign_keys:
@@ -2267,7 +2494,8 @@ class Superset(BaseSupersetView):
     @log_this
     def extra_table_metadata(self, database_id, table_name, schema):
         schema = utils.js_string_to_python(schema)
-        mydb = db.session.query(models.Database).filter_by(id=database_id).one()
+        mydb = db.session.query(models.Database).filter_by(
+            id=database_id).one()
         payload = mydb.db_engine_spec.extra_table_metadata(
             mydb, table_name, schema)
         return json_success(json.dumps(payload))
@@ -2473,7 +2701,8 @@ class Superset(BaseSupersetView):
         rejected_tables = self.rejected_datasources(
             query.sql, query.database, query.schema)
         if rejected_tables:
-            flash(get_datasource_access_error_msg('{}'.format(rejected_tables)))
+            flash(get_datasource_access_error_msg(
+                '{}'.format(rejected_tables)))
             return redirect('/')
         blob = None
         if results_backend and query.results_key:
@@ -2527,10 +2756,12 @@ class Superset(BaseSupersetView):
                 'Please login to access the queries.', status=403)
 
         # Unix time, milliseconds.
-        last_updated_ms_int = int(float(last_updated_ms)) if last_updated_ms else 0
+        last_updated_ms_int = int(
+            float(last_updated_ms)) if last_updated_ms else 0
 
         # UTC date time, same that is stored in the DB.
-        last_updated_dt = utils.EPOCH + timedelta(seconds=last_updated_ms_int / 1000)
+        last_updated_dt = utils.EPOCH + \
+            timedelta(seconds=last_updated_ms_int / 1000)
 
         sql_queries = (
             db.session.query(Query)
@@ -2616,8 +2847,9 @@ class Superset(BaseSupersetView):
         return self.render_template(
             'superset/basic.html',
             entry='welcome',
-            title='Superset',
-            bootstrap_data=json.dumps(payload, default=utils.json_iso_dttm_ser),
+            title='Futuredial BI',
+            bootstrap_data=json.dumps(
+                payload, default=utils.json_iso_dttm_ser),
         )
 
     @has_access
@@ -2626,7 +2858,6 @@ class Superset(BaseSupersetView):
         """User profile page"""
         if not username and g.user:
             username = g.user.username
-
         payload = {
             'user': bootstrap_user_data(username, include_perms=True),
             'common': self.common_bootsrap_payload(),
@@ -2636,7 +2867,8 @@ class Superset(BaseSupersetView):
             'superset/basic.html',
             title=username + "'s profile",
             entry='profile',
-            bootstrap_data=json.dumps(payload, default=utils.json_iso_dttm_ser),
+            bootstrap_data=json.dumps(
+                payload, default=utils.json_iso_dttm_ser),
         )
 
     @has_access
@@ -2696,36 +2928,6 @@ appbuilder.add_view(
 
 
 appbuilder.add_view_no_menu(CssTemplateAsyncModelView)
-
-appbuilder.add_link(
-    'SQL Editor',
-    label=_('SQL Editor'),
-    href='/superset/sqllab',
-    category_icon='fa-flask',
-    icon='fa-flask',
-    category='SQL Lab',
-    category_label=__('SQL Lab'),
-)
-
-appbuilder.add_link(
-    'Query Search',
-    label=_('Query Search'),
-    href='/superset/sqllab#search',
-    icon='fa-search',
-    category_icon='fa-flask',
-    category='SQL Lab',
-    category_label=__('SQL Lab'),
-)
-
-appbuilder.add_link(
-    'Upload a CSV',
-    label=__('Upload a CSV'),
-    href='/csvtodatabaseview/form',
-    icon='fa-upload',
-    category='Sources',
-    category_label=__('Sources'),
-    category_icon='fa-wrench')
-appbuilder.add_separator('Sources')
 
 
 @app.after_request

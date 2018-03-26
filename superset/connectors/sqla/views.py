@@ -296,13 +296,13 @@ class TableModelView(DatasourceModelView, DeleteMixin, YamlExportMixin):  # noqa
         return redirect('/tablemodelview/list/')
 
 
-appbuilder.add_view(
-    TableModelView,
-    'Tables',
-    label=__('Tables'),
-    category='Sources',
-    category_label=__('Sources'),
-    icon='fa-table',
-)
+# appbuilder.add_view(
+#     TableModelView,
+#     'Tables',
+#     label=__('Tables'),
+#     category='Sources',
+#     category_label=__('Sources'),
+#     icon='fa-table',
+# )
 
-appbuilder.add_separator('Sources')
+# appbuilder.add_separator('Sources')

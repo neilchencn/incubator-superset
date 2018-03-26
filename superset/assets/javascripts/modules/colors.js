@@ -73,6 +73,20 @@ const googleCategory20c = [
   '#5574a6',
   '#3b3eac',
 ];
+
+const fdColor10c = [
+  '#66CC66',
+  '#0066FF',
+  '#6600FF',
+  '#990033',
+  '#99CCFF',
+  '#CC0066',
+  '#CCFF33',
+  '#FFFF33',
+  '#FF6600',
+  '#666666',
+];
+
 export const ALL_COLOR_SCHEMES = {
   bnbColors,
   d3Category10,
@@ -81,40 +95,16 @@ export const ALL_COLOR_SCHEMES = {
   d3Category20c,
   googleCategory10c,
   googleCategory20c,
+  fdColor10c,
 };
 
 export const spectrums = {
-  blue_white_yellow: [
-    '#00d1c1',
-    'white',
-    '#ffb400',
-  ],
-  fire: [
-    'white',
-    'yellow',
-    'red',
-    'black',
-  ],
-  white_black: [
-    'white',
-    'black',
-  ],
-  black_white: [
-    'black',
-    'white',
-  ],
-  dark_blue: [
-    '#EBF5F8',
-    '#6BB1CC',
-    '#357E9B',
-    '#1B4150',
-    '#092935',
-  ],
-  pink_grey: [
-    '#E70B81',
-    '#FAFAFA',
-    '#666666',
-  ],
+  blue_white_yellow: ['#00d1c1', 'white', '#ffb400'],
+  fire: ['white', 'yellow', 'red', 'black'],
+  white_black: ['white', 'black'],
+  black_white: ['black', 'white'],
+  dark_blue: ['#EBF5F8', '#6BB1CC', '#357E9B', '#1B4150', '#092935'],
+  pink_grey: ['#E70B81', '#FAFAFA', '#666666'],
 };
 
 /**
@@ -135,7 +125,9 @@ export const getColorFromScheme = (function () {
     if (!s) {
       return;
     }
-    const selectedScheme = scheme ? ALL_COLOR_SCHEMES[scheme] : ALL_COLOR_SCHEMES.bnbColors;
+    const selectedScheme = scheme
+      ? ALL_COLOR_SCHEMES[scheme]
+      : ALL_COLOR_SCHEMES.bnbColors;
     let stringifyS = String(s).toLowerCase();
     // next line is for superset series that should have the same color
     stringifyS = stringifyS.replace('---', '');
@@ -151,10 +143,14 @@ export const getColorFromScheme = (function () {
       seen[selectedScheme] = {};
     }
     if (seen[selectedScheme][stringifyS] === undefined) {
-      seen[selectedScheme][stringifyS] = Object.keys(seen[selectedScheme]).length;
+      seen[selectedScheme][stringifyS] = Object.keys(
+        seen[selectedScheme],
+      ).length;
     }
     /* eslint consistent-return: 0 */
-    return selectedScheme[seen[selectedScheme][stringifyS] % selectedScheme.length];
+    return selectedScheme[
+      seen[selectedScheme][stringifyS] % selectedScheme.length
+    ];
   };
 }());
 
@@ -172,7 +168,7 @@ export const colorScalerFactory = function (colors, data, accessor, extents) {
     ext = d3.extent(data, accessor);
   }
   const chunkSize = (ext[1] - ext[0]) / (colors.length - 1);
-  const points = colors.map((col, i) => ext[0] + (i * chunkSize));
+  const points = colors.map((col, i) => ext[0] + i * chunkSize);
   return d3.scale.linear().domain(points).range(colors).clamp(true);
 };
 

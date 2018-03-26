@@ -1,5 +1,9 @@
 <script>
-    window.onload = function() {
+    window.onload = function () {
+        //url = window.location + '&action=go';
+        //document.body.innerHTML = "<a id='openWin' href='javascript:void(0)' onclick='window.open(\"" + url + "\",\"_blank\")'></a>";
+        //document.getElementById("openWin").click();
+
         window.open(window.location += '&action=go', '_blank');
         window.location = '{{ dashboards_url }}';
     };

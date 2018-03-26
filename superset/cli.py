@@ -104,6 +104,25 @@ def version(verbose):
 
 
 @manager.option(
+    '-d', '--load-dict-data', action='store_true',
+    help='Load dictionay data')
+def load_dict(load_dict_data):
+    """Loads dictionay data for futuredial database field """
+    from superset import data
+    print('Loading examples into {}'.format(db))
+    data.load_dictionarys()
+
+
+@manager.option(
+    '-d', '--load-company-data', action='store_true',
+    help='Load company data')
+def load_company(load_company_data):
+    from superset import data
+    print('Loading company into {}'.format(db))
+    data.load_companies()
+
+
+@manager.option(
     '-t', '--load-test-data', action='store_true',
     help='Load additional test data')
 def load_examples(load_test_data):

@@ -65,6 +65,7 @@ class JavascriptPostAggregator(Postaggregator):
 
 class CustomPostAggregator(Postaggregator):
     """A way to allow users to specify completely custom PostAggregators"""
+
     def __init__(self, name, post_aggregator):
         self.name = name
         self.post_aggregator = post_aggregator
@@ -724,7 +725,7 @@ class DruidDatasource(Model, BaseDatasource):
             session.query(DruidMetric)
             .filter(DruidMetric.datasource_id == datasource.id)
             .filter(or_(DruidMetric.metric_name == spec['name']
-                    for spec in druid_config['metrics_spec']))
+                        for spec in druid_config['metrics_spec']))
         )
         metric_objs = {metric.metric_name: metric for metric in metric_objs}
         for metric_spec in druid_config['metrics_spec']:
@@ -777,6 +778,8 @@ class DruidDatasource(Model, BaseDatasource):
             '6 hour': 'PT6H',
             'one day': 'P1D',
             '1 day': 'P1D',
+            '2 days': 'P2D',
+            '3 days': 'P3D',
             '7 days': 'P7D',
             'week': 'P1W',
             'week_starting_sunday': 'P1W',
@@ -904,7 +907,8 @@ class DruidDatasource(Model, BaseDatasource):
             for missing_postagg in missing_postaggs:
                 DruidDatasource.resolve_postagg(
                     missing_postagg, post_aggs, agg_names, visited_postaggs, metrics_dict)
-        post_aggs[postagg.metric_name] = DruidDatasource.get_post_agg(postagg.json_obj)
+        post_aggs[postagg.metric_name] = DruidDatasource.get_post_agg(
+            postagg.json_obj)
 
     @staticmethod
     def metrics_and_post_aggs(metrics, metrics_dict):
@@ -1131,11 +1135,13 @@ class DruidDatasource(Model, BaseDatasource):
                 order_desc
         ):
             dim = list(qry.get('dimensions'))[0]
-            logging.info('Running two-phase topn query for dimension [{}]'.format(dim))
+            logging.info(
+                'Running two-phase topn query for dimension [{}]'.format(dim))
             pre_qry = deepcopy(qry)
             if timeseries_limit_metric:
                 order_by = timeseries_limit_metric
-                pre_qry['aggregations'] = self.get_aggregations([timeseries_limit_metric])
+                pre_qry['aggregations'] = self.get_aggregations(
+                    [timeseries_limit_metric])
             else:
                 order_by = list(qry['aggregations'].keys())[0]
             # Limit on the number of timeseries, doing a two-phases query
@@ -1143,7 +1149,8 @@ class DruidDatasource(Model, BaseDatasource):
             pre_qry['threshold'] = min(row_limit,
                                        timeseries_limit or row_limit)
             pre_qry['metric'] = order_by
-            pre_qry['dimension'] = self._dimensions_to_values(qry.get('dimensions'))[0]
+            pre_qry['dimension'] = self._dimensions_to_values(
+                qry.get('dimensions'))[0]
             del pre_qry['dimensions']
 
             client.topn(**pre_qry)
@@ -1173,7 +1180,8 @@ class DruidDatasource(Model, BaseDatasource):
         elif len(groupby) > 0 or having_filters:
             # If grouping on multiple fields or using a having filter
             # we have to force a groupby query
-            logging.info('Running groupby query for dimensions [{}]'.format(dimensions))
+            logging.info(
+                'Running groupby query for dimensions [{}]'.format(dimensions))
             if timeseries_limit and is_timeseries:
                 logging.info('Running two-phase query for timeseries')
 
@@ -1233,14 +1241,15 @@ class DruidDatasource(Model, BaseDatasource):
         return query_str
 
     def query(self, query_obj):
+
         qry_start_dttm = datetime.now()
         client = self.cluster.get_pydruid_client()
         query_str = self.get_query_str(
             client=client, query_obj=query_obj, phase=2)
         df = client.export_pandas()
 
-        if df is None or df.size == 0:
-            raise Exception(_('No data was returned.'))
+        # if df is None or df.size == 0:
+        #     raise Exception(_('No data was returned.'))
         df.columns = [
             DTTM_ALIAS if c == 'timestamp' else c for c in df.columns]
 

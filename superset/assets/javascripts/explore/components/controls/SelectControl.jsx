@@ -4,7 +4,8 @@ import VirtualizedSelect from 'react-virtualized-select';
 import Select, { Creatable } from 'react-select';
 import ControlHeader from '../ControlHeader';
 import { t } from '../../../locales';
-import VirtualizedRendererWrap from '../../../components/VirtualizedRendererWrap';
+import VirtualizedRendererWrap
+  from '../../../components/VirtualizedRendererWrap';
 import OnPasteSelect from '../../../components/OnPasteSelect';
 
 const propTypes = {
@@ -18,7 +19,11 @@ const propTypes = {
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.array]),
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.array,
+  ]),
   showHeader: PropTypes.bool,
   optionRenderer: PropTypes.func,
   valueRenderer: PropTypes.func,
@@ -50,8 +55,10 @@ export default class SelectControl extends React.PureComponent {
     this.onChange = this.onChange.bind(this);
   }
   componentWillReceiveProps(nextProps) {
-    if (nextProps.choices !== this.props.choices ||
-        nextProps.options !== this.props.options) {
+    if (
+      nextProps.choices !== this.props.choices ||
+      nextProps.options !== this.props.options
+    ) {
       const options = this.getOptions(nextProps);
       this.setState({ options });
     }
@@ -106,7 +113,8 @@ export default class SelectControl extends React.PureComponent {
   }
   render() {
     //  Tab, comma or Enter will trigger a new option created for FreeFormSelect
-    const placeholder = this.props.placeholder || t('%s option(s)', this.state.options.length);
+    const placeholder =
+      this.props.placeholder || t('%s option(s)', this.state.options.length);
     const selectProps = {
       multi: this.props.multi,
       name: `select-${this.props.name}`,
@@ -126,9 +134,7 @@ export default class SelectControl extends React.PureComponent {
     };
     return (
       <div>
-        {this.props.showHeader &&
-          <ControlHeader {...this.props} />
-        }
+        {this.props.showHeader && <ControlHeader {...this.props} />}
         <OnPasteSelect {...selectProps} selectWrap={VirtualizedSelect} />
       </div>
     );

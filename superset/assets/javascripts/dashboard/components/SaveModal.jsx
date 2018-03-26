@@ -7,7 +7,7 @@ import ModalTrigger from '../../components/ModalTrigger';
 import { t } from '../../locales';
 import Checkbox from '../../components/Checkbox';
 
-const $ = window.$ = require('jquery');
+const $ = (window.$ = require('jquery'));
 
 const propTypes = {
   css: PropTypes.string,
@@ -68,8 +68,17 @@ class SaveModal extends React.PureComponent {
       },
       error(error) {
         saveModal.close();
-        const errorMsg = getAjaxErrorMsg(error);
-        notify.error(t('Sorry, there was an error saving this dashboard: ') + '</ br>' + errorMsg);
+        let errorMsg = getAjaxErrorMsg(error);
+        if (errorMsg.includes('SupersetSecurityException:')) {
+          errorMsg = errorMsg.slice(
+            errorMsg.indexOf('SupersetSecurityException:') + 26,
+            -4,
+          );
+        }
+
+        notify.error(
+          t('Sorry, there was an error saving this dashboard: ') + errorMsg,
+        );
       },
     });
   }
@@ -105,7 +114,9 @@ class SaveModal extends React.PureComponent {
   render() {
     return (
       <ModalTrigger
-        ref={(modal) => { this.modal = modal; }}
+        ref={(modal) => {
+          this.modal = modal;
+        }}
         isMenuItem
         triggerNode={this.props.triggerNode}
         modalTitle={t('Save Dashboard')}
@@ -116,7 +127,10 @@ class SaveModal extends React.PureComponent {
               onChange={this.handleSaveTypeChange}
               checked={this.state.saveType === 'overwrite'}
             >
-              {t('Overwrite Dashboard [%s]', this.props.dashboard.dashboard_title)}
+              {t(
+                'Overwrite Dashboard [%s]',
+                this.props.dashboard.dashboard_title,
+              )}
             </Radio>
             <hr />
             <Radio
@@ -146,7 +160,9 @@ class SaveModal extends React.PureComponent {
           <div>
             <Button
               bsStyle="primary"
-              onClick={() => { this.saveDashboard(this.state.saveType, this.state.newDashName); }}
+              onClick={() => {
+                this.saveDashboard(this.state.saveType, this.state.newDashName);
+              }}
             >
               {t('Save')}
             </Button>
