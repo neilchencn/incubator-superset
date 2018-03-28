@@ -2,9 +2,9 @@
 %}
 <li class="dropdown">
 
-    <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)">
+    <a class="dropdown-toggle" data-toggle="dropdown" title="{{g.user.get_full_name()}}" rel="tooltip" href="javascript:void(0)">
         <div class="f16">
-            <i class="flag {{languages[locale].get('flag')}}"></i>&nbsp;
+            <i class="fa fa-user"></i>&nbsp;{{g.user.get_full_name()}}
             <b class="caret"></b>
         </div>
     </a>
