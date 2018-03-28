@@ -160,13 +160,13 @@ BABEL_DEFAULT_FOLDER = 'superset/translations'
 # The allowed translation for you app
 LANGUAGES = {
     'en': {'flag': 'us', 'name': 'English'},
-    'it': {'flag': 'it', 'name': 'Italian'},
-    'fr': {'flag': 'fr', 'name': 'French'},
-    'zh': {'flag': 'cn', 'name': 'Chinese'},
-    'ja': {'flag': 'jp', 'name': 'Japanese'},
-    'de': {'flag': 'de', 'name': 'German'},
-    'pt-BR': {'flag': 'br', 'name': 'Brazilian Portuguese'},
-    'ru': {'flag': 'ru', 'name': 'Russian'},
+    # 'it': {'flag': 'it', 'name': 'Italian'},
+    # 'fr': {'flag': 'fr', 'name': 'French'},
+    # 'zh': {'flag': 'cn', 'name': 'Chinese'},
+    # 'ja': {'flag': 'jp', 'name': 'Japanese'},
+    # 'de': {'flag': 'de', 'name': 'German'},
+    # 'pt-BR': {'flag': 'br', 'name': 'Brazilian Portuguese'},
+    # 'ru': {'flag': 'ru', 'name': 'Russian'},
 }
 # ---------------------------------------------------
 # Image and file configuration
@@ -427,7 +427,7 @@ SQL_QUERY_MUTATOR = None
 
 # When not using gunicorn, (nginx for instance), you may want to disable
 # using flask-compress
-ENABLE_FLASK_COMPRESS = True
+ENABLE_FLASK_COMPRESS = False
 
 try:
     if CONFIG_PATH_ENV_VAR in os.environ:
