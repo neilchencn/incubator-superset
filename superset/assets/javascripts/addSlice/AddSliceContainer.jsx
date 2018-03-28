@@ -6,17 +6,22 @@ import visTypes from '../explore/stores/visTypes';
 import { t } from '../locales';
 
 const propTypes = {
-  datasources: PropTypes.arrayOf(PropTypes.shape({
-    label: PropTypes.string.isRequired,
-    value: PropTypes.string.isRequired,
-  })).isRequired,
+  datasources: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      value: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
 };
 
 export default class AddSliceContainer extends React.PureComponent {
   constructor(props) {
     super(props);
     const visTypeKeys = Object.keys(visTypes);
-    this.vizTypeOptions = visTypeKeys.map(vt => ({ label: visTypes[vt].label, value: vt }));
+    this.vizTypeOptions = visTypeKeys.map(vt => ({
+      label: visTypes[vt].label,
+      value: vt,
+    }));
     this.state = {
       visType: 'table',
     };
@@ -27,7 +32,8 @@ export default class AddSliceContainer extends React.PureComponent {
       JSON.stringify({
         viz_type: this.state.visType,
         datasource: this.state.datasourceValue,
-      }));
+      }),
+    );
     return `/superset/explore/?form_data=${formData}`;
   }
 
@@ -54,7 +60,7 @@ export default class AddSliceContainer extends React.PureComponent {
   render() {
     return (
       <div className="container">
-        <Panel header={<h3>{t('Create a new slice')}</h3>}>
+        <Panel header={<h3>{t('Create a new chart')}</h3>}>
           <Grid>
             <Row>
               <Col xs={12} sm={6}>
@@ -87,7 +93,7 @@ export default class AddSliceContainer extends React.PureComponent {
                   disabled={this.isBtnDisabled()}
                   onClick={this.gotoSlice.bind(this)}
                 >
-                  {t('Create new slice')}
+                  {t('Create new chart')}
                 </Button>
                 <br /><br />
               </Col>

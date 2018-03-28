@@ -32,7 +32,7 @@ from sqlalchemy import (
     Boolean, Column, DateTime, ForeignKey, Integer, or_, String, Text, UniqueConstraint,
 )
 from sqlalchemy.orm import backref, relationship
-
+import pandas as pd
 from superset import conf, db, import_util, sm, utils
 from superset.connectors.base.models import BaseColumn, BaseDatasource, BaseMetric
 from superset.exceptions import MetricPermException
@@ -1251,8 +1251,8 @@ class DruidDatasource(Model, BaseDatasource):
             client=client, query_obj=query_obj, phase=2)
         df = client.export_pandas()
 
-        # if df is None or df.size == 0:
-        #     raise Exception(_('No data was returned.'))
+        if df is None or df.size == 0:
+            df = pd.DataFrame()
         df.columns = [
             DTTM_ALIAS if c == 'timestamp' else c for c in df.columns]
 

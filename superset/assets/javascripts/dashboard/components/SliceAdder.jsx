@@ -70,8 +70,9 @@ class SliceAdder extends React.Component {
       error: (error) => {
         this.errored = true;
         this.setState({
-          errorMsg: t('Sorry, there was an error fetching slices to this dashboard: ') +
-          this.getAjaxErrorMsg(error),
+          errorMsg: t(
+            'Sorry, there was an error fetching slices to this dashboard: ',
+          ) + this.getAjaxErrorMsg(error),
         });
       },
     });
@@ -79,19 +80,20 @@ class SliceAdder extends React.Component {
 
   getAjaxErrorMsg(error) {
     const respJSON = error.responseJSON;
-    return (respJSON && respJSON.message) ? respJSON.message :
-      error.responseText;
+    return respJSON && respJSON.message ? respJSON.message : error.responseText;
   }
 
   addSlices() {
     const adder = this;
-    this.props.addSlicesToDashboard(Object.keys(this.state.selectionMap))
+    this.props
+      .addSlicesToDashboard(Object.keys(this.state.selectionMap))
       // if successful, page will be reloaded.
       .fail((error) => {
         adder.errored = true;
         adder.setState({
-          errorMsg: t('Sorry, there was an error adding slices to this dashboard: ') +
-          this.getAjaxErrorMsg(error),
+          errorMsg: t(
+            'Sorry, there was an error adding slices to this dashboard: ',
+          ) + this.getAjaxErrorMsg(error),
         });
       });
   }
@@ -122,7 +124,8 @@ class SliceAdder extends React.Component {
 
   render() {
     const hideLoad = this.state.slicesLoaded || this.errored;
-    let enableAddSlice = this.state.selectionMap && Object.keys(this.state.selectionMap);
+    let enableAddSlice =
+      this.state.selectionMap && Object.keys(this.state.selectionMap);
     if (enableAddSlice) {
       enableAddSlice = enableAddSlice.some(function (key) {
         return this.state.selectionMap[key];
@@ -150,22 +153,11 @@ class SliceAdder extends React.Component {
             condensed
             height="auto"
           >
-            <TableHeaderColumn
-              dataField="id"
-              isKey
-              dataSort
-              hidden
-            />
-            <TableHeaderColumn
-              dataField="sliceName"
-              dataSort
-            >
+            <TableHeaderColumn dataField="id" isKey dataSort hidden />
+            <TableHeaderColumn dataField="sliceName" dataSort>
               {t('Name')}
             </TableHeaderColumn>
-            <TableHeaderColumn
-              dataField="vizType"
-              dataSort
-            >
+            <TableHeaderColumn dataField="vizType" dataSort>
               {t('Viz')}
             </TableHeaderColumn>
             <TableHeaderColumn
@@ -193,7 +185,7 @@ class SliceAdder extends React.Component {
             onClick={this.addSlices}
             disabled={!enableAddSlice}
           >
-            {t('Add Slices')}
+            {t('Add Charts')}
           </button>
         </div>
       </div>
@@ -202,13 +194,13 @@ class SliceAdder extends React.Component {
     return (
       <ModalTrigger
         triggerNode={this.props.triggerNode}
-        tooltip={t('Add a new slice to the dashboard')}
+        tooltip={t('Add a new chart to the dashboard')}
         beforeOpen={this.onEnterModal.bind(this)}
         isMenuItem
         modalBody={modalContent}
         bsSize="large"
         setModalAsTriggerChildren
-        modalTitle={t('Add Slices to Dashboard')}
+        modalTitle={t('Add Charts to Dashboard')}
       />
     );
   }

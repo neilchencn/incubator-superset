@@ -267,9 +267,9 @@ export default class AnnotationLayer extends React.PureComponent {
         label = 'Annotation Layer';
         description = 'Select the Annotation Layer you would like to use.';
       } else {
-        label = 'Slice';
-        description = `Use a pre defined Superset Slice as a source for annotations and overlays. 
-        'your Slice must be one of these visualization types:
+        label = 'Chart';
+        description = `Use a pre defined Superset Chart as a source for annotations and overlays. 
+        'your Chart must be one of these visualization types:
         '[${getSupportedSourceTypes(sourceType)
             .map(x => vizTypes[x].label).join(', ')}]'`;
       }
@@ -328,9 +328,9 @@ export default class AnnotationLayer extends React.PureComponent {
             isSelected
             onSelect={() => {
             }}
-            title="Annotation Slice Configuration"
+            title="Annotation Chart Configuration"
             info={
-              `This section allows you to configure how to use the slice
+              `This section allows you to configure how to use the chart
                to generate annotations.`
             }
           >

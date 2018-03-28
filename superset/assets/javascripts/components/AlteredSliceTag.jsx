@@ -14,7 +14,6 @@ const propTypes = {
 };
 
 export default class AlteredSliceTag extends React.Component {
-
   constructor(props) {
     super(props);
     const diffs = this.getDiffs(props);
@@ -60,10 +59,14 @@ export default class AlteredSliceTag extends React.Component {
       if (!value.length) {
         return '[]';
       }
-      return value.map((v) => {
-        const filterVal = v.val.constructor === Array ? `[${v.val.join(', ')}]` : v.val;
-        return `${v.col} ${v.op} ${filterVal}`;
-      }).join(', ');
+      return value
+        .map((v) => {
+          const filterVal = v.val.constructor === Array
+            ? `[${v.val.join(', ')}]`
+            : v.val;
+          return `${v.col} ${v.op} ${filterVal}`;
+        })
+        .join(', ');
     } else if (controls[key] && controls[key].type === 'BoundsControl') {
       return `Min: ${value[0]}, Max: ${value[1]}`;
     } else if (controls[key] && controls[key].type === 'CollectionControl') {
@@ -84,7 +87,10 @@ export default class AlteredSliceTag extends React.Component {
     for (const key in diffs) {
       rows.push(
         <Tr key={key}>
-          <Td column="control" data={(controls[key] && controls[key].label) || key} />
+          <Td
+            column="control"
+            data={(controls[key] && controls[key].label) || key}
+          />
           <Td column="before">{this.formatValue(diffs[key].before, key)}</Td>
           <Td column="after">{this.formatValue(diffs[key].after, key)}</Td>
         </Tr>,
@@ -108,10 +114,7 @@ export default class AlteredSliceTag extends React.Component {
 
   renderTriggerNode() {
     return (
-      <TooltipWrapper
-        label="difference"
-        tooltip={t('Click to see difference')}
-      >
+      <TooltipWrapper label="difference" tooltip={t('Click to see difference')}>
         <span
           className="label label-warning m-l-5"
           style={{ fontSize: '12px' }}
@@ -134,7 +137,7 @@ export default class AlteredSliceTag extends React.Component {
       <ModalTrigger
         animation
         triggerNode={this.renderTriggerNode()}
-        modalTitle={t('Slice changes')}
+        modalTitle={t('Chart changes')}
         bsSize="large"
         modalBody={this.renderModalBody()}
       />

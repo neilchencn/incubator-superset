@@ -58,6 +58,32 @@
       },
       "renderTrigger": true
     },
+    "legend_position": {
+      "label": "Legend Position",
+      "description": "Choose the position of the legend",
+      "type": "SelectControl",
+      "clearable": false,
+      "default": "Top right",
+      "choices": [
+        [
+          "tl",
+          "Top left"
+        ],
+        [
+          "tr",
+          "Top right"
+        ],
+        [
+          "bl",
+          "Bottom left"
+        ],
+        [
+          "br",
+          "Bottom right"
+        ]
+      ],
+      "renderTrigger": true
+    },
     "fill_color_picker": {
       "label": "Fill Color",
       "description": " Set the opacity to 0 if you do not want to override the color specified in the GeoJSON",
@@ -106,6 +132,7 @@
     "stacked_style": {
       "type": "SelectControl",
       "label": "Stacked Style",
+      "renderTrigger": true,
       "choices": [
         [
           "stack",
@@ -718,6 +745,13 @@
       "description": "Whether to include the time granularity as defined in the time section",
       "default": false
     },
+    "autozoom": {
+      "type": "CheckboxControl",
+      "label": "Auto Zoom",
+      "default": true,
+      "renderTrigger": true,
+      "description": "When checked, the map will zoom to your data after each query"
+    },
     "show_perc": {
       "type": "CheckboxControl",
       "label": "Show percentage",
@@ -757,6 +791,7 @@
       "type": "CheckboxControl",
       "label": "Sort Bars",
       "default": false,
+      "renderTrigger": true,
       "description": "Sort bars by x labels."
     },
     "combine_metric": {
@@ -950,7 +985,8 @@
       "multi": true,
       "label": "Columns",
       "default": [],
-      "description": "Columns to display"
+      "description": "Columns to display",
+      "valueKey": "column_name"
     },
     "spatial": {
       "type": "SpatialControl",
@@ -1539,6 +1575,7 @@
     "treemap_ratio": {
       "type": "TextControl",
       "label": "Ratio",
+      "renderTrigger": true,
       "isFloat": true,
       "default": 1.618033988749895,
       "description": "Target aspect ratio for treemap tiles."
@@ -1550,6 +1587,10 @@
       "renderTrigger": true,
       "default": ".3s",
       "choices": [
+        [
+          ".1s",
+          ".1s | 12k"
+        ],
         [
           ".3s",
           ".3s | 12.3k"
@@ -1584,7 +1625,7 @@
       "validators": [
         null
       ],
-      "default": 50000,
+      "default": 10000,
       "choices": [
         [
           10,
@@ -1661,8 +1702,7 @@
           "500"
         ]
       ],
-      "default": 50,
-      "description": "Limits the number of time series that get displayed"
+      "description": "Limits the number of time series that get displayed. A sub query (or an extra phase where sub queries are not supported) is applied to limit the number of time series that get fetched and displayed. This feature is useful when grouping by high cardinality dimension(s)."
     },
     "timeseries_limit_metric": {
       "type": "SelectControl",
@@ -1708,6 +1748,7 @@
       "type": "TextControl",
       "label": "Multiplier",
       "isFloat": true,
+      "renderTrigger": true,
       "default": 1,
       "description": "Factor to multiply the metric by"
     },
@@ -1963,6 +2004,10 @@
       "default": ".3s",
       "choices": [
         [
+          ".1s",
+          ".1s | 12k"
+        ],
+        [
           ".3s",
           ".3s | 12.3k"
         ],
@@ -2039,6 +2084,10 @@
       "default": ".3s",
       "choices": [
         [
+          ".1s",
+          ".1s | 12k"
+        ],
+        [
           ".3s",
           ".3s | 12.3k"
         ],
@@ -2071,6 +2120,10 @@
       "label": "Right Axis Format",
       "default": ".3s",
       "choices": [
+        [
+          ".1s",
+          ".1s | 12k"
+        ],
         [
           ".3s",
           ".3s | 12.3k"
@@ -2217,6 +2270,7 @@
       "type": "SelectControl",
       "label": "Label Type",
       "default": "key",
+      "renderTrigger": true,
       "choices": [
         [
           "key",
@@ -2313,10 +2367,25 @@
       "description": "Whether to make the grid 3D"
     },
     "show_brush": {
-      "type": "CheckboxControl",
-      "label": "Range Filter",
+      "type": "SelectControl",
+      "label": "Show Range Filter",
       "renderTrigger": true,
-      "default": false,
+      "clearable": false,
+      "default": "auto",
+      "choices": [
+        [
+          "yes",
+          "Yes"
+        ],
+        [
+          "no",
+          "No"
+        ],
+        [
+          "auto",
+          "Auto"
+        ]
+      ],
       "description": "Whether to display the time range interactive selector"
     },
     "date_filter": {
@@ -2798,7 +2867,8 @@
       "label": "",
       "default": [],
       "description": "Annotation Layers",
-      "renderTrigger": true
+      "renderTrigger": true,
+      "tabOverride": "data"
     },
     "having_filters": {
       "type": "FilterControl",
@@ -2808,9 +2878,9 @@
     },
     "slice_id": {
       "type": "HiddenControl",
-      "label": "Slice ID",
+      "label": "Chart ID",
       "hidden": true,
-      "description": "The id of the active slice"
+      "description": "The id of the active chart"
     },
     "cache_timeout": {
       "type": "HiddenControl",
@@ -2908,8 +2978,8 @@
           "googleCategory20c"
         ],
         [
-          "lyftColors",
-          "lyftColors"
+          "fdColor10c",
+          "fdColor10c"
         ]
       ],
       "description": "The color scheme for rendering chart",
@@ -3104,7 +3174,8 @@
       ],
       "default": "not_time",
       "valueKey": "value",
-      "options": [{
+      "options": [
+        {
           "label": "Not Time Series",
           "value": "not_time",
           "description": "Ignore time"
@@ -3160,6 +3231,28 @@
       "isInt": true,
       "default": "5",
       "description": "The maximum number of subdivisions of each group; lower values are pruned first"
+    },
+    "min_radius": {
+      "type": "TextControl",
+      "label": "Minimum Radius",
+      "isFloat": true,
+      "validators": [
+        null
+      ],
+      "renderTrigger": true,
+      "default": 2,
+      "description": "Minimum radius size of the circle, in pixels. As the zoom level changes, this insures that the circle respects this minimum radius."
+    },
+    "max_radius": {
+      "type": "TextControl",
+      "label": "Maximum Radius",
+      "isFloat": true,
+      "validators": [
+        null
+      ],
+      "renderTrigger": true,
+      "default": 250,
+      "description": "Maxium radius size of the circle, in pixels. As the zoom level changes, this insures that the circle respects this maximum radius."
     },
     "partition_threshold": {
       "type": "TextControl",
@@ -3232,7 +3325,8 @@
         "key": null,
         "ref": null,
         "props": {
-          "children": [{
+          "children": [
+            {
               "type": "p",
               "key": null,
               "ref": null,
@@ -3297,7 +3391,8 @@
         "key": null,
         "ref": null,
         "props": {
-          "children": [{
+          "children": [
+            {
               "type": "p",
               "key": null,
               "ref": null,
@@ -3362,7 +3457,8 @@
         "key": null,
         "ref": null,
         "props": {
-          "children": [{
+          "children": [
+            {
               "type": "p",
               "key": null,
               "ref": null,
@@ -3427,7 +3523,8 @@
         "key": null,
         "ref": null,
         "props": {
-          "children": [{
+          "children": [
+            {
               "type": "p",
               "key": null,
               "ref": null,
@@ -3501,6 +3598,13 @@
       "label": "Filled",
       "renderTrigger": true,
       "description": "Whether to fill the objects",
+      "default": false
+    },
+    "normalized": {
+      "type": "CheckboxControl",
+      "label": "Normalized",
+      "renderTrigger": true,
+      "description": "Whether to normalize the histogram",
       "default": false
     }
   }

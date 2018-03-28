@@ -9,7 +9,7 @@ import SliceAdder from './SliceAdder';
 import { t } from '../../locales';
 import InfoTooltipWithTrigger from '../../components/InfoTooltipWithTrigger';
 
-const $ = window.$ = require('jquery');
+const $ = (window.$ = require('jquery'));
 
 const propTypes = {
   dashboard: PropTypes.object.isRequired,
@@ -114,19 +114,32 @@ class Controls extends React.PureComponent {
     }
   }
   render() {
-    const { dashboard, userId, filters,
-      addSlicesToDashboard, startPeriodicRender,
-      serialize, onSave, editMode } = this.props;
+    const {
+      dashboard,
+      userId,
+      filters,
+      addSlicesToDashboard,
+      startPeriodicRender,
+      serialize,
+      onSave,
+      editMode,
+    } = this.props;
     const emailBody = t('Checkout this dashboard: %s', window.location.href);
-    const emailLink = 'mailto:?Subject=Superset%20Dashboard%20'
-      + `${dashboard.dashboard_title}&Body=${emailBody}`;
+    const emailLink =
+      'mailto:?Subject=Superset%20Dashboard%20' +
+      `${dashboard.dashboard_title}&Body=${emailBody}`;
     let saveText = t('Save as');
     if (editMode) {
       saveText = t('Save');
     }
     return (
       <span>
-        <DropdownButton title="Actions" bsSize="small" id="bg-nested-dropdown" pullRight>
+        <DropdownButton
+          title="Actions"
+          bsSize="small"
+          id="bg-nested-dropdown"
+          pullRight
+        >
           <ActionMenuItem
             text={t('Force Refresh')}
             tooltip={t('Force refresh the whole dashboard')}
@@ -134,7 +147,8 @@ class Controls extends React.PureComponent {
             onClick={this.refresh}
           />
           <RefreshIntervalModal
-            onChange={refreshInterval => startPeriodicRender(refreshInterval * 1000)}
+            onChange={refreshInterval =>
+              startPeriodicRender(refreshInterval * 1000)}
             triggerNode={
               <MenuItemContent
                 text={t('Set autorefresh')}
@@ -162,17 +176,19 @@ class Controls extends React.PureComponent {
               text={t('Edit properties')}
               tooltip={t("Edit the dashboards's properties")}
               faIcon="edit"
-              onClick={() => { window.location = `/dashboardmodelview/edit/${dashboard.id}`; }}
-            />
-          }
+              onClick={() => {
+                window.location = `/dashboardmodelview/edit/${dashboard.id}`;
+              }}
+            />}
           {editMode &&
             <ActionMenuItem
               text={t('Email')}
               tooltip={t('Email a link to this dashboard')}
-              onClick={() => { window.location = emailLink; }}
+              onClick={() => {
+                window.location = emailLink;
+              }}
               faIcon="envelope"
-            />
-          }
+            />}
           {editMode &&
             <SliceAdder
               dashboard={dashboard}
@@ -180,28 +196,28 @@ class Controls extends React.PureComponent {
               userId={userId}
               triggerNode={
                 <MenuItemContent
-                  text={t('Add Slices')}
-                  tooltip={t('Add some slices to this dashboard')}
+                  text={t('Add Charts')}
+                  tooltip={t('Add some charts to this dashboard')}
                   faIcon="plus"
                 />
               }
-            />
-          }
+            />}
           {editMode &&
             <CssEditor
               dashboard={dashboard}
               triggerNode={
                 <MenuItemContent
                   text={t('Edit CSS')}
-                  tooltip={t('Change the style of the dashboard using CSS code')}
+                  tooltip={t(
+                    'Change the style of the dashboard using CSS code',
+                  )}
                   faIcon="css3"
                 />
               }
               initialCss={this.state.css}
               templates={this.state.cssTemplates}
               onChange={this.changeCss.bind(this)}
-            />
-          }
+            />}
         </DropdownButton>
       </span>
     );
