@@ -655,8 +655,8 @@ class MarkupViz(BaseViz):
         return None
 
     def get_data(self, df):
-        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-            raise Exception(_('No data was returned'))
+        # if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+        #     raise Exception(_('No data was returned'))
 
         markup_type = self.form_data.get('markup_type')
         code = self.form_data.get('code', '')
@@ -1749,8 +1749,8 @@ class FilterBoxViz(BaseViz):
         return qry
 
     def get_data(self, df):
-        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-            raise Exception(_('No data was returned'))
+        # if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+        #     raise Exception(_('No data was returned'))
 
         d = {}
         filters = [g for g in self.form_data['groupby']]
