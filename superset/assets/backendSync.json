@@ -2980,6 +2980,38 @@
         [
           "fdColor10c",
           "fdColor10c"
+        ],
+        [
+          "fdColorGreen",
+          "fdColorGreen"
+        ],
+        [
+          "fdColorYellow",
+          "fdColorYellow"
+        ],
+        [
+          "fdColorPurple",
+          "fdColorPurple"
+        ],
+        [
+          "fdColorOrange",
+          "fdColorOrange"
+        ],
+        [
+          "fdColorPink",
+          "fdColorPink"
+        ],
+        [
+          "fdColorGrey",
+          "fdColorGrey"
+        ],
+        [
+          "fdColorBrown",
+          "fdColorBrown"
+        ],
+        [
+          "fdColorRainbow",
+          "fdColorRainbow"
         ]
       ],
       "description": "The color scheme for rendering chart",
@@ -3130,6 +3162,51 @@
           "#FFFF33",
           "#FF6600",
           "#666666"
+        ],
+        "fdColorGreen": [
+          "#00FF99",
+          "#00CC99",
+          "#00CC33",
+          "#66FFCC"
+        ],
+        "fdColorYellow": [
+          "#FFFF66",
+          "#FFFF00",
+          "#FFFFCC"
+        ],
+        "fdColorPurple": [
+          "#CC00FF",
+          "#CC99FF",
+          "#CC0099",
+          "#FF99FF"
+        ],
+        "fdColorOrange": [
+          "#FF6633",
+          "#FF9966",
+          "#FF9900"
+        ],
+        "fdColorPink": [
+          "#FF6699",
+          "#FF9999",
+          "#FFCCCC"
+        ],
+        "fdColorGrey": [
+          "#CCCCCC",
+          "#999999"
+        ],
+        "fdColorBrown": [
+          "#660000",
+          "#663300",
+          "#993300"
+        ],
+        "fdColorRainbow": [
+          "#FF3333",
+          "#FF9933",
+          "#FFFF33",
+          "#99FF33",
+          "#33CCCC",
+          "#33CCFF",
+          "9933FF"
         ]
       }
     },

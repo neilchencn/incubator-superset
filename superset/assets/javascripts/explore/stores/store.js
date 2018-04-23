@@ -12,10 +12,11 @@ export function getFormDataFromControls(controlsState) {
 
 export function getControlNames(vizType, datasourceType) {
   const controlNames = [];
-  sectionsToRender(vizType, datasourceType).forEach(
-    section => section.controlSetRows.forEach(
-      fsr => fsr.forEach(
-        f => controlNames.push(f))));
+  sectionsToRender(vizType, datasourceType).forEach(section =>
+    section.controlSetRows.forEach(fsr =>
+      fsr.forEach(f => controlNames.push(f)),
+    ),
+  );
   return controlNames;
 }
 
@@ -57,11 +58,24 @@ export function getControlsState(state, form_data) {
     }
 
     // If the value is not valid anymore based on choices, clear it
-    if (control.type === 'SelectControl' && control.choices && k !== 'datasource' && formData[k]) {
+    if (
+      control.type === 'SelectControl' &&
+      control.choices &&
+      k !== 'datasource' &&
+      formData[k]
+    ) {
       const choiceValues = control.choices.map(c => c[0]);
-      if (control.multi && formData[k].length > 0 && choiceValues.indexOf(formData[k][0]) < 0) {
+      if (
+        control.multi &&
+        formData[k].length > 0 &&
+        choiceValues.indexOf(formData[k][0]) < 0
+      ) {
         delete formData[k];
-      } else if (!control.multi && !control.freeForm && choiceValues.indexOf(formData[k]) < 0) {
+      } else if (
+        !control.multi &&
+        !control.freeForm &&
+        choiceValues.indexOf(formData[k]) < 0
+      ) {
         delete formData[k];
       }
     }
@@ -71,7 +85,9 @@ export function getControlsState(state, form_data) {
         formData[k] = [];
       }
       const choiceValues = control.choices.map(c => c[0]);
-      formData[k] = formData[k].filter(flt => choiceValues.indexOf(flt.col) >= 0);
+      formData[k] = formData[k].filter(
+        flt => choiceValues.indexOf(flt.col) >= 0,
+      );
     }
 
     if (typeof control.default === 'function') {
@@ -110,19 +126,15 @@ export function applyDefaultFormData(form_data) {
     }
   });
   // fill in additional params stored in form_data but not used by control
-  Object.keys(form_data)
-    .forEach((key) => {
-      if (formData[key] === undefined) {
-        formData[key] = form_data[key];
-      }
-    });
+  Object.keys(form_data).forEach((key) => {
+    if (formData[key] === undefined) {
+      formData[key] = form_data[key];
+    }
+  });
   return formData;
 }
 
-export const autoQueryControls = [
-  'datasource',
-  'viz_type',
-];
+export const autoQueryControls = ['datasource', 'viz_type'];
 
 const defaultControls = Object.assign({}, controls);
 Object.keys(controls).forEach((f) => {

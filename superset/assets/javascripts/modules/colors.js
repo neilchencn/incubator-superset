@@ -87,6 +87,23 @@ const fdColor10c = [
   '#666666',
 ];
 
+const fdColorGreen = ['#00FF99', '#00CC99', '#00CC33', '#66FFCC'];
+const fdColorYellow = ['#fff600', '#ffff00', '#FFFF33', '#FFFF66'];
+const fdColorPurple = ['#CC00FF', '#CC99FF', '#CC0099', '#FF99FF'];
+const fdColorOrange = ['#FF6633', '#FF9966', '#FF9900'];
+const fdColorPink = ['#FF6699', '#FF9999', '#FFCCCC'];
+const fdColorGrey = ['#CCCCCC', '#999999'];
+const fdColorBrown = ['#660000', '#663300', '#993300'];
+const fdColorRainbow = [
+  '#FF3333',
+  '#FF9933',
+  '#FFFF33',
+  '#99FF33',
+  '#33CCCC',
+  '#33CCFF',
+  '9933FF',
+];
+
 export const ALL_COLOR_SCHEMES = {
   bnbColors,
   d3Category10,
@@ -96,6 +113,14 @@ export const ALL_COLOR_SCHEMES = {
   googleCategory10c,
   googleCategory20c,
   fdColor10c,
+  fdColorGreen,
+  fdColorYellow,
+  fdColorPurple,
+  fdColorOrange,
+  fdColorPink,
+  fdColorGrey,
+  fdColorBrown,
+  fdColorRainbow,
 };
 
 export const spectrums = {

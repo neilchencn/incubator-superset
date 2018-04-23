@@ -19,28 +19,32 @@ class CreatedContent extends React.PureComponent {
     };
   }
   renderSliceTable() {
-    const mutator = data => data.map(slice => ({
-      slice: <a href={slice.url}>{slice.title}</a>,
-      favorited: moment.utc(slice.dttm).fromNow(),
-      _favorited: slice.dttm,
-    }));
+    const mutator = data =>
+      data.map(slice => ({
+        chart: <a href={slice.url}>{slice.title}</a>,
+        favorited: moment.utc(slice.dttm).fromNow(),
+        _favorited: slice.dttm,
+        _chart: slice.title,
+      }));
     return (
       <TableLoader
         dataEndpoint={`/superset/created_slices/${this.props.user.userId}/`}
         className="table table-condensed"
-        columns={['slice', 'favorited']}
+        columns={['chart', 'favorited']}
         mutator={mutator}
-        noDataText={t('No slices')}
+        noDataText={t('No charts')}
         sortable
       />
     );
   }
   renderDashboardTable() {
-    const mutator = data => data.map(dash => ({
-      dashboard: <a href={dash.url}>{dash.title}</a>,
-      favorited: moment.utc(dash.dttm).fromNow(),
-      _favorited: dash.dttm,
-    }));
+    const mutator = data =>
+      data.map(dash => ({
+        dashboard: <a href={dash.url}>{dash.title}</a>,
+        favorited: moment.utc(dash.dttm).fromNow(),
+        _favorited: dash.dttm,
+        _dashboard: dash.title,
+      }));
     return (
       <TableLoader
         className="table table-condensed"
@@ -58,7 +62,7 @@ class CreatedContent extends React.PureComponent {
         <h3>{t('Dashboards')}</h3>
         {this.renderDashboardTable()}
         <hr />
-        <h3>{t('Slices')}</h3>
+        <h3>{t('Charts')}</h3>
         {this.renderSliceTable()}
       </div>
     );

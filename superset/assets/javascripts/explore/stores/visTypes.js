@@ -635,7 +635,6 @@ export const visTypes = {
       {
         label: t('Query'),
         expanded: true,
-        
         controlSetRows: [
           ['spatial', 'row_limit'],
         ],
@@ -809,7 +808,7 @@ export const visTypes = {
       {
         label: t('Query'),
         expanded: true,
-        controlSetRows: [['groupby', 'columns'], ['metrics']],
+        controlSetRows: [['groupby'], ['columns'], ['metrics']],
       },
       {
         label: t('Pivot Options'),
@@ -820,8 +819,8 @@ export const visTypes = {
       },
     ],
     controlOverrides: {
-      groupby: { includeTime: true },
-      columns: { includeTime: true },
+      groupby: { includeTime: false },
+      columns: { includeTime: false },
     },
   },
 
