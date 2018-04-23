@@ -44,6 +44,12 @@ ADMIN_ONLY_VIEW_MENUS = {
     'UserOAuthModelView',
     'UserOIDModelView',
     'UserRemoteUserModelView',
+    'Clusters',
+    'Company',
+    'iRT',
+    'GreenT',
+    'DSED',
+    'DSE',
 }
 
 ALPHA_ONLY_VIEW_MENUS = {
