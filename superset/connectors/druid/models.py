@@ -285,11 +285,11 @@ class DruidColumn(Model, BaseColumn):
 
     def get_metrics(self):
         metrics = {}
-        metrics['count'] = DruidMetric(
-            metric_name='count',
-            verbose_name='COUNT(*)',
+        metrics['druid_row_count'] = DruidMetric(
+            metric_name='druid_row_count',
+            verbose_name='DRUID COUNT(*)',
             metric_type='count',
-            json=json.dumps({'type': 'count', 'name': 'count'}),
+            json=json.dumps({'type': 'count', 'name': 'druid_row_count'}),
         )
         # Somehow we need to reassign this for UDAFs
         if self.type in ('DOUBLE', 'FLOAT'):
@@ -300,13 +300,22 @@ class DruidColumn(Model, BaseColumn):
         if self.sum and self.is_num:
             mt = corrected_type.lower() + 'Sum'
             name = 'sum__' + self.column_name
-            metrics[name] = DruidMetric(
-                metric_name=name,
-                metric_type='sum',
-                verbose_name='SUM({})'.format(self.column_name),
-                json=json.dumps({
-                    'type': mt, 'name': name, 'fieldName': self.column_name}),
-            )
+            if self.column_name == 'druid_row_count' or self.column_name == 'count':
+                metrics['count'] = DruidMetric(
+                    metric_name='count',
+                    metric_type='sum',
+                    verbose_name='COUNT(*)',
+                    json=json.dumps({
+                        'type': mt, 'name': 'count', 'fieldName': self.column_name}),
+                )
+            else:
+                metrics[name] = DruidMetric(
+                    metric_name=name,
+                    metric_type='sum',
+                    verbose_name='SUM({})'.format(self.column_name),
+                    json=json.dumps({
+                        'type': mt, 'name': name, 'fieldName': self.column_name}),
+                )
 
         if self.avg and self.is_num:
             mt = corrected_type.lower() + 'Avg'
@@ -322,23 +331,25 @@ class DruidColumn(Model, BaseColumn):
         if self.min and self.is_num:
             mt = corrected_type.lower() + 'Min'
             name = 'min__' + self.column_name
-            metrics[name] = DruidMetric(
-                metric_name=name,
-                metric_type='min',
-                verbose_name='MIN({})'.format(self.column_name),
-                json=json.dumps({
-                    'type': mt, 'name': name, 'fieldName': self.column_name}),
-            )
+            if self.column_name != 'druid_row_count' and self.column_name != 'count':
+                metrics[name] = DruidMetric(
+                    metric_name=name,
+                    metric_type='min',
+                    verbose_name='MIN({})'.format(self.column_name),
+                    json=json.dumps({
+                        'type': mt, 'name': name, 'fieldName': self.column_name}),
+                )
         if self.max and self.is_num:
             mt = corrected_type.lower() + 'Max'
             name = 'max__' + self.column_name
-            metrics[name] = DruidMetric(
-                metric_name=name,
-                metric_type='max',
-                verbose_name='MAX({})'.format(self.column_name),
-                json=json.dumps({
-                    'type': mt, 'name': name, 'fieldName': self.column_name}),
-            )
+            if self.column_name != 'druid_row_count' and self.column_name != 'count':
+                metrics[name] = DruidMetric(
+                    metric_name=name,
+                    metric_type='max',
+                    verbose_name='MAX({})'.format(self.column_name),
+                    json=json.dumps({
+                        'type': mt, 'name': name, 'fieldName': self.column_name}),
+                )
         if self.count_distinct:
             name = 'count_distinct__' + self.column_name
             if self.type == 'hyperUnique' or self.type == 'thetaSketch':
@@ -629,15 +640,16 @@ class DruidDatasource(Model, BaseDatasource):
         else:
             rbound = max_time.isoformat()
         segment_metadata = None
-        try:
-            segment_metadata = client.segment_metadata(
-                datasource=self.datasource_name,
-                intervals=lbound + '/' + rbound,
-                merge=self.merge_flag,
-                analysisTypes=[])
-        except Exception as e:
-            logging.warning('Failed first attempt to get latest segment')
-            logging.exception(e)
+        # try:
+
+        #     segment_metadata = client.segment_metadata(
+        #         datasource=self.datasource_name,
+        #         intervals=lbound + '/' + rbound,
+        #         merge=self.merge_flag,
+        #         analysisTypes=[])
+        # except Exception as e:
+        #     logging.warning('Failed first attempt to get latest segment')
+        #     logging.exception(e)
         if not segment_metadata:
             # if no segments in the past 7 days, look at all segments
             lbound = datetime(1901, 1, 1).isoformat()[:10]
@@ -649,7 +661,7 @@ class DruidDatasource(Model, BaseDatasource):
                 segment_metadata = client.segment_metadata(
                     datasource=self.datasource_name,
                     intervals=lbound + '/' + rbound,
-                    merge=self.merge_flag,
+                    merge=True,
                     analysisTypes=[])
             except Exception as e:
                 logging.warning('Failed 2nd attempt to get latest segment')
