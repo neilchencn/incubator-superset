@@ -78,6 +78,7 @@ def runserver(debug, no_reload, address, port, timeout, workers, socket):
         cmd = (
             'gunicorn '
             '-w {workers} '
+            '-k gevent '
             '--timeout {timeout} '
             '-b ' + addr_str +
             '--limit-request-line 0 '
@@ -103,23 +104,29 @@ def version(verbose):
     print(Style.RESET_ALL)
 
 
-@manager.option(
-    '-d', '--load-dict-data', action='store_true',
-    help='Load dictionay data')
-def load_dict(load_dict_data):
+@manager.option('-p', '--path', help=('Load dictionay data'))
+def load_dict(path):
     """Loads dictionay data for futuredial database field """
     from superset import data
     print('Loading examples into {}'.format(db))
-    data.load_dictionarys()
+    data.load_dictionarys(path)
 
 
 @manager.option(
-    '-d', '--load-company-data', action='store_true',
-    help='Load company data')
-def load_company(load_company_data):
+    '-p', '--path', help=('Load company data')
+)
+def load_company(path):
     from superset import data
     print('Loading company into {}'.format(db))
-    data.load_companies()
+    data.load_companies(path)
+
+
+@manager.option(
+    '-d', '--set_custom_role', action='store_true',
+    help='Set custom role')
+def set_custom_role(set_custom_role):
+    from superset import data
+    data.set_custom_role()
 
 
 @manager.option(

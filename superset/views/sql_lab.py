@@ -33,6 +33,7 @@ appbuilder.add_view(
     label=__('Queries'),
     category='Manage',
     category_label=__('Manage'),
+    category_icon='fa-wrench',
     icon='fa-search')
 
 

@@ -19,6 +19,11 @@ READ_ONLY_MODEL_VIEWS = {
     'DatabaseAsync',
     'DatabaseView',
     'DruidClusterModelView',
+    'IRTView',
+    'GreenTView',
+    'DSEDView',
+    'DSEView',
+    'CompanyView',
 }
 
 GAMMA_READ_ONLY_MODEL_VIEWS = {
@@ -45,15 +50,16 @@ ADMIN_ONLY_VIEW_MENUS = {
     'UserOIDModelView',
     'UserRemoteUserModelView',
     'Clusters',
-    'Company',
-    'iRT',
-    'GreenT',
-    'DSED',
-    'DSE',
+    'Refresh Company Permission',
 }
 
 ALPHA_ONLY_VIEW_MENUS = {
     'Upload a CSV',
+    'iRT',
+    'Company',
+    'GreenT',
+    'DSED',
+    'DSE',
 }
 
 ADMIN_ONLY_PERMISSIONS = {

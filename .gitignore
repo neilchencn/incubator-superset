@@ -41,3 +41,4 @@ superset/assets/version_info.json
 venv
 @eaDir/
 superset/data/*.json
+superset/custom_security_manager.py

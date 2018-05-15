@@ -185,15 +185,16 @@ class DruidClusterModelView(SupersetModelView, DeleteMixin, YamlExportMixin):  #
         DeleteMixin._delete(self, pk)
 
 
-appbuilder.add_view(
-    DruidClusterModelView,
-    name='Clusters',
-    label=__('Clusters'),
-    icon='fa-cubes',
-    category='Sources',
-    category_label=__('Sources'),
-    category_icon='fa-database',
-)
+appbuilder.add_view_no_menu(DruidClusterModelView)
+# appbuilder.add_view(
+#     DruidClusterModelView,
+#     name='Clusters',
+#     label=__('Clusters'),
+#     icon='fa-cubes',
+#     category='Sources',
+#     category_label=__('Sources'),
+#     category_icon='fa-cubes'
+# )
 
 
 class DruidDatasourceModelView(DatasourceModelView, DeleteMixin, YamlExportMixin):  # noqa
@@ -294,6 +295,7 @@ appbuilder.add_view(
     label=__('Datasources'),
     category='Sources',
     category_label=__('Sources'),
+    category_icon="fa-cubes",
     icon='fa-cube')
 
 
@@ -343,7 +345,7 @@ appbuilder.add_link(
     href='/druid/scan_new_datasources/',
     category='Sources',
     category_label=__('Sources'),
-    category_icon='fa-database',
+    category_icon='fa-cubes',
     icon='fa-refresh')
 appbuilder.add_link(
     'Refresh Metadata',
@@ -351,7 +353,7 @@ appbuilder.add_link(
     href='/druid/refresh_datasources/',
     category='Sources',
     category_label=__('Sources'),
-    category_icon='fa-database',
+    category_icon='fa-cubes',
     icon='fa-cog')
 
 

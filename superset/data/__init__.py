@@ -12,12 +12,13 @@ import random
 import textwrap
 import sqlite3
 import pandas as pd
+from sqlalchemy import func
 from sqlalchemy import BigInteger, Date, DateTime, Float, String, Text, Integer
 import geohash
 import polyline
 from collections import OrderedDict
-
-from superset import app, db, utils
+from flask_appbuilder.security.sqla import models as ab_models
+from superset import app, db, utils, sm, security
 from superset.connectors.connector_registry import ConnectorRegistry
 from superset.models import core as models
 from superset.security import get_or_create_main_db
@@ -1481,54 +1482,54 @@ def load_deck_dash():
                     .filter_by(table_name='sf_population_polygons').first()
     slice_data = {
 
-            "datasource": "11__table",
-            "viz_type": "deck_polygon",
-            "slice_id": 41,
-            "granularity_sqla": None,
-            "time_grain_sqla": None,
-            "since": None,
-            "until": None,
-            "line_column": "contour",
-            "line_type": "json",
-            "mapbox_style": "mapbox://styles/mapbox/light-v9",
-            "viewport": {
-                "longitude": -122.43388541747726,
-                "latitude": 37.752020331384834,
-                "zoom": 11.133995608594631,
-                "bearing": 37.89506450385642,
-                "pitch": 60,
-                "width": 667,
-                "height": 906,
-                "altitude": 1.5,
-                "maxZoom": 20,
-                "minZoom": 0,
-                "maxPitch": 60,
-                "minPitch": 0,
-                "maxLatitude": 85.05113,
-                "minLatitude": -85.05113
-            },
-            "reverse_long_lat": False,
-            "fill_color_picker": {
-                "r": 3,
-                "g": 65,
-                "b": 73,
-                "a": 1
-            },
-            "stroke_color_picker": {
-                "r": 0,
-                "g": 122,
-                "b": 135,
-                "a": 1
-            },
-            "filled": True,
-            "stroked": False,
-            "extruded": True,
-            "point_radius_scale": 100,
-            "js_columns": [
-                "population",
-                "area"
-            ],
-            "js_datapoint_mutator": "(d) => {\n    d.elevation = d.extraProps.population/d.extraProps.area/10\n \
+        "datasource": "11__table",
+        "viz_type": "deck_polygon",
+        "slice_id": 41,
+        "granularity_sqla": None,
+        "time_grain_sqla": None,
+        "since": None,
+        "until": None,
+        "line_column": "contour",
+        "line_type": "json",
+        "mapbox_style": "mapbox://styles/mapbox/light-v9",
+        "viewport": {
+            "longitude": -122.43388541747726,
+            "latitude": 37.752020331384834,
+            "zoom": 11.133995608594631,
+            "bearing": 37.89506450385642,
+            "pitch": 60,
+            "width": 667,
+            "height": 906,
+            "altitude": 1.5,
+            "maxZoom": 20,
+            "minZoom": 0,
+            "maxPitch": 60,
+            "minPitch": 0,
+            "maxLatitude": 85.05113,
+            "minLatitude": -85.05113
+        },
+        "reverse_long_lat": False,
+        "fill_color_picker": {
+            "r": 3,
+            "g": 65,
+            "b": 73,
+            "a": 1
+        },
+        "stroke_color_picker": {
+            "r": 0,
+            "g": 122,
+            "b": 135,
+            "a": 1
+        },
+        "filled": True,
+        "stroked": False,
+        "extruded": True,
+        "point_radius_scale": 100,
+        "js_columns": [
+            "population",
+            "area"
+        ],
+        "js_datapoint_mutator": "(d) => {\n    d.elevation = d.extraProps.population/d.extraProps.area/10\n \
              d.fillColor = [d.extraProps.population/d.extraProps.area/60,140,0]\n \
              return d;\n}",
         "js_tooltip": "",
@@ -1550,54 +1551,52 @@ def load_deck_dash():
     slices.append(slc)
 
     slice_data = {
-            "datasource": "10__table",
-            "viz_type": "deck_arc",
-            "slice_id": 42,
-            "granularity_sqla": "dttm",
-            "time_grain_sqla": "Time Column",
-            "since": None,
-            "until": None,
-            "start_spatial": {
-                "type": "latlong",
-                "latCol": "LATITUDE",
-                "lonCol": "LONGITUDE"
-            },
-            "end_spatial": {
-                "type": "latlong",
-                "latCol": "LATITUDE_DEST",
-                "lonCol": "LONGITUDE_DEST"
-            },
-            "row_limit": 5000,
-            "mapbox_style": "mapbox://styles/mapbox/light-v9",
-            "viewport": {
-                "altitude": 1.5,
-                "bearing": 8.546256357301871,
-                "height": 642,
-                "latitude": 44.596651438714254,
-                "longitude": -91.84340711201104,
-                "maxLatitude": 85.05113,
-                "maxPitch": 60,
-                "maxZoom": 20,
-                "minLatitude": -85.05113,
-                "minPitch": 0,
-                "minZoom": 0,
-                "pitch": 60,
-                "width": 997,
-                "zoom": 2.929837070560775
-            },
-            "color_picker": {
-                "r": 0,
-                "g": 122,
-                "b": 135,
-                "a": 1
-            },
-            "stroke_width": 1,
-            "where": "",
-            "having": "",
-            "filters": []
-        }
-
-
+        "datasource": "10__table",
+        "viz_type": "deck_arc",
+        "slice_id": 42,
+        "granularity_sqla": "dttm",
+        "time_grain_sqla": "Time Column",
+        "since": None,
+        "until": None,
+        "start_spatial": {
+            "type": "latlong",
+            "latCol": "LATITUDE",
+            "lonCol": "LONGITUDE"
+        },
+        "end_spatial": {
+            "type": "latlong",
+            "latCol": "LATITUDE_DEST",
+            "lonCol": "LONGITUDE_DEST"
+        },
+        "row_limit": 5000,
+        "mapbox_style": "mapbox://styles/mapbox/light-v9",
+        "viewport": {
+            "altitude": 1.5,
+            "bearing": 8.546256357301871,
+            "height": 642,
+            "latitude": 44.596651438714254,
+            "longitude": -91.84340711201104,
+            "maxLatitude": 85.05113,
+            "maxPitch": 60,
+            "maxZoom": 20,
+            "minLatitude": -85.05113,
+            "minPitch": 0,
+            "minZoom": 0,
+            "pitch": 60,
+            "width": 997,
+            "zoom": 2.929837070560775
+        },
+        "color_picker": {
+            "r": 0,
+            "g": 122,
+            "b": 135,
+            "a": 1
+        },
+        "stroke_width": 1,
+        "where": "",
+        "having": "",
+        "filters": []
+    }
     print("Creating Arc slice")
     slc = Slice(
         slice_name="Arcs",
@@ -1876,12 +1875,26 @@ def load_bart_lines():
     tbl.fetch_metadata()
 
 
-def load_dictionarys():
+def load_dictionarys(path):
+    DATA_FOLDER = '/bi/'
+    if path:
+        DATA_FOLDER = path
+
+    if not os.path.isfile(os.path.join(DATA_FOLDER, 'dict.json')):
+        print('can not find dict.json')
+        return
+
     Order = OrderedDict(
         [('1', 'iRT'), ('2', 'GreenT'), ('25', 'DSED'), ('27', 'DSE')])
     with open(os.path.join(DATA_FOLDER, 'dict.json')) as f:
         jd = json.load(f)
 
+    dict_model = {
+        'iRT': dictionary.IRT,
+        'GreenT': dictionary.GreenT,
+        'DSE': dictionary.DSE,
+        'DSED': dictionary.DSED
+    }
     for k, v in Order.items():
         names = []
         des = []
@@ -1895,7 +1908,9 @@ def load_dictionarys():
                 ids.append(idx + 1)
                 idx += 1
             df = pd.DataFrame(dict(id=ids, field_name=names, describe=des))
-            df = clean_df_db_dups(df, tbl_name, db.engine, dup_cols=['field_name','describe'])
+            sesh = sm.get_session()
+            sesh.query(dict_model[v]).delete()
+            sesh.commit()
             df.to_sql(
                 tbl_name,
                 db.engine,
@@ -1976,33 +1991,128 @@ def clean_df_db_dups(df, tablename, engine, dup_cols=[],
     return df
 
 
-def load_companies():
+def load_companies(path):
+    DATA_FOLDER = '/bi/'
+    if path:
+        DATA_FOLDER = path
     tbl_name = 'company'
-    with open(os.path.join(DATA_FOLDER, 'company.json')) as f:
-        data = [v for d, v in byteify(json.load(f)).items()]
+    if not os.path.isfile(os.path.join(DATA_FOLDER, 'meta.json')):
+        print('can not find meta.json')
+        return
+    with open(os.path.join(DATA_FOLDER, 'meta.json')) as f:
+        meta = byteify(json.load(f))
+        data = [v for d, v in meta['cmc_company'].items()]
+        data += [v for d, v in meta['bs_company'].items()]
 
-    with open(os.path.join(DATA_FOLDER, 'bs_company.json')) as bs:
-        data += [v for d, v in byteify(json.load(bs)).items()]
+    temp = []
+    sesh = sm.get_session()
+    companies = sesh.query(dictionary.Company).all()
+    all_pvs = set()
+    for pv in sm.get_session.query(sm.permissionview_model).all():
+        if pv.permission and pv.view_menu:
+            all_pvs.add((pv.permission.name, pv.view_menu.name))
 
-    df = pd.DataFrame(dict(id=range(1, len(data) + 1), field_name=data))
+    def merge_pv(view_menu, perm):
+        """Create permission view menu only if it doesn't exist"""
+        if view_menu and perm and (view_menu, perm) not in all_pvs:
+            security.merge_perm(sm, view_menu, perm)
+    c_count = len(companies)
+
+    for c in companies:
+        if c.field_name in data:
+            data.remove(c.field_name)
+
+    df = pd.DataFrame(
+        dict(id=range(c_count + 1,  c_count + len(data) + 1), field_name=data))
     df = clean_df_db_dups(df, tbl_name, db.engine, dup_cols=['field_name'])
-    df.to_sql(
-        tbl_name,
-        db.engine,
-        if_exists='append',
-        chunksize=500,
-        index=False,
-        dtype={
-            'id': Integer(),
-            'field_name': String(255),
-        }
-    )
-    print("Creating table {} reference".format(tbl_name))
-    tbl = db.session.query(TBL).filter_by(table_name=tbl_name).first()
-    if not tbl:
-        tbl = TBL(table_name=tbl_name)
-    tbl.description = "company list"
-    tbl.database = get_or_create_main_db()
-    db.session.merge(tbl)
-    db.session.commit()
-    tbl.fetch_metadata()
+
+    if len(df) > 0:
+        df.to_sql(
+            tbl_name,
+            db.engine,
+            if_exists='append',
+            chunksize=500,
+            index=False,
+            dtype={
+                'id': Integer(),
+                'field_name': String(255),
+            }
+        )
+        print("Creating table {} reference".format(tbl_name))
+        tbl = db.session.query(TBL).filter_by(table_name=tbl_name).first()
+        if not tbl:
+            tbl = TBL(table_name=tbl_name)
+        tbl.description = "company list"
+        tbl.database = get_or_create_main_db()
+        db.session.merge(tbl)
+        db.session.commit()
+
+        print('Create missing company perm')
+        companies = db.session.query(dictionary.Company).all()
+        for c in companies:
+            merge_pv('company_access', '{}'.format(c.field_name))
+        tbl.fetch_metadata()
+
+
+from superset.models import dictionary
+
+
+def is_datasource(pvm, perm):
+    return pvm.view_menu.name in {perm} and pvm.permission.name in {
+        'datasource_access',
+    }
+
+
+def is_company(pvm, perm):
+    return pvm.view_menu.name in {perm} and pvm.permission.name in {
+        'company_access',
+    }
+
+
+def is_dict(pvm, perm):
+    return pvm.view_menu.name in {perm} and pvm.permission.name in {
+        'menu_access',
+    }
+
+
+def set_custom_role():
+    print('set custom roles')
+
+    sesh = sm.get_session()
+    pvms = sesh.query(ab_models.PermissionView).all()
+    pvms = [p for p in pvms if p.permission and p.view_menu]
+
+    datasources = ConnectorRegistry.get_all_datasources(db.session)
+
+    for datasource in datasources:
+        print('DATASOURCE[{}]'.format(datasource))
+        if 'main' not in datasource.perm:
+            role_name = 'DATASOURCE[{}]'.format(datasource)
+            if not sm.find_role(role_name):
+                ds_role = sm.add_role(role_name)
+                ds_role_pvms = [
+                    p for p in pvms if is_datasource(p, datasource.perm)]
+                ds_role.permissions = ds_role_pvms
+                sesh.merge(ds_role)
+
+    companies = sesh.query(dictionary.Company).all()
+
+    for company in companies:
+        role_name = 'COMPANY[{}]'.format(company.field_name)
+        if not sm.find_role(role_name):
+            c_role = sm.add_role(role_name)
+            c_role_pvms = [p for p in pvms if is_company(
+                p, company.field_name)]
+            c_role.permissions = c_role_pvms
+            sesh.merge(c_role)
+
+    dicts = ['GreenT', 'iRT', 'DSE', 'DSED']
+    for d in dicts:
+        role_name = 'DICT[{}]'.format(d)
+        if not sm.find_role(role_name):
+            c_role = sm.add_role(role_name)
+            c_role_pvms = [p for p in pvms if is_dict(
+                p, d)]
+            c_role.permissions = c_role_pvms
+            sesh.merge(c_role)
+    sesh.commit()

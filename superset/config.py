@@ -17,10 +17,11 @@ import os
 import sys
 
 from dateutil import tz
-from flask_appbuilder.security.manager import AUTH_DB
+from flask_appbuilder.security.manager import AUTH_DB, AUTH_REMOTE_USER
 
 from superset.stats_logger import DummyStatsLogger
 
+from superset.custom_security.security_models import MySecurityManager
 # Realtime stats logger, a StatsD implementation exists
 STATS_LOGGER = DummyStatsLogger()
 
@@ -49,12 +50,12 @@ SUPERSET_WEBSERVER_ADDRESS = '0.0.0.0'
 SUPERSET_WEBSERVER_PORT = 8088
 SUPERSET_WEBSERVER_TIMEOUT = 1000
 EMAIL_NOTIFICATIONS = False
-CUSTOM_SECURITY_MANAGER = None
+CUSTOM_SECURITY_MANAGER = MySecurityManager
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 # ---------------------------------------------------------
 
 # Your App secret key
-SECRET_KEY = '\2\1thisismyscretkey\1\2\e\y\y\h'  # noqa
+SECRET_KEY = '&%1)d+ujhbg0ei2_oiw_9hb^nkof#mpj9k7zz8zb4807c9q7%7'  # noqa
 
 # The SQLAlchemy connection string.
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DATA_DIR, 'superset.db')
@@ -80,9 +81,10 @@ WTF_CSRF_ENABLED = True
 WTF_CSRF_EXEMPT_LIST = ['bi.futuredial.com',
                         'bi.futuredial.com/login', '/login']
 
+
 # Whether to run the web server in debug mode or not
-DEBUG = False
-FLASK_USE_RELOAD = True
+DEBUG = True
+FLASK_USE_RELOAD = False
 
 # Whether to show the stacktrace on 500 error
 SHOW_STACKTRACE = True
@@ -127,10 +129,10 @@ AUTH_TYPE = AUTH_DB
 # AUTH_ROLE_PUBLIC = 'Public'
 
 # Will allow user self registration
-# AUTH_USER_REGISTRATION = True
+AUTH_USER_REGISTRATION = False
 
 # The default user self registration role
-# AUTH_USER_REGISTRATION_ROLE = "Public"
+AUTH_USER_REGISTRATION_ROLE = "Gamma"
 
 # When using LDAP Auth, setup the ldap server
 # AUTH_LDAP_SERVER = "ldap://ldapserver.new"
@@ -221,7 +223,7 @@ CSV_EXPORT = {
 #  VIZ_TYPE_BLACKLIST = ['pivot_table', 'treemap']
 # ---------------------------------------------------
 
-VIZ_TYPE_BLACKLIST = []
+VIZ_TYPE_BLACKLIST = ['bullet','iframe','deck_multi','deck_scatter','deck_screengrid','deck_grid','deck_path','deck_polygon','deck_hex','deck_geojson','deck_arc',]
 
 # ---------------------------------------------------
 # List of data sources not to be refreshed in druid cluster

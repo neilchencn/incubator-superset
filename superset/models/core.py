@@ -47,6 +47,7 @@ metadata = Model.metadata  # pylint: disable=no-member
 
 PASSWORD_MASK = 'X' * 10
 
+
 def set_related_perm(mapper, connection, target):  # noqa
     src_class = target.cls_model
     id_ = target.datasource_id
@@ -447,7 +448,8 @@ class Dashboard(Model, AuditMixinNullable, ImportMixin):
             logging.info('Importing slice {} from the dashboard: {}'.format(
                 slc.to_json(), dashboard_to_import.dashboard_title))
             remote_slc = remote_id_slice_map.get(slc.id)
-            new_slc_id = Slice.import_obj(slc, remote_slc, import_time=import_time)
+            new_slc_id = Slice.import_obj(
+                slc, remote_slc, import_time=import_time)
             old_to_new_slc_id_dict[slc.id] = new_slc_id
             # update json metadata that deals with slice ids
             new_slc_id_str = '{}'.format(new_slc_id)
@@ -662,7 +664,8 @@ class Database(Model, AuditMixinNullable, ImportMixin):
             effective_username)
 
         masked_url = self.get_password_masked_url(url)
-        logging.info('Database.get_sqla_engine(). Masked URL: {0}'.format(masked_url))
+        logging.info(
+            'Database.get_sqla_engine(). Masked URL: {0}'.format(masked_url))
 
         params = extra.get('engine_params', {})
         if nullpool:

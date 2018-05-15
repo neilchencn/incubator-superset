@@ -937,56 +937,56 @@ class BubbleViz(NVD3Viz):
         return chart_data
 
 
-class BulletViz(NVD3Viz):
+# class BulletViz(NVD3Viz):
 
-    """Based on the NVD3 bullet chart"""
+#     """Based on the NVD3 bullet chart"""
 
-    viz_type = 'bullet'
-    verbose_name = _('Bullet Chart')
-    is_timeseries = False
+#     viz_type = 'bullet'
+#     verbose_name = _('Bullet Chart')
+#     is_timeseries = False
 
-    def query_obj(self):
-        form_data = self.form_data
-        d = super(BulletViz, self).query_obj()
-        self.metric = form_data.get('metric')
+#     def query_obj(self):
+#         form_data = self.form_data
+#         d = super(BulletViz, self).query_obj()
+#         self.metric = form_data.get('metric')
 
-        def as_strings(field):
-            value = form_data.get(field)
-            return value.split(',') if value else []
+#         def as_strings(field):
+#             value = form_data.get(field)
+#             return value.split(',') if value else []
 
-        def as_floats(field):
-            return [float(x) for x in as_strings(field)]
+#         def as_floats(field):
+#             return [float(x) for x in as_strings(field)]
 
-        self.ranges = as_floats('ranges')
-        self.range_labels = as_strings('range_labels')
-        self.markers = as_floats('markers')
-        self.marker_labels = as_strings('marker_labels')
-        self.marker_lines = as_floats('marker_lines')
-        self.marker_line_labels = as_strings('marker_line_labels')
+#         self.ranges = as_floats('ranges')
+#         self.range_labels = as_strings('range_labels')
+#         self.markers = as_floats('markers')
+#         self.marker_labels = as_strings('marker_labels')
+#         self.marker_lines = as_floats('marker_lines')
+#         self.marker_line_labels = as_strings('marker_line_labels')
 
-        d['metrics'] = [
-            self.metric,
-        ]
-        if not self.metric:
-            raise Exception(_('Pick a metric to display'))
-        return d
+#         d['metrics'] = [
+#             self.metric,
+#         ]
+#         if not self.metric:
+#             raise Exception(_('Pick a metric to display'))
+#         return d
 
-    def get_data(self, df):
-        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-            raise Exception(_('No data was returned'))
+#     def get_data(self, df):
+#         if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+#             raise Exception(_('No data was returned'))
 
-        df = df.fillna(0)
-        df['metric'] = df[[self.metric]]
-        values = df['metric'].values
-        return {
-            'measures': values.tolist(),
-            'ranges': self.ranges or [0, values.max() * 1.1],
-            'rangeLabels': self.range_labels or None,
-            'markers': self.markers or None,
-            'markerLabels': self.marker_labels or None,
-            'markerLines': self.marker_lines or None,
-            'markerLineLabels': self.marker_line_labels or None,
-        }
+#         df = df.fillna(0)
+#         df['metric'] = df[[self.metric]]
+#         values = df['metric'].values
+#         return {
+#             'measures': values.tolist(),
+#             'ranges': self.ranges or [0, values.max() * 1.1],
+#             'rangeLabels': self.range_labels or None,
+#             'markers': self.markers or None,
+#             'markerLabels': self.marker_labels or None,
+#             'markerLines': self.marker_lines or None,
+#             'markerLineLabels': self.marker_line_labels or None,
+#         }
 
 
 class BigNumberViz(BaseViz):
@@ -1328,11 +1328,17 @@ class NVD3TimePivotViz(NVD3TimeSeriesViz):
         df = self.process_data(df)
         freq = to_offset(fd.get('freq'))
         freq.normalize = True
+        # print(df)
         df[DTTM_ALIAS] = df.index.map(freq.rollback)
+        # print(df[DTTM_ALIAS])
         df['ranked'] = df[DTTM_ALIAS].rank(method='dense', ascending=False) - 1
+        # print(df['ranked'])
         df.ranked = df.ranked.map(int)
+        # print(df.ranked)
         df['series'] = '-' + df.ranked.map(str)
         df['series'] = df['series'].str.replace('-0', 'current')
+        for row in df.to_dict(orient='records'):
+            print(row)
         rank_lookup = {
             row['series']: row['ranked']
             for row in df.to_dict(orient='records')
@@ -1633,88 +1639,88 @@ class ChordViz(BaseViz):
         }
 
 
-class CountryMapViz(BaseViz):
+# class CountryMapViz(BaseViz):
 
-    """A country centric"""
+#     """A country centric"""
 
-    viz_type = 'country_map'
-    verbose_name = _('Country Map')
-    is_timeseries = False
-    credits = 'From bl.ocks.org By john-guerra'
+#     viz_type = 'country_map'
+#     verbose_name = _('Country Map')
+#     is_timeseries = False
+#     credits = 'From bl.ocks.org By john-guerra'
 
-    def query_obj(self):
-        qry = super(CountryMapViz, self).query_obj()
-        qry['metrics'] = [
-            self.form_data['metric']]
-        qry['groupby'] = [self.form_data['entity']]
-        return qry
+#     def query_obj(self):
+#         qry = super(CountryMapViz, self).query_obj()
+#         qry['metrics'] = [
+#             self.form_data['metric']]
+#         qry['groupby'] = [self.form_data['entity']]
+#         return qry
 
-    def get_data(self, df):
-        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-            raise Exception(_('No data was returned'))
+#     def get_data(self, df):
+#         if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+#             raise Exception(_('No data was returned'))
 
-        fd = self.form_data
-        cols = [fd.get('entity')]
-        metric = fd.get('metric')
-        cols += [metric]
-        ndf = df[cols]
-        df = ndf
-        df.columns = ['country_id', 'metric']
-        d = df.to_dict(orient='records')
-        return d
+#         fd = self.form_data
+#         cols = [fd.get('entity')]
+#         metric = fd.get('metric')
+#         cols += [metric]
+#         ndf = df[cols]
+#         df = ndf
+#         df.columns = ['country_id', 'metric']
+#         d = df.to_dict(orient='records')
+#         return d
 
 
-class WorldMapViz(BaseViz):
+# class WorldMapViz(BaseViz):
 
-    """A country centric world map"""
+#     """A country centric world map"""
 
-    viz_type = 'world_map'
-    verbose_name = _('World Map')
-    is_timeseries = False
-    credits = 'datamaps on <a href="https://www.npmjs.com/package/datamaps">npm</a>'
+#     viz_type = 'world_map'
+#     verbose_name = _('World Map')
+#     is_timeseries = False
+#     credits = 'datamaps on <a href="https://www.npmjs.com/package/datamaps">npm</a>'
 
-    def query_obj(self):
-        qry = super(WorldMapViz, self).query_obj()
-        qry['metrics'] = [
-            self.form_data['metric'], self.form_data['secondary_metric']]
-        qry['groupby'] = [self.form_data['entity']]
-        return qry
+#     def query_obj(self):
+#         qry = super(WorldMapViz, self).query_obj()
+#         qry['metrics'] = [
+#             self.form_data['metric'], self.form_data['secondary_metric']]
+#         qry['groupby'] = [self.form_data['entity']]
+#         return qry
 
-    def get_data(self, df):
-        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-            raise Exception(_('No data was returned'))
+#     def get_data(self, df):
+#         if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+#             raise Exception(_('No data was returned'))
 
-        from superset.data import countries
-        fd = self.form_data
-        cols = [fd.get('entity')]
-        metric = fd.get('metric')
-        secondary_metric = fd.get('secondary_metric')
-        if metric == secondary_metric:
-            ndf = df[cols]
-            # df[metric] will be a DataFrame
-            # because there are duplicate column names
-            ndf['m1'] = df[metric].iloc[:, 0]
-            ndf['m2'] = ndf['m1']
-        else:
-            cols += [metric, secondary_metric]
-            ndf = df[cols]
-        df = ndf
-        df.columns = ['country', 'm1', 'm2']
-        d = df.to_dict(orient='records')
-        for row in d:
-            country = None
-            if isinstance(row['country'], string_types):
-                country = countries.get(
-                    fd.get('country_fieldtype'), row['country'])
+#         from superset.data import countries
+#         fd = self.form_data
+#         cols = [fd.get('entity')]
+#         metric = fd.get('metric')
+#         secondary_metric = fd.get('secondary_metric')
+#         if metric == secondary_metric:
+#             ndf = df[cols]
+#             # df[metric] will be a DataFrame
+#             # because there are duplicate column names
+#             ndf['m1'] = df[metric].iloc[:, 0]
+#             ndf['m2'] = ndf['m1']
+#         else:
+#             cols += [metric, secondary_metric]
+#             ndf = df[cols]
+#         df = ndf
+#         df.columns = ['country', 'm1', 'm2']
+#         d = df.to_dict(orient='records')
+#         for row in d:
+#             country = None
+#             if isinstance(row['country'], string_types):
+#                 country = countries.get(
+#                     fd.get('country_fieldtype'), row['country'])
 
-            if country:
-                row['country'] = country['cca3']
-                row['latitude'] = country['lat']
-                row['longitude'] = country['lng']
-                row['name'] = country['name']
-            else:
-                row['country'] = 'XXX'
-        return d
+#             if country:
+#                 row['country'] = country['cca3']
+#                 row['latitude'] = country['lat']
+#                 row['longitude'] = country['lng']
+#                 row['name'] = country['name']
+#             else:
+#                 row['country'] = 'XXX'
+#         return d
 
 
 class FilterBoxViz(BaseViz):
@@ -1766,20 +1772,20 @@ class FilterBoxViz(BaseViz):
         return d
 
 
-class IFrameViz(BaseViz):
+# class IFrameViz(BaseViz):
 
-    """You can squeeze just about anything in this iFrame component"""
+#     """You can squeeze just about anything in this iFrame component"""
 
-    viz_type = 'iframe'
-    verbose_name = _('iFrame')
-    credits = 'a <a href="https://github.com/airbnb/superset">Superset</a> original'
-    is_timeseries = False
+#     viz_type = 'iframe'
+#     verbose_name = _('iFrame')
+#     credits = 'a <a href="https://github.com/airbnb/superset">Superset</a> original'
+#     is_timeseries = False
 
-    def query_obj(self):
-        return None
+#     def query_obj(self):
+#         return None
 
-    def get_df(self, query_obj=None):
-        return None
+#     def get_df(self, query_obj=None):
+#         return None
 
 
 class ParallelCoordinatesViz(BaseViz):
@@ -1887,426 +1893,426 @@ class HorizonViz(NVD3TimeSeriesViz):
         'd3-horizon-chart</a>')
 
 
-class MapboxViz(BaseViz):
-
-    """Rich maps made with Mapbox"""
-
-    viz_type = 'mapbox'
-    verbose_name = _('Mapbox')
-    is_timeseries = False
-    credits = (
-        '<a href=https://www.mapbox.com/mapbox-gl-js/api/>Mapbox GL JS</a>')
-
-    def query_obj(self):
-        d = super(MapboxViz, self).query_obj()
-        fd = self.form_data
-        label_col = fd.get('mapbox_label')
-
-        if not fd.get('groupby'):
-            d['columns'] = [fd.get('all_columns_x'), fd.get('all_columns_y')]
-
-            if label_col and len(label_col) >= 1:
-                if label_col[0] == 'count':
-                    raise Exception(_(
-                        "Must have a [Group By] column to have 'count' as the [Label]"))
-                d['columns'].append(label_col[0])
-
-            if fd.get('point_radius') != 'Auto':
-                d['columns'].append(fd.get('point_radius'))
-
-            d['columns'] = list(set(d['columns']))
-        else:
-            # Ensuring columns chosen are all in group by
-            if (label_col and len(label_col) >= 1 and
-                    label_col[0] != 'count' and
-                    label_col[0] not in fd.get('groupby')):
-                raise Exception(_(
-                    'Choice of [Label] must be present in [Group By]'))
-
-            if (fd.get('point_radius') != 'Auto' and
-                    fd.get('point_radius') not in fd.get('groupby')):
-                raise Exception(_(
-                    'Choice of [Point Radius] must be present in [Group By]'))
-
-            if (fd.get('all_columns_x') not in fd.get('groupby') or
-                    fd.get('all_columns_y') not in fd.get('groupby')):
-                raise Exception(_(
-                    '[Longitude] and [Latitude] columns must be present in [Group By]'))
-        return d
-
-    def get_data(self, df):
-
-        if df is None:
-            return None
-
-        fd = self.form_data
-        label_col = fd.get('mapbox_label')
-        custom_metric = label_col and len(label_col) >= 1
-        metric_col = [None] * len(df.index)
-        if custom_metric:
-            if label_col[0] == fd.get('all_columns_x'):
-                metric_col = df[fd.get('all_columns_x')]
-            elif label_col[0] == fd.get('all_columns_y'):
-                metric_col = df[fd.get('all_columns_y')]
-            else:
-                metric_col = df[label_col[0]]
-        point_radius_col = (
-            [None] * len(df.index)
-            if fd.get('point_radius') == 'Auto'
-            else df[fd.get('point_radius')])
-
-        # using geoJSON formatting
-        geo_json = {
-            'type': 'FeatureCollection',
-            'features': [
-                {
-                    'type': 'Feature',
-                    'properties': {
-                        'metric': metric,
-                        'radius': point_radius,
-                    },
-                    'geometry': {
-                        'type': 'Point',
-                        'coordinates': [lon, lat],
-                    },
-                }
-                for lon, lat, metric, point_radius
-                in zip(
-                    df[fd.get('all_columns_x')],
-                    df[fd.get('all_columns_y')],
-                    metric_col, point_radius_col)
-            ],
-        }
-
-        return {
-            'geoJSON': geo_json,
-            'customMetric': custom_metric,
-            'mapboxApiKey': config.get('MAPBOX_API_KEY'),
-            'mapStyle': fd.get('mapbox_style'),
-            'aggregatorName': fd.get('pandas_aggfunc'),
-            'clusteringRadius': fd.get('clustering_radius'),
-            'pointRadiusUnit': fd.get('point_radius_unit'),
-            'globalOpacity': fd.get('global_opacity'),
-            'viewportLongitude': fd.get('viewport_longitude'),
-            'viewportLatitude': fd.get('viewport_latitude'),
-            'viewportZoom': fd.get('viewport_zoom'),
-            'renderWhileDragging': fd.get('render_while_dragging'),
-            'tooltip': fd.get('rich_tooltip'),
-            'color': fd.get('mapbox_color'),
-        }
-
-
-class DeckGLMultiLayer(BaseViz):
-
-    """Pile on multiple DeckGL layers"""
-
-    viz_type = 'deck_multi'
-    verbose_name = _('Deck.gl - Multiple Layers')
-
-    is_timeseries = False
-    credits = '<a href="https://uber.github.io/deck.gl/">deck.gl</a>'
-
-    def query_obj(self):
-        return None
-
-    def get_data(self, df):
-        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-            raise Exception(_('No data was returned'))
-
-        fd = self.form_data
-        # Late imports to avoid circular import issues
-        from superset.models.core import Slice
-        from superset import db
-        slice_ids = fd.get('deck_slices')
-        slices = db.session.query(Slice).filter(Slice.id.in_(slice_ids)).all()
-        return {
-            'mapboxApiKey': config.get('MAPBOX_API_KEY'),
-            'slices': [slc.data for slc in slices],
-        }
-
-
-class BaseDeckGLViz(BaseViz):
-
-    """Base class for deck.gl visualizations"""
-
-    is_timeseries = False
-    credits = '<a href="https://uber.github.io/deck.gl/">deck.gl</a>'
-    spatial_control_keys = []
-
-    def get_metrics(self):
-        self.metric = self.form_data.get('size')
-        return [self.metric] if self.metric else []
-
-    def process_spatial_query_obj(self, key, group_by):
-        spatial = self.form_data.get(key)
-        if spatial is None:
-            raise ValueError(_('Bad spatial key'))
-
-        if spatial.get('type') == 'latlong':
-            group_by += [spatial.get('lonCol')]
-            group_by += [spatial.get('latCol')]
-        elif spatial.get('type') == 'delimited':
-            group_by += [spatial.get('lonlatCol')]
-        elif spatial.get('type') == 'geohash':
-            group_by += [spatial.get('geohashCol')]
-
-    def process_spatial_data_obj(self, key, df):
-        spatial = self.form_data.get(key)
-        if spatial is None:
-            raise ValueError(_('Bad spatial key'))
-        if spatial.get('type') == 'latlong':
-
-            df[key] = list(zip(
-                pd.to_numeric(df[spatial.get('lonCol')], errors='coerce'),
-                pd.to_numeric(df[spatial.get('latCol')], errors='coerce'),
-            ))
-        elif spatial.get('type') == 'delimited':
-
-            def tupleify(s):
-                p = Point(s)
-                return (p.latitude, p.longitude)
-
-            df[key] = df[spatial.get('lonlatCol')].apply(tupleify)
-
-            if spatial.get('reverseCheckbox'):
-                df[key] = [
-                    tuple(reversed(o)) if isinstance(
-                        o, (list, tuple)) else (0, 0)
-                    for o in df[key]
-                ]
-            del df[spatial.get('lonlatCol')]
-        elif spatial.get('type') == 'geohash':
-            latlong = df[spatial.get('geohashCol')].map(geohash.decode)
-            df[key] = list(zip(latlong.apply(lambda x: x[0]),
-                               latlong.apply(lambda x: x[1])))
-            del df[spatial.get('geohashCol')]
-        return df
-
-    def query_obj(self):
-        d = super(BaseDeckGLViz, self).query_obj()
-        fd = self.form_data
-        gb = []
-
-        for key in self.spatial_control_keys:
-            self.process_spatial_query_obj(key, gb)
-
-        if fd.get('dimension'):
-            gb += [fd.get('dimension')]
-
-        if fd.get('js_columns'):
-            gb += fd.get('js_columns')
-        metrics = self.get_metrics()
-        if metrics:
-            d['groupby'] = gb
-            d['metrics'] = self.get_metrics()
-        else:
-            d['columns'] = gb
-
-        return d
-
-    def get_js_columns(self, d):
-        cols = self.form_data.get('js_columns') or []
-        return {col: d.get(col) for col in cols}
-
-    def get_data(self, df):
-
-        if df is None:
-            return None
-
-        for key in self.spatial_control_keys:
-            df = self.process_spatial_data_obj(key, df)
-
-        features = []
-        for d in df.to_dict(orient='records'):
-            feature = self.get_properties(d)
-            extra_props = self.get_js_columns(d)
-            if extra_props:
-                feature['extraProps'] = extra_props
-            features.append(feature)
-
-        return {
-            'features': features,
-            'mapboxApiKey': config.get('MAPBOX_API_KEY'),
-        }
-
-    def get_properties(self, d):
-        raise NotImplementedError()
-
-
-class DeckScatterViz(BaseDeckGLViz):
-
-    """deck.gl's ScatterLayer"""
-
-    viz_type = 'deck_scatter'
-    verbose_name = _('Deck.gl - Scatter plot')
-    spatial_control_keys = ['spatial']
-    is_timeseries = True
-
-    def query_obj(self):
-        fd = self.form_data
-        self.is_timeseries = fd.get('time_grain_sqla') or fd.get('granularity')
-        self.point_radius_fixed = (
-            fd.get('point_radius_fixed') or {'type': 'fix', 'value': 500})
-        return super(DeckScatterViz, self).query_obj()
-
-    def get_metrics(self):
-        self.metric = None
-        if self.point_radius_fixed.get('type') == 'metric':
-            self.metric = self.point_radius_fixed.get('value')
-            return [self.metric]
-        return None
-
-    def get_properties(self, d):
-        return {
-            'radius': self.fixed_value if self.fixed_value else d.get(self.metric),
-            'cat_color': d.get(self.dim) if self.dim else None,
-            'position': d.get('spatial'),
-            '__timestamp': d.get(DTTM_ALIAS) or d.get('__time'),
-        }
-
-    def get_data(self, df):
-        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-            raise Exception(_('No data was returned'))
+# class MapboxViz(BaseViz):
+
+#     """Rich maps made with Mapbox"""
+
+#     viz_type = 'mapbox'
+#     verbose_name = _('Mapbox')
+#     is_timeseries = False
+#     credits = (
+#         '<a href=https://www.mapbox.com/mapbox-gl-js/api/>Mapbox GL JS</a>')
+
+#     def query_obj(self):
+#         d = super(MapboxViz, self).query_obj()
+#         fd = self.form_data
+#         label_col = fd.get('mapbox_label')
+
+#         if not fd.get('groupby'):
+#             d['columns'] = [fd.get('all_columns_x'), fd.get('all_columns_y')]
+
+#             if label_col and len(label_col) >= 1:
+#                 if label_col[0] == 'count':
+#                     raise Exception(_(
+#                         "Must have a [Group By] column to have 'count' as the [Label]"))
+#                 d['columns'].append(label_col[0])
+
+#             if fd.get('point_radius') != 'Auto':
+#                 d['columns'].append(fd.get('point_radius'))
+
+#             d['columns'] = list(set(d['columns']))
+#         else:
+#             # Ensuring columns chosen are all in group by
+#             if (label_col and len(label_col) >= 1 and
+#                     label_col[0] != 'count' and
+#                     label_col[0] not in fd.get('groupby')):
+#                 raise Exception(_(
+#                     'Choice of [Label] must be present in [Group By]'))
+
+#             if (fd.get('point_radius') != 'Auto' and
+#                     fd.get('point_radius') not in fd.get('groupby')):
+#                 raise Exception(_(
+#                     'Choice of [Point Radius] must be present in [Group By]'))
+
+#             if (fd.get('all_columns_x') not in fd.get('groupby') or
+#                     fd.get('all_columns_y') not in fd.get('groupby')):
+#                 raise Exception(_(
+#                     '[Longitude] and [Latitude] columns must be present in [Group By]'))
+#         return d
+
+#     def get_data(self, df):
+
+#         if df is None:
+#             return None
+
+#         fd = self.form_data
+#         label_col = fd.get('mapbox_label')
+#         custom_metric = label_col and len(label_col) >= 1
+#         metric_col = [None] * len(df.index)
+#         if custom_metric:
+#             if label_col[0] == fd.get('all_columns_x'):
+#                 metric_col = df[fd.get('all_columns_x')]
+#             elif label_col[0] == fd.get('all_columns_y'):
+#                 metric_col = df[fd.get('all_columns_y')]
+#             else:
+#                 metric_col = df[label_col[0]]
+#         point_radius_col = (
+#             [None] * len(df.index)
+#             if fd.get('point_radius') == 'Auto'
+#             else df[fd.get('point_radius')])
+
+#         # using geoJSON formatting
+#         geo_json = {
+#             'type': 'FeatureCollection',
+#             'features': [
+#                 {
+#                     'type': 'Feature',
+#                     'properties': {
+#                         'metric': metric,
+#                         'radius': point_radius,
+#                     },
+#                     'geometry': {
+#                         'type': 'Point',
+#                         'coordinates': [lon, lat],
+#                     },
+#                 }
+#                 for lon, lat, metric, point_radius
+#                 in zip(
+#                     df[fd.get('all_columns_x')],
+#                     df[fd.get('all_columns_y')],
+#                     metric_col, point_radius_col)
+#             ],
+#         }
+
+#         return {
+#             'geoJSON': geo_json,
+#             'customMetric': custom_metric,
+#             'mapboxApiKey': config.get('MAPBOX_API_KEY'),
+#             'mapStyle': fd.get('mapbox_style'),
+#             'aggregatorName': fd.get('pandas_aggfunc'),
+#             'clusteringRadius': fd.get('clustering_radius'),
+#             'pointRadiusUnit': fd.get('point_radius_unit'),
+#             'globalOpacity': fd.get('global_opacity'),
+#             'viewportLongitude': fd.get('viewport_longitude'),
+#             'viewportLatitude': fd.get('viewport_latitude'),
+#             'viewportZoom': fd.get('viewport_zoom'),
+#             'renderWhileDragging': fd.get('render_while_dragging'),
+#             'tooltip': fd.get('rich_tooltip'),
+#             'color': fd.get('mapbox_color'),
+#         }
+
+
+# class DeckGLMultiLayer(BaseViz):
+
+#     """Pile on multiple DeckGL layers"""
+
+#     viz_type = 'deck_multi'
+#     verbose_name = _('Deck.gl - Multiple Layers')
+
+#     is_timeseries = False
+#     credits = '<a href="https://uber.github.io/deck.gl/">deck.gl</a>'
+
+#     def query_obj(self):
+#         return None
+
+#     def get_data(self, df):
+#         if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+#             raise Exception(_('No data was returned'))
+
+#         fd = self.form_data
+#         # Late imports to avoid circular import issues
+#         from superset.models.core import Slice
+#         from superset import db
+#         slice_ids = fd.get('deck_slices')
+#         slices = db.session.query(Slice).filter(Slice.id.in_(slice_ids)).all()
+#         return {
+#             'mapboxApiKey': config.get('MAPBOX_API_KEY'),
+#             'slices': [slc.data for slc in slices],
+#         }
+
+
+# class BaseDeckGLViz(BaseViz):
+
+#     """Base class for deck.gl visualizations"""
+
+#     is_timeseries = False
+#     credits = '<a href="https://uber.github.io/deck.gl/">deck.gl</a>'
+#     spatial_control_keys = []
+
+#     def get_metrics(self):
+#         self.metric = self.form_data.get('size')
+#         return [self.metric] if self.metric else []
+
+#     def process_spatial_query_obj(self, key, group_by):
+#         spatial = self.form_data.get(key)
+#         if spatial is None:
+#             raise ValueError(_('Bad spatial key'))
+
+#         if spatial.get('type') == 'latlong':
+#             group_by += [spatial.get('lonCol')]
+#             group_by += [spatial.get('latCol')]
+#         elif spatial.get('type') == 'delimited':
+#             group_by += [spatial.get('lonlatCol')]
+#         elif spatial.get('type') == 'geohash':
+#             group_by += [spatial.get('geohashCol')]
+
+#     def process_spatial_data_obj(self, key, df):
+#         spatial = self.form_data.get(key)
+#         if spatial is None:
+#             raise ValueError(_('Bad spatial key'))
+#         if spatial.get('type') == 'latlong':
+
+#             df[key] = list(zip(
+#                 pd.to_numeric(df[spatial.get('lonCol')], errors='coerce'),
+#                 pd.to_numeric(df[spatial.get('latCol')], errors='coerce'),
+#             ))
+#         elif spatial.get('type') == 'delimited':
+
+#             def tupleify(s):
+#                 p = Point(s)
+#                 return (p.latitude, p.longitude)
+
+#             df[key] = df[spatial.get('lonlatCol')].apply(tupleify)
+
+#             if spatial.get('reverseCheckbox'):
+#                 df[key] = [
+#                     tuple(reversed(o)) if isinstance(
+#                         o, (list, tuple)) else (0, 0)
+#                     for o in df[key]
+#                 ]
+#             del df[spatial.get('lonlatCol')]
+#         elif spatial.get('type') == 'geohash':
+#             latlong = df[spatial.get('geohashCol')].map(geohash.decode)
+#             df[key] = list(zip(latlong.apply(lambda x: x[0]),
+#                                latlong.apply(lambda x: x[1])))
+#             del df[spatial.get('geohashCol')]
+#         return df
+
+#     def query_obj(self):
+#         d = super(BaseDeckGLViz, self).query_obj()
+#         fd = self.form_data
+#         gb = []
+
+#         for key in self.spatial_control_keys:
+#             self.process_spatial_query_obj(key, gb)
+
+#         if fd.get('dimension'):
+#             gb += [fd.get('dimension')]
+
+#         if fd.get('js_columns'):
+#             gb += fd.get('js_columns')
+#         metrics = self.get_metrics()
+#         if metrics:
+#             d['groupby'] = gb
+#             d['metrics'] = self.get_metrics()
+#         else:
+#             d['columns'] = gb
+
+#         return d
+
+#     def get_js_columns(self, d):
+#         cols = self.form_data.get('js_columns') or []
+#         return {col: d.get(col) for col in cols}
+
+#     def get_data(self, df):
+
+#         if df is None:
+#             return None
+
+#         for key in self.spatial_control_keys:
+#             df = self.process_spatial_data_obj(key, df)
+
+#         features = []
+#         for d in df.to_dict(orient='records'):
+#             feature = self.get_properties(d)
+#             extra_props = self.get_js_columns(d)
+#             if extra_props:
+#                 feature['extraProps'] = extra_props
+#             features.append(feature)
+
+#         return {
+#             'features': features,
+#             'mapboxApiKey': config.get('MAPBOX_API_KEY'),
+#         }
+
+#     def get_properties(self, d):
+#         raise NotImplementedError()
+
+
+# class DeckScatterViz(BaseDeckGLViz):
+
+#     """deck.gl's ScatterLayer"""
+
+#     viz_type = 'deck_scatter'
+#     verbose_name = _('Deck.gl - Scatter plot')
+#     spatial_control_keys = ['spatial']
+#     is_timeseries = True
+
+#     def query_obj(self):
+#         fd = self.form_data
+#         self.is_timeseries = fd.get('time_grain_sqla') or fd.get('granularity')
+#         self.point_radius_fixed = (
+#             fd.get('point_radius_fixed') or {'type': 'fix', 'value': 500})
+#         return super(DeckScatterViz, self).query_obj()
+
+#     def get_metrics(self):
+#         self.metric = None
+#         if self.point_radius_fixed.get('type') == 'metric':
+#             self.metric = self.point_radius_fixed.get('value')
+#             return [self.metric]
+#         return None
+
+#     def get_properties(self, d):
+#         return {
+#             'radius': self.fixed_value if self.fixed_value else d.get(self.metric),
+#             'cat_color': d.get(self.dim) if self.dim else None,
+#             'position': d.get('spatial'),
+#             '__timestamp': d.get(DTTM_ALIAS) or d.get('__time'),
+#         }
+
+#     def get_data(self, df):
+#         if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+#             raise Exception(_('No data was returned'))
 
-        fd = self.form_data
-        self.point_radius_fixed = fd.get('point_radius_fixed')
-        self.fixed_value = None
-        self.dim = self.form_data.get('dimension')
-        if self.point_radius_fixed.get('type') != 'metric':
-            self.fixed_value = self.point_radius_fixed.get('value')
-        return super(DeckScatterViz, self).get_data(df)
-
-
-class DeckScreengrid(BaseDeckGLViz):
-
-    """deck.gl's ScreenGridLayer"""
-
-    viz_type = 'deck_screengrid'
-    verbose_name = _('Deck.gl - Screen Grid')
-    spatial_control_keys = ['spatial']
+#         fd = self.form_data
+#         self.point_radius_fixed = fd.get('point_radius_fixed')
+#         self.fixed_value = None
+#         self.dim = self.form_data.get('dimension')
+#         if self.point_radius_fixed.get('type') != 'metric':
+#             self.fixed_value = self.point_radius_fixed.get('value')
+#         return super(DeckScatterViz, self).get_data(df)
+
+
+# class DeckScreengrid(BaseDeckGLViz):
+
+#     """deck.gl's ScreenGridLayer"""
+
+#     viz_type = 'deck_screengrid'
+#     verbose_name = _('Deck.gl - Screen Grid')
+#     spatial_control_keys = ['spatial']
 
-    def get_properties(self, d):
-        return {
-            'position': d.get('spatial'),
-            'weight': d.get(self.metric) or 1,
-        }
+#     def get_properties(self, d):
+#         return {
+#             'position': d.get('spatial'),
+#             'weight': d.get(self.metric) or 1,
+#         }
 
 
-class DeckGrid(BaseDeckGLViz):
+# class DeckGrid(BaseDeckGLViz):
 
-    """deck.gl's DeckLayer"""
+#     """deck.gl's DeckLayer"""
 
-    viz_type = 'deck_grid'
-    verbose_name = _('Deck.gl - 3D Grid')
-    spatial_control_keys = ['spatial']
+#     viz_type = 'deck_grid'
+#     verbose_name = _('Deck.gl - 3D Grid')
+#     spatial_control_keys = ['spatial']
 
-    def get_properties(self, d):
-        return {
-            'position': d.get('spatial'),
-            'weight': d.get(self.metric) or 1,
-        }
+#     def get_properties(self, d):
+#         return {
+#             'position': d.get('spatial'),
+#             'weight': d.get(self.metric) or 1,
+#         }
 
 
-class DeckPathViz(BaseDeckGLViz):
+# class DeckPathViz(BaseDeckGLViz):
 
-    """deck.gl's PathLayer"""
+#     """deck.gl's PathLayer"""
 
-    viz_type = 'deck_path'
-    verbose_name = _('Deck.gl - Paths')
-    deck_viz_key = 'path'
-    deser_map = {
-        'json': json.loads,
-        'polyline': polyline.decode,
-    }
+#     viz_type = 'deck_path'
+#     verbose_name = _('Deck.gl - Paths')
+#     deck_viz_key = 'path'
+#     deser_map = {
+#         'json': json.loads,
+#         'polyline': polyline.decode,
+#     }
 
-    def query_obj(self):
-        d = super(DeckPathViz, self).query_obj()
-        line_col = self.form_data.get('line_column')
-        if d['metrics']:
-            d['groupby'].append(line_col)
-        else:
-            d['columns'].append(line_col)
-        return d
+#     def query_obj(self):
+#         d = super(DeckPathViz, self).query_obj()
+#         line_col = self.form_data.get('line_column')
+#         if d['metrics']:
+#             d['groupby'].append(line_col)
+#         else:
+#             d['columns'].append(line_col)
+#         return d
 
-    def get_properties(self, d):
-        fd = self.form_data
-        deser = self.deser_map[fd.get('line_type')]
-        path = deser(d[fd.get('line_column')])
-        if fd.get('reverse_long_lat'):
-            path = (path[1], path[0])
-        return {
-            self.deck_viz_key: path,
-        }
+#     def get_properties(self, d):
+#         fd = self.form_data
+#         deser = self.deser_map[fd.get('line_type')]
+#         path = deser(d[fd.get('line_column')])
+#         if fd.get('reverse_long_lat'):
+#             path = (path[1], path[0])
+#         return {
+#             self.deck_viz_key: path,
+#         }
 
 
-class DeckPolygon(DeckPathViz):
+# class DeckPolygon(DeckPathViz):
 
-    """deck.gl's Polygon Layer"""
+#     """deck.gl's Polygon Layer"""
 
-    viz_type = 'deck_polygon'
-    deck_viz_key = 'polygon'
-    verbose_name = _('Deck.gl - Polygon')
+#     viz_type = 'deck_polygon'
+#     deck_viz_key = 'polygon'
+#     verbose_name = _('Deck.gl - Polygon')
 
 
-class DeckHex(BaseDeckGLViz):
+# class DeckHex(BaseDeckGLViz):
 
-    """deck.gl's DeckLayer"""
+#     """deck.gl's DeckLayer"""
 
-    viz_type = 'deck_hex'
-    verbose_name = _('Deck.gl - 3D HEX')
-    spatial_control_keys = ['spatial']
+#     viz_type = 'deck_hex'
+#     verbose_name = _('Deck.gl - 3D HEX')
+#     spatial_control_keys = ['spatial']
 
-    def get_properties(self, d):
-        return {
-            'position': d.get('spatial'),
-            'weight': d.get(self.metric) or 1,
-        }
+#     def get_properties(self, d):
+#         return {
+#             'position': d.get('spatial'),
+#             'weight': d.get(self.metric) or 1,
+#         }
 
 
-class DeckGeoJson(BaseDeckGLViz):
+# class DeckGeoJson(BaseDeckGLViz):
 
-    """deck.gl's GeoJSONLayer"""
+#     """deck.gl's GeoJSONLayer"""
 
-    viz_type = 'deck_geojson'
-    verbose_name = _('Deck.gl - GeoJSON')
+#     viz_type = 'deck_geojson'
+#     verbose_name = _('Deck.gl - GeoJSON')
 
-    def query_obj(self):
-        d = super(DeckGeoJson, self).query_obj()
-        d['columns'] += [self.form_data.get('geojson')]
-        d['metrics'] = []
-        d['groupby'] = []
-        return d
+#     def query_obj(self):
+#         d = super(DeckGeoJson, self).query_obj()
+#         d['columns'] += [self.form_data.get('geojson')]
+#         d['metrics'] = []
+#         d['groupby'] = []
+#         return d
 
-    def get_properties(self, d):
-        geojson = d.get(self.form_data.get('geojson'))
-        return json.loads(geojson)
+#     def get_properties(self, d):
+#         geojson = d.get(self.form_data.get('geojson'))
+#         return json.loads(geojson)
 
 
-class DeckArc(BaseDeckGLViz):
+# class DeckArc(BaseDeckGLViz):
 
-    """deck.gl's Arc Layer"""
+#     """deck.gl's Arc Layer"""
 
-    viz_type = 'deck_arc'
-    verbose_name = _('Deck.gl - Arc')
-    spatial_control_keys = ['start_spatial', 'end_spatial']
+#     viz_type = 'deck_arc'
+#     verbose_name = _('Deck.gl - Arc')
+#     spatial_control_keys = ['start_spatial', 'end_spatial']
 
-    def get_properties(self, d):
-        return {
-            'sourcePosition': d.get('start_spatial'),
-            'targetPosition': d.get('end_spatial'),
-        }
+#     def get_properties(self, d):
+#         return {
+#             'sourcePosition': d.get('start_spatial'),
+#             'targetPosition': d.get('end_spatial'),
+#         }
 
-    def get_data(self, df):
-        if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-            raise Exception(_('No data was returned'))
+#     def get_data(self, df):
+#         if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+#             raise Exception(_('No data was returned'))
 
-        d = super(DeckArc, self).get_data(df)
-        arcs = d['features']
+#         d = super(DeckArc, self).get_data(df)
+#         arcs = d['features']
 
-        return {
-            'arcs': arcs,
-            'mapboxApiKey': config.get('MAPBOX_API_KEY'),
-        }
+#         return {
+#             'arcs': arcs,
+#             'mapboxApiKey': config.get('MAPBOX_API_KEY'),
+#         }
 
 
 class EventFlowViz(BaseViz):
