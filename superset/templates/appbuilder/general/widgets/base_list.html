@@ -25,7 +25,7 @@ can_show = "can_show" | is_item_visible(modelview_name) %} {% set can_edit = "ca
         if( $('tbody').find('.action_check:checked').length == 0){
             $('.action_check_all').prop('checked', false);
         }
-        if($('tbody').find('.action_check:checked').length == $('tbody').find('tr').length) {
+        if($('tbody').find('.action_check:checked').length == $('.action_check_all').parents('table').find('tbody').find('tr').length) {
             $('.action_check_all').prop('checked', true);
         }
     });
