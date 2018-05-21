@@ -195,18 +195,8 @@ class MySecurityManager(SecurityManager):
         user.password = generate_password_django(password)
         self.update_user(user)
 
-    # def encode(self, password, salt=''):
-    #     try:
-    #         r = requests.get(
-    #             'http://127.0.0.1:7070/djnagopwd?attempted={}&salt={}'.format(password, salt))
-    #         return r.text
-    #     except Exception as e:
-    #         logger.error(LOGMSG_ERR_SEC_ADD_USER.format(str(e)))
-    #         return False
-
     def verify(self, password, encoded):
         algorithm, iterations, salt, hash = encoded.split('$', 3)
-        # assert algorithm == self.algorithm
         encoded_2 = generate_password_django(password, salt)
         return constant_time_compare(encoded, encoded_2)
 
