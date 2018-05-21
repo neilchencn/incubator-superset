@@ -193,11 +193,15 @@ class SliceFilter(SupersetFilter):
     def apply(self, query, func):  # noqa
         if self.has_all_datasource_access():
             return query
-        # Slice = models.Slice
+        Slice = models.Slice
         perms = self.get_view_menus('datasource_access')
         query = query.filter(self.model.perm.in_(perms))
-        # if not self.has_role(['Admin', 'Alpha']):
-        #     query = query.filter(Slice.created_by_fk.in_([g.user.id, 5]))
+        session = sm.get_session
+        sampleID = session.query(sm.user_model).filter_by(
+            username='sample').first().get_id()
+        if not self.has_role(['Admin', 'Alpha']):
+            query = query.filter(
+                Slice.created_by_fk.in_([g.user.id, sampleID]))
         return query
 
 
@@ -225,8 +229,11 @@ class DashboardFilter(SupersetFilter):
                 .filter(Slice.id.in_(slice_ids_qry)),
             ),
         )
-        # if not self.has_role(['Admin', 'Alpha']):
-        #     query = query.filter(Dash.created_by_fk.in_([g.user.id, 5]))
+        session = sm.get_session
+        sampleID = session.query(sm.user_model).filter_by(
+            username='sample').first().get_id()
+        if not self.has_role(['Admin', 'Alpha']):
+            query = query.filter(Dash.created_by_fk.in_([g.user.id, sampleID]))
         return query
 
 
@@ -365,8 +372,8 @@ class FavView(BaseSupersetView):
 
 appbuilder.add_view(
     FavView,
-    'Favorates',
-    label=__('Favorates'),
+    'Favorites',
+    label=__('Favorites'),
     icon='fa-star')
 
 
@@ -935,7 +942,7 @@ class CompanyView(SupersetModelView, DeleteMixin):
     #     def merge_pv(view_menu, perm):
     #         """Create permission view menu only if it doesn't exist"""
     #         if view_menu and perm and (view_menu, perm) not in all_pvs:
-                # security.merge_perm(sm, view_menu, perm)
+    # security.merge_perm(sm, view_menu, perm)
 
     #     def is_company(pvm, perm):
     #         return pvm.view_menu.name in {perm} and pvm.permission.name in {
