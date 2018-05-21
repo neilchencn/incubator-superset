@@ -8,8 +8,20 @@ import { t } from '../../../locales';
 const operatorsArr = [
   { val: 'in', type: 'array', useSelect: true, multi: true },
   { val: 'not in', type: 'array', useSelect: true, multi: true },
-  { val: '==', type: 'string', useSelect: true, multi: false, havingOnly: true },
-  { val: '!=', type: 'string', useSelect: true, multi: false, havingOnly: true },
+  {
+    val: '==',
+    type: 'string',
+    useSelect: true,
+    multi: false,
+    havingOnly: true,
+  },
+  {
+    val: '!=',
+    type: 'string',
+    useSelect: true,
+    multi: false,
+    havingOnly: true,
+  },
   { val: '>=', type: 'string', havingOnly: true },
   { val: '<=', type: 'string', havingOnly: true },
   { val: '>', type: 'string', havingOnly: true },
@@ -42,7 +54,6 @@ const defaultProps = {
 };
 
 export default class Filter extends React.Component {
-
   switchFilterValue(prevOp, nextOp) {
     if (operators[prevOp].type !== operators[nextOp].type) {
       // Switch from array to string or vice versa
@@ -119,28 +130,40 @@ export default class Filter extends React.Component {
     const datasource = this.props.datasource;
     const filter = this.props.filter;
     const opsChoices = operatorsArr
-    .filter((o) => {
-      if (this.props.having) {
-        return !!o.havingOnly;
-      }
-      return (!o.datasourceTypes || o.datasourceTypes.indexOf(datasource.type) >= 0);
-    })
-    .map(o => ({ value: o.val, label: o.val }));
+      .filter((o) => {
+        if (this.props.having) {
+          return !!o.havingOnly;
+        }
+        return (
+          !o.datasourceTypes || o.datasourceTypes.indexOf(datasource.type) >= 0
+        );
+      })
+      .map(o => ({ value: o.val, label: o.val }));
     let colChoices;
     if (datasource) {
       if (this.props.having) {
-        colChoices = datasource.metrics_combo.map(c => ({ value: c[0], label: c[1] }));
+        colChoices = datasource.metrics_combo.map(c => ({
+          value: c[0],
+          label: c[1],
+        }));
       } else {
-        colChoices = datasource.filterable_cols.map(c => ({ value: c[0], label: c[1] }));
+        colChoices = datasource.filterable_cols.map(c => ({
+          value: c[0],
+          label: this.props.datasource.verbose_map[c[1]] || c[1],
+        }));
       }
     }
+    // const filterVerbose =
+    //   this.props.datasource.verbose_map[filter.col] || filter.col;
     return (
       <div>
         <Row className="space-1">
           <Col md={12}>
             <Select
               id="select-col"
-              placeholder={this.props.having ? t('Select metric') : t('Select column')}
+              placeholder={
+                this.props.having ? t('Select metric') : t('Select column')
+              }
               clearable={false}
               options={colChoices}
               value={filter.col}

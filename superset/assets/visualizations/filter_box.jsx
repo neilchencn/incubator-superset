@@ -186,11 +186,12 @@ class FilterBox extends React.Component {
       maxes[filter] = d3.max(data, function (d) {
         return d.metric;
       });
+      const filterVerbose = this.props.datasource.verbose_map[filter] || filter;
       return (
         <div key={filter} className="m-b-5">
-          {this.props.datasource.verbose_map[filter] || filter}
+          {filterVerbose}
           <OnPasteSelect
-            placeholder={t('Select [%s]', filter)}
+            placeholder={t('Select [%s]', filterVerbose)}
             key={filter}
             multi
             value={this.state.selectedValues[filter]}

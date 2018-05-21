@@ -32,6 +32,9 @@ from unidecode import unidecode
 from werkzeug.routing import BaseConverter
 from werkzeug.utils import secure_filename
 
+
+from flask_appbuilder.security.sqla import models as ab_models
+
 from superset import (
     app, appbuilder, cache, db, results_backend, security, sm, sql_lab, utils,
     viz,
@@ -85,6 +88,44 @@ if not config.get('ENABLE_JAVASCRIPT_CONTROLS'):
         'js_onclick_href',
         'js_data_mutator',
     ]
+
+
+def has_role(role_name_or_list):
+    """Whether the user has this role name"""
+    if not isinstance(role_name_or_list, list):
+        role_name_or_list = [role_name_or_list]
+    return any(
+        [r.name in role_name_or_list for r in get_user_roles()])
+
+
+def has_perm(permission_name, view_menu_name):
+    """Whether the user has this perm"""
+    return (permission_name, view_menu_name) in get_all_permissions()
+
+
+def has_all_datasource_access():
+    return (
+        has_role(['Admin', 'Alpha']) or
+        has_perm('all_datasource_access', 'all_datasource_access'))
+
+
+def get_all_permissions():
+    """Returns a set of tuples with the perm name and view menu name"""
+    perms = set()
+    for role in get_user_roles():
+        for perm_view in role.permissions:
+            t = (perm_view.permission.name, perm_view.view_menu.name)
+            perms.add(t)
+    return perms
+
+
+def get_view_menus(permission_name):
+    """Returns the details of view_menus for a perm name"""
+    vm = set()
+    for perm_name, vm_name in get_all_permissions():
+        if perm_name == permission_name:
+            vm.add(vm_name)
+    return vm
 
 
 def get_database_access_error_msg(database_name):
@@ -152,10 +193,16 @@ class SliceFilter(SupersetFilter):
     def apply(self, query, func):  # noqa
         if self.has_all_datasource_access():
             return query
+        Slice = models.Slice
         perms = self.get_view_menus('datasource_access')
-        # TODO(bogdan): add `schema_access` support here
-        print(perms)
-        return query.filter(self.model.perm.in_(perms))
+        query = query.filter(self.model.perm.in_(perms))
+        session = sm.get_session
+        sampleID = session.query(sm.user_model).filter_by(
+            username='sample').first().get_id()
+        if not self.has_role(['Admin', 'Alpha']):
+            query = query.filter(
+                Slice.created_by_fk.in_([g.user.id, sampleID]))
+        return query
 
 
 class DashboardFilter(SupersetFilter):
@@ -182,6 +229,11 @@ class DashboardFilter(SupersetFilter):
                 .filter(Slice.id.in_(slice_ids_qry)),
             ),
         )
+        session = sm.get_session
+        sampleID = session.query(sm.user_model).filter_by(
+            username='sample').first().get_id()
+        if not self.has_role(['Admin', 'Alpha']):
+            query = query.filter(Dash.created_by_fk.in_([g.user.id, sampleID]))
         return query
 
 
@@ -299,14 +351,33 @@ class DatabaseView(SupersetModelView, DeleteMixin, YamlExportMixin):  # noqa
         DeleteMixin._delete(self, pk)
 
 
-appbuilder.add_link(
-    'Import Dashboards',
-    label=__('Import Dashboards'),
-    href='/superset/import_dashboards',
-    icon='fa-cloud-upload',
-    category='Manage',
-    category_label=__('Manage'),
-    category_icon='fa-wrench')
+# appbuilder.add_link(
+#     'Import Dashboards',
+#     label=__('Import Dashboards'),
+#     href='/superset/import_dashboards',
+#     icon='fa-cloud-upload',
+#     category='Manage',
+#     category_label=__('Manage'),
+#     category_icon='fa-wrench')
+
+class FavView(BaseSupersetView):
+    default_view = 'fav'
+
+    @expose('/fav/')
+    @has_access
+    def fav(self):
+        return redirect(
+            '/superset/profile/{}/'.format(g.user.username))
+
+
+appbuilder.add_view(
+    FavView,
+    'Favorites',
+    label=__('Favorites'),
+    icon='fa-star')
+
+
+# appbuilder.add_view_no_menu(Favorates)
 
 
 # appbuilder.add_view(
@@ -490,11 +561,19 @@ class SliceModelView(SupersetModelView, DeleteMixin):  # noqa
         #     for d in datasources
         # ]
         _temp = []
+        perms = []
+        if not has_all_datasource_access():
+            perms = get_view_menus('datasource_access')
 
         for d in datasources:
             if d.type == 'druid':
-                _temp.append({'value': str(d.id) + '__' +
-                              d.type, 'label': repr(d)})
+                if len(perms) > 0:
+                    if d.perm in perms:
+                        _temp.append({'value': str(d.id) + '__' +
+                                      d.type, 'label': repr(d)})
+                else:
+                    _temp.append({'value': str(d.id) + '__' +
+                                  d.type, 'label': repr(d)})
 
         return self.render_template(
             'superset/add_slice.html',
@@ -847,6 +926,46 @@ class CompanyView(SupersetModelView, DeleteMixin):
 
     # def pre_delete(self, obj):
     #     check_ownership(obj)
+    # @has_access
+    # @expose('/refresh_company_perms/')
+    # def refresh_datasources(self, refreshAll=True):
+    #     """endpoint that refreshes datasources metadata"""
+    #     """Creates missing perms for datasources, schemas and metrics"""
+
+    #     logging.info(
+    #         'Fetching a set of all perms to lookup which ones are missing')
+    #     all_pvs = set()
+    #     for pv in sm.get_session.query(sm.permissionview_model).all():
+    #         if pv.permission and pv.view_menu:
+    #             all_pvs.add((pv.permission.name, pv.view_menu.name))
+
+    #     def merge_pv(view_menu, perm):
+    #         """Create permission view menu only if it doesn't exist"""
+    #         if view_menu and perm and (view_menu, perm) not in all_pvs:
+    # security.merge_perm(sm, view_menu, perm)
+
+    #     def is_company(pvm, perm):
+    #         return pvm.view_menu.name in {perm} and pvm.permission.name in {
+    #             'company_access',
+    #         }
+    #     logging.info('Create missing company perm')
+    #     companies = db.session.query(dicts.Company).all()
+    #     sesh = sm.get_session()
+
+    #     for c in companies:
+    #         merge_pv('company_access', '{}'.format(c.field_name))
+    #         role_name = 'CMC[{}]'.format(c.field_name)
+
+    #         if not sm.find_role(role_name):
+    #             pvms = sesh.query(ab_models.PermissionView).all()
+    #             pvms = [p for p in pvms if p.permission and p.view_menu]
+    #             c_role = sm.add_role(role_name)
+    #             c_role_pvms = [p for p in pvms if is_company(
+    #                 p, c.field_name)]
+    #             c_role.permissions = c_role_pvms
+    #             sesh.merge(c_role)
+    #             sesh.commit()
+    #     return redirect('/companyview/list/')
 
 
 appbuilder.add_view(
@@ -855,6 +974,7 @@ appbuilder.add_view(
     category="Sources",
     label=__('iRT Data Fields Dictionary'),
     category_label=__('Sources'),
+    category_icon='fa-cubes',
     icon='fa-list-alt')
 
 appbuilder.add_view(
@@ -863,6 +983,7 @@ appbuilder.add_view(
     category="Sources",
     label=__('GreenT Data Fields Dictionary'),
     category_label=__('Sources'),
+    category_icon='fa-cubes',
     icon='fa-list-alt')
 
 appbuilder.add_view(
@@ -871,6 +992,7 @@ appbuilder.add_view(
     category="Sources",
     label=__('DSED Data Fields Dictionary'),
     category_label=__('Sources'),
+    category_icon='fa-cubes',
     icon='fa-list-alt')
 
 appbuilder.add_view(
@@ -879,15 +1001,27 @@ appbuilder.add_view(
     category="Sources",
     label=__('DSE Data Fields Dictionary'),
     category_label=__('Sources'),
+    category_icon='fa-cubes',
     icon='fa-list-alt')
 
-appbuilder.add_view(
-    CompanyView,
-    'Company',
-    category="Sources",
-    label=__('Company'),
-    category_label=__('Sources'),
-    icon='fa-list-alt')
+# appbuilder.add_separator('Sources')
+# appbuilder.add_view(
+#     CompanyView,
+#     'Company',
+#     category="Sources",
+#     label=__('Company'),
+#     category_label=__('Sources'),
+#     category_icon='fa-cubes',
+#     icon='fa-list-alt')
+
+# appbuilder.add_link(
+#     'Refresh Company Permission',
+#     label=__('Refresh Company Permission'),
+#     href='/companyview/refresh_company_perms/',
+#     category='Sources',
+#     category_label=__('Sources'),
+#     category_icon='fa-cubes',
+#     icon='fa-cog')
 
 
 @app.route('/health')
@@ -987,10 +1121,18 @@ class Superset(BaseSupersetView):
         datasources = ConnectorRegistry.get_all_datasources(db.session)
         # datasources = [o.short_data for o in datasources]
         _temp = []
+        perms = []
+        if not has_all_datasource_access():
+            perms = get_view_menus('datasource_access')
 
         for o in datasources:
             if o.type == 'druid':
-                _temp.append(o.short_data)
+                if len(perms) > 0:
+                    if o.perm in perms:
+                        _temp.append(o.short_data)
+                else:
+                    _temp.append(o.short_data)
+
         datasources = sorted(_temp, key=lambda o: o['name'])
         return self.json_response(datasources)
 
@@ -2929,7 +3071,7 @@ appbuilder.add_view(
     icon='fa-css3',
     category='Manage',
     category_label=__('Manage'),
-    category_icon='')
+    category_icon='fa-wrench')
 
 
 appbuilder.add_view_no_menu(CssTemplateAsyncModelView)

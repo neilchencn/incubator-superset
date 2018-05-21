@@ -29,7 +29,8 @@ class AnnotationModelView(SupersetModelView, DeleteMixin):  # noqa
         elif not obj.end_dttm:
             obj.end_dttm = obj.start_dttm
         elif obj.end_dttm < obj.start_dttm:
-            raise Exception('Annotation end time must be no earlier than start time.')
+            raise Exception(
+                'Annotation end time must be no earlier than start time.')
 
     def pre_update(self, obj):
         self.pre_add(obj)
@@ -49,7 +50,7 @@ appbuilder.add_view(
     icon='fa-comment',
     category='Manage',
     category_label=__('Manage'),
-    category_icon='')
+    category_icon='fa-wrench')
 appbuilder.add_view(
     AnnotationModelView,
     'Annotations',
@@ -57,4 +58,4 @@ appbuilder.add_view(
     icon='fa-comments',
     category='Manage',
     category_label=__('Manage'),
-    category_icon='')
+    category_icon='fa-wrench')

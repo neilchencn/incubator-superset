@@ -1,25 +1,26 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
-from datetime import datetime
 import functools
 import json
 import logging
+import re
 import traceback
+from datetime import datetime
 
-from flask import abort, flash, g, get_flashed_messages, redirect, Response
+import yaml
+from flask import (Response, abort, flash, g, get_flashed_messages, redirect,
+                   request)
 from flask_appbuilder import BaseView, ModelView
 from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.filters import BaseFilter
+from flask_appbuilder.urltools import (get_filter_args, get_order_args,
+                                       get_page_args, get_page_size_args)
 from flask_appbuilder.widgets import ListWidget
-from flask_babel import get_locale
 from flask_babel import gettext as __
 from flask_babel import lazy_gettext as _
-import yaml
-
+from flask_babel import get_locale
 from superset import appbuilder, conf, db, sm, sql_parse, utils
 from superset.connectors.connector_registry import ConnectorRegistry
 from superset.connectors.sqla.models import SqlaTable
@@ -66,6 +67,7 @@ def api(f):
     A decorator to label an endpoint as an API. Catches uncaught exceptions and
     return the response in the JSON format
     """
+
     def wraps(self, *args, **kwargs):
         try:
             return f(self, *args, **kwargs)

@@ -68,12 +68,12 @@ class ImportMixin(object):
 
         schema = {c.name: formatter(c) for c in cls.__table__.columns
                   if (c.name in cls.export_fields and
-                  c.name not in parent_excludes)}
+                      c.name not in parent_excludes)}
         if recursive:
             for c in cls.export_children:
                 child_class = cls.__mapper__.relationships[c].argument.class_
                 schema[c] = [child_class.export_schema(recursive=recursive,
-                             include_parent_ref=include_parent_ref)]
+                                                       include_parent_ref=include_parent_ref)]
         return schema
 
     @classmethod
@@ -110,7 +110,7 @@ class ImportMixin(object):
 
         # Add filter for unique constraints
         ucs = [and_(*[getattr(cls, k) == dict_rep.get(k)
-               for k in cs if dict_rep.get(k) is not None])
+                      for k in cs if dict_rep.get(k) is not None])
                for cs in unique_constrains]
         filters.append(or_(*ucs))
 
@@ -250,8 +250,10 @@ class AuditMixinNullable(AuditMixin):
     def _user_link(self, user):
         if not user:
             return ''
-        url = '/superset/profile/{}/'.format(user.username)
-        return Markup('<a href="{}">{}</a>'.format(url, escape(user) or ''))
+        else:
+            return user.username
+        # url = '/superset/profile/{}/'.format(user.username)
+        # return Markup('<a href="{}">{}</a>'.format(url, escape(user) or ''))
 
     def changed_by_name(self):
         if self.created_by:
