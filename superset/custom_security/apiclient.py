@@ -73,9 +73,9 @@ class APIClient(AbsAPIClient):
 # }
 
 # for local test, client host bind 58.213.22.146:8889, neil's dev machine
-# SSO_API_AUTH_SETTING = {
-#     "apikey": "a9d8bfee",
-#     "seckey": "a2d4e2422ef6412fbe540941d8726bfb",
-#     "url": "http://cmcqa.futuredial.com",
-# }
+SSO_API_AUTH_SETTING = {
+    "apikey": "a9d8bfee",
+    "seckey": "a2d4e2422ef6412fbe540941d8726bfb",
+    "url": "http://cmcqa.futuredial.com",
+}
 client = APIClient(**SSO_API_AUTH_SETTING)

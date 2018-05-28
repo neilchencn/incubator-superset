@@ -20,13 +20,30 @@ can_show = "can_show" | is_item_visible(modelview_name) %} {% set can_edit = "ca
 </div>
 <script language="javascript">
     var modelActions = new AdminActions();
+    var checkAllFlag = false;
+    var row_checked_class = 'success';
+
+    $('.action_check_all').click(function(e) {
+        console.info('check all:',checkAllFlag);
+        checkAllFlag = !checkAllFlag;
+        $('.action_check').prop('checked', checkAllFlag).trigger("change");
+        
+        
+    });
     
-    $('.action_check').change(function() {
-        if( $('tbody').find('.action_check:checked').length == 0){
-            $('.action_check_all').prop('checked', false);
-        }
+    $('.action_check').change(function(e) {
+        var thisClosest = $(this).closest('tr'),
+        checked = this.checked;
+        $(this).closest('tr').add(thisClosest )[checked ? 'addClass' : 'removeClass'](row_checked_class);
+    });
+
+    $('.action_check').click(function(e) {
         if($('tbody').find('.action_check:checked').length == $('.action_check_all').parents('table').find('tbody').find('tr').length) {
             $('.action_check_all').prop('checked', true);
+            checkAllFlag = true;
+        } else {
+            $('.action_check_all').prop('checked', false);
+            checkAllFlag = false;
         }
     });
 </script> {% else %}

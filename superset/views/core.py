@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=C,R,W
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
-import json
 import logging
 import os
 import re
@@ -19,13 +19,14 @@ from flask import (
 from flask_appbuilder import expose, SimpleFormView, BaseView
 from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.interface import SQLAInterface
-from flask_appbuilder.security.decorators import has_access_api
+from flask_appbuilder.security.decorators import has_access, has_access_api
 from flask_babel import gettext as __
 from flask_babel import lazy_gettext as _
 import pandas as pd
+import simplejson as json
 from six import text_type
 import sqlalchemy as sqla
-from sqlalchemy import create_engine
+from sqlalchemy import and_, create_engine, update
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.exc import IntegrityError
 from unidecode import unidecode
@@ -36,13 +37,14 @@ from werkzeug.utils import secure_filename
 from flask_appbuilder.security.sqla import models as ab_models
 
 from superset import (
-    app, appbuilder, cache, db, results_backend, security, sm, sql_lab, utils,
+    app, appbuilder, cache, db, results_backend, security_manager, sql_lab, utils,
     viz,
 )
 from superset.connectors.connector_registry import ConnectorRegistry
 from superset.connectors.sqla.models import AnnotationDatasource, SqlaTable
 from superset.exceptions import SupersetException, SupersetSecurityException
 from superset.forms import CsvToDatabaseForm
+from superset.jinja_context import get_template_processor
 from superset.legacy import cast_form_data
 import superset.models.core as models
 import superset.models.dictionary as dicts
@@ -50,7 +52,7 @@ from superset.models.sql_lab import Query
 
 from superset.sql_parse import SupersetQuery
 from superset.utils import (
-    has_access, merge_extra_filters, merge_request_params, QueryStatus,
+    merge_extra_filters, merge_request_params, QueryStatus,
 )
 from .base import (
     api, BaseSupersetView, CsvResponse, DeleteMixin,
@@ -62,7 +64,6 @@ from .utils import bootstrap_user_data
 config = app.config
 stats_logger = config.get('STATS_LOGGER')
 log_this = models.Log.log_this
-can_access = utils.can_access
 DAR = models.DatasourceAccessRequest
 
 
@@ -196,8 +197,8 @@ class SliceFilter(SupersetFilter):
         Slice = models.Slice
         perms = self.get_view_menus('datasource_access')
         query = query.filter(self.model.perm.in_(perms))
-        session = sm.get_session
-        sampleID = session.query(sm.user_model).filter_by(
+        session = security_manager.get_session
+        sampleID = session.query(security_manager.user_model).filter_by(
             username='sample').first().get_id()
         if not self.has_role(['Admin', 'Alpha']):
             query = query.filter(
@@ -229,8 +230,8 @@ class DashboardFilter(SupersetFilter):
                 .filter(Slice.id.in_(slice_ids_qry)),
             ),
         )
-        session = sm.get_session
-        sampleID = session.query(sm.user_model).filter_by(
+        session = security_manager.get_session
+        sampleID = session.query(security_manager.user_model).filter_by(
             username='sample').first().get_id()
         if not self.has_role(['Admin', 'Alpha']):
             query = query.filter(Dash.created_by_fk.in_([g.user.id, sampleID]))
@@ -339,10 +340,10 @@ class DatabaseView(SupersetModelView, DeleteMixin, YamlExportMixin):  # noqa
 
     def pre_add(self, db):
         db.set_sqlalchemy_uri(db.sqlalchemy_uri)
-        security.merge_perm(sm, 'database_access', db.perm)
+        security_manager.merge_perm('database_access', db.perm)
         for schema in db.all_schema_names():
-            security.merge_perm(
-                sm, 'schema_access', utils.get_schema_perm(db, schema))
+            security_manager.merge_perm(
+                'schema_access', security_manager.get_schema_perm(db, schema))
 
     def pre_update(self, db):
         self.pre_add(db)
@@ -422,15 +423,17 @@ class CsvToDatabaseView(SimpleFormView):
         form.csv_file.data.filename = secure_filename(
             form.csv_file.data.filename)
         csv_filename = form.csv_file.data.filename
+        path = os.path.join(config['UPLOAD_FOLDER'], csv_filename)
         try:
-            csv_file.save(os.path.join(config['UPLOAD_FOLDER'], csv_filename))
+            utils.ensure_path_exists(config['UPLOAD_FOLDER'])
+            csv_file.save(path)
             table = SqlaTable(table_name=form.name.data)
             table.database = form.data.get('con')
             table.database_id = table.database.id
             table.database.db_engine_spec.create_table_from_csv(form, table)
         except Exception as e:
             try:
-                os.remove(os.path.join(config['UPLOAD_FOLDER'], csv_filename))
+                os.remove(path)
             except OSError:
                 pass
 
@@ -442,7 +445,7 @@ class CsvToDatabaseView(SimpleFormView):
                 'danger')
             return redirect('/csvtodatabaseview/form')
 
-        os.remove(os.path.join(config['UPLOAD_FOLDER'], csv_filename))
+        os.remove(path)
         # Go back to welcome page / splash screen
         db_name = table.database.database_name
         message = _('CSV file "{0}" uploaded to table "{1}" in '
@@ -1093,8 +1096,10 @@ class R(BaseSupersetView):
         obj = models.Url(url=url)
         db.session.add(obj)
         db.session.commit()
-        return('http://{request.headers[Host]}/{directory}?r={obj.id}'.format(
-            request=request, directory=directory, obj=obj))
+        return Response(
+            '{scheme}://{request.headers[Host]}/{directory}?r={obj.id}'.format(
+                scheme=request.scheme, request=request, directory=directory, obj=obj),
+            mimetype='text/plain')
 
     @expose('/msg/')
     def msg(self):
@@ -1171,13 +1176,13 @@ class Superset(BaseSupersetView):
             db.session)
         datasources = [
             d for d in existing_datasources if d.full_name in db_ds_names]
-        role = sm.find_role(role_name)
+        role = security_manager.find_role(role_name)
         # remove all permissions
         role.permissions = []
         # grant permissions to the list of datasources
         granted_perms = []
         for datasource in datasources:
-            view_menu_perm = sm.find_permission_view_menu(
+            view_menu_perm = security_manager.find_permission_view_menu(
                 view_menu_name=datasource.perm,
                 permission_name='datasource_access')
             # prevent creating empty permissions
@@ -1216,7 +1221,7 @@ class Superset(BaseSupersetView):
 
         has_access = all(
             (
-                datasource and self.datasource_access(datasource)
+                datasource and security_manager.datasource_access(datasource)
                 for datasource in datasources
             ))
         if has_access:
@@ -1246,9 +1251,9 @@ class Superset(BaseSupersetView):
             for r in session.query(DAR).all():
                 datasource = ConnectorRegistry.get_datasource(
                     r.datasource_type, r.datasource_id, session)
-                user = sm.get_user_by_id(r.created_by_fk)
+                user = security_manager.get_user_by_id(r.created_by_fk)
                 if not datasource or \
-                   self.datasource_access(datasource, user):
+                   security_manager.datasource_access(datasource, user):
                     # datasource does not exist anymore
                     session.delete(r)
             session.commit()
@@ -1266,7 +1271,7 @@ class Superset(BaseSupersetView):
             flash(DATASOURCE_MISSING_ERR, 'alert')
             return json_error_response(DATASOURCE_MISSING_ERR)
 
-        requested_by = sm.find_user(username=created_by_username)
+        requested_by = security_manager.find_user(username=created_by_username)
         if not requested_by:
             flash(USER_MISSING_ERR, 'alert')
             return json_error_response(USER_MISSING_ERR)
@@ -1285,10 +1290,10 @@ class Superset(BaseSupersetView):
             return json_error_response(ACCESS_REQUEST_MISSING_ERR)
 
         # check if you can approve
-        if self.all_datasource_access() or g.user.id == datasource.owner_id:
+        if security_manager.all_datasource_access() or g.user.id == datasource.owner_id:
             # can by done by admin only
             if role_to_grant:
-                role = sm.find_role(role_to_grant)
+                role = security_manager.find_role(role_to_grant)
                 requested_by.roles.append(role)
                 msg = __(
                     '%(user)s was granted the role %(role)s that gives access '
@@ -1302,10 +1307,10 @@ class Superset(BaseSupersetView):
                 flash(msg, 'info')
 
             if role_to_extend:
-                perm_view = sm.find_permission_view_menu(
+                perm_view = security_manager.find_permission_view_menu(
                     'email/datasource_access', datasource.perm)
-                role = sm.find_role(role_to_extend)
-                sm.add_permission_role(role, perm_view)
+                role = security_manager.find_role(role_to_extend)
+                security_manager.add_permission_role(role, perm_view)
                 msg = __('Role %(r)s was extended to provide the access to '
                          'the datasource %(ds)s', r=role_to_extend,
                          ds=datasource.full_name)
@@ -1448,7 +1453,7 @@ class Superset(BaseSupersetView):
                 utils.error_msg_from_exception(e),
                 stacktrace=traceback.format_exc())
 
-        if not self.datasource_access(viz_obj.datasource):
+        if not security_manager.datasource_access(viz_obj.datasource, g.user):
             return json_error_response(DATASOURCE_ACCESS_ERR, status=404)
 
         if csv:
@@ -1609,7 +1614,7 @@ class Superset(BaseSupersetView):
             flash(DATASOURCE_MISSING_ERR, 'danger')
             return redirect(error_redirect)
 
-        if not self.datasource_access(datasource):
+        if not security_manager.datasource_access(datasource):
             flash(
                 __(get_datasource_access_error_msg(datasource.name)),
                 'danger')
@@ -1624,9 +1629,11 @@ class Superset(BaseSupersetView):
             return redirect(datasource.default_endpoint)
 
         # slc perms
-        slice_add_perm = self.can_access('can_add', 'SliceModelView')
+        slice_add_perm = security_manager.can_access(
+            'can_add', 'SliceModelView')
         slice_overwrite_perm = is_owner(slc, g.user)
-        slice_download_perm = self.can_access('can_download', 'SliceModelView')
+        slice_download_perm = security_manager.can_access(
+            'can_download', 'SliceModelView')
 
         form_data['datasource'] = str(datasource_id) + '__' + datasource_type
 
@@ -1708,7 +1715,7 @@ class Superset(BaseSupersetView):
             datasource_type, datasource_id, db.session)
         if not datasource:
             return json_error_response(DATASOURCE_MISSING_ERR)
-        if not self.datasource_access(datasource):
+        if not security_manager.datasource_access(datasource):
             return json_error_response(DATASOURCE_ACCESS_ERR)
 
         payload = json.dumps(
@@ -1768,7 +1775,8 @@ class Superset(BaseSupersetView):
                 'info')
         elif request.args.get('add_to_dash') == 'new':
             # check create dashboard permissions
-            dash_add_perm = self.can_access('can_add', 'DashboardModelView')
+            dash_add_perm = security_manager.can_access(
+                'can_add', 'DashboardModelView')
             if not dash_add_perm:
                 return json_error_response(
                     _('You don\'t have the rights to ') +
@@ -1840,24 +1848,6 @@ class Superset(BaseSupersetView):
 
     @api
     @has_access_api
-    @expose('/activity_per_day')
-    def activity_per_day(self):
-        """endpoint to power the calendar heatmap on the welcome page"""
-        Log = models.Log  # noqa
-        qry = (
-            db.session
-            .query(
-                Log.dt,
-                sqla.func.count())
-            .group_by(Log.dt)
-            .all()
-        )
-        payload = {str(time.mktime(dt.timetuple())):
-                   ccount for dt, ccount in qry if dt}
-        return json_success(json.dumps(payload))
-
-    @api
-    @has_access_api
     @expose('/schemas/<db_id>/')
     def schemas(self, db_id):
         db_id = int(db_id)
@@ -1868,7 +1858,8 @@ class Superset(BaseSupersetView):
             .one()
         )
         schemas = database.all_schema_names()
-        schemas = self.schemas_accessible_by_user(database, schemas)
+        schemas = security_manager.schemas_accessible_by_user(
+            database, schemas)
         return Response(
             json.dumps({'schemas': schemas}),
             mimetype='application/json')
@@ -1882,9 +1873,9 @@ class Superset(BaseSupersetView):
         schema = utils.js_string_to_python(schema)
         substr = utils.js_string_to_python(substr)
         database = db.session.query(models.Database).filter_by(id=db_id).one()
-        table_names = self.accessible_by_user(
+        table_names = security_manager.accessible_by_user(
             database, database.all_table_names(schema), schema)
-        view_names = self.accessible_by_user(
+        view_names = security_manager.accessible_by_user(
             database, database.all_view_names(schema), schema)
 
         if substr:
@@ -2130,7 +2121,7 @@ class Superset(BaseSupersetView):
     @expose('/fave_dashboards_by_username/<username>/', methods=['GET'])
     def fave_dashboards_by_username(self, username):
         """This lets us use a user's username to pull favourite dashboards"""
-        user = sm.find_user(username=username)
+        user = security_manager.find_user(username=username)
         return self.fave_dashboards(user.get_id())
 
     @api
@@ -2410,7 +2401,7 @@ class Superset(BaseSupersetView):
 
         if config.get('ENABLE_ACCESS_REQUEST'):
             for datasource in datasources:
-                if datasource and not self.datasource_access(datasource):
+                if datasource and not security_manager.datasource_access(datasource):
                     flash(
                         __(get_datasource_access_error_msg(datasource.name)),
                         'danger')
@@ -2426,7 +2417,12 @@ class Superset(BaseSupersetView):
 
         dash_edit_perm = check_ownership(dash, raise_if_false=False)
         dash_save_perm = \
-            dash_edit_perm and self.can_access('can_save_dash', 'Superset')
+            dash_edit_perm and security_manager.can_access(
+                'can_save_dash', 'Superset')
+        superset_can_explore = security_manager.can_access(
+            'can_explore', 'Superset')
+        slice_can_edit = security_manager.can_access(
+            'can_edit', 'SliceModelView')
 
         standalone_mode = request.args.get('standalone') == 'true'
 
@@ -2435,6 +2431,8 @@ class Superset(BaseSupersetView):
             'standalone_mode': standalone_mode,
             'dash_save_perm': dash_save_perm,
             'dash_edit_perm': dash_edit_perm,
+            'superset_can_explore': superset_can_explore,
+            'slice_can_edit': slice_can_edit,
         })
 
         bootstrap_data = {
@@ -2442,6 +2440,7 @@ class Superset(BaseSupersetView):
             'dashboard_data': dashboard_data,
             'datasources': {ds.uid: ds.data for ds in datasources},
             'common': self.common_bootsrap_payload(),
+            'editMode': request.args.get('edit') == 'true',
         }
 
         if request.args.get('json') == 'true':
@@ -2477,7 +2476,7 @@ class Superset(BaseSupersetView):
                 metrics_spec: list of metrics (dictionary). Metric consists of
                     2 attributes: type and name. Type can be count,
                     etc. `count` type is stored internally as longSum
-            other fields will be ignored.
+                    other fields will be ignored.
 
             Example: {
                 'name': 'test_click',
@@ -2490,7 +2489,7 @@ class Superset(BaseSupersetView):
         user_name = payload['user']
         cluster_name = payload['cluster']
 
-        user = sm.find_user(username=user_name)
+        user = security_manager.find_user(username=user_name)
         DruidDatasource = ConnectorRegistry.sources['druid']
         DruidCluster = DruidDatasource.cluster_class
         if not user:
@@ -2528,6 +2527,8 @@ class Superset(BaseSupersetView):
         if not table:
             table = SqlaTable(table_name=table_name)
         table.database_id = data.get('dbId')
+        table.schema = data.get('schema')
+        table.is_sqllab_view = True
         q = SupersetQuery(data.get('sql'))
         table.sql = q.stripped()
         db.session.add(table)
@@ -2698,7 +2699,7 @@ class Superset(BaseSupersetView):
             )
 
         query = db.session.query(Query).filter_by(results_key=key).one()
-        rejected_tables = self.rejected_datasources(
+        rejected_tables = security_manager.rejected_datasources(
             query.sql, query.database, query.schema)
         if rejected_tables:
             return json_error_response(get_datasource_access_error_msg(
@@ -2710,7 +2711,8 @@ class Superset(BaseSupersetView):
             payload_json = json.loads(payload)
             payload_json['data'] = payload_json['data'][:display_limit]
         return json_success(
-            json.dumps(payload_json, default=utils.json_iso_dttm_ser))
+            json.dumps(
+                payload_json, default=utils.json_iso_dttm_ser, ignore_nan=True))
 
     @has_access_api
     @expose('/stop_query/', methods=['POST'])
@@ -2747,7 +2749,8 @@ class Superset(BaseSupersetView):
             json_error_response(
                 'Database with id {} is missing.'.format(database_id))
 
-        rejected_tables = self.rejected_datasources(sql, mydb, schema)
+        rejected_tables = security_manager.rejected_datasources(
+            sql, mydb, schema)
         if rejected_tables:
             return json_error_response(get_datasource_access_error_msg(
                 '{}'.format(rejected_tables)))
@@ -2783,16 +2786,27 @@ class Superset(BaseSupersetView):
             raise Exception(_('Query record was not created as expected.'))
         logging.info('Triggering query_id: {}'.format(query_id))
 
+        try:
+            template_processor = get_template_processor(
+                database=query.database, query=query)
+            rendered_query = template_processor.process_template(
+                query.sql,
+                **template_params)
+        except Exception as e:
+            return json_error_response(
+                'Template rendering failed: {}'.format(utils.error_msg_from_exception(e)))
+
         # Async request.
         if async:
             logging.info('Running query on a Celery worker')
             # Ignore the celery future object and the request may time out.
             try:
                 sql_lab.get_sql_results.delay(
-                    query_id=query_id, return_results=False,
+                    query_id,
+                    rendered_query,
+                    return_results=False,
                     store_results=not query.select_as_cta,
-                    user_name=g.user.username,
-                    template_params=template_params)
+                    user_name=g.user.username)
             except Exception as e:
                 logging.exception(e)
                 msg = (
@@ -2807,7 +2821,7 @@ class Superset(BaseSupersetView):
 
             resp = json_success(json.dumps(
                 {'query': query.to_dict()}, default=utils.json_int_dttm_ser,
-                allow_nan=False), status=202)
+                ignore_nan=True), status=202)
             session.commit()
             return resp
 
@@ -2821,10 +2835,11 @@ class Superset(BaseSupersetView):
                                error_message=timeout_msg):
                 # pylint: disable=no-value-for-parameter
                 data = sql_lab.get_sql_results(
-                    query_id=query_id, return_results=True,
-                    template_params=template_params)
+                    query_id,
+                    rendered_query,
+                    return_results=True)
             payload = json.dumps(
-                data, default=utils.pessimistic_json_iso_dttm_ser)
+                data, default=utils.pessimistic_json_iso_dttm_ser, ignore_nan=True)
         except Exception as e:
             logging.exception(e)
             return json_error_response('{}'.format(e))
@@ -2844,7 +2859,7 @@ class Superset(BaseSupersetView):
             .one()
         )
 
-        rejected_tables = self.rejected_datasources(
+        rejected_tables = security_manager.rejected_datasources(
             query.sql, query.database, query.schema)
         if rejected_tables:
             flash(get_datasource_access_error_msg(
@@ -2889,7 +2904,7 @@ class Superset(BaseSupersetView):
             return json_error_response(DATASOURCE_MISSING_ERR)
 
         # Check permission for datasource
-        if not self.datasource_access(datasource):
+        if not security_manager.datasource_access(datasource):
             return json_error_response(DATASOURCE_ACCESS_ERR)
         return json_success(json.dumps(datasource.data))
 
@@ -2918,6 +2933,35 @@ class Superset(BaseSupersetView):
             .all()
         )
         dict_queries = {q.client_id: q.to_dict() for q in sql_queries}
+
+        now = int(round(time.time() * 1000))
+
+        unfinished_states = [
+            utils.QueryStatus.PENDING,
+            utils.QueryStatus.RUNNING,
+        ]
+
+        queries_to_timeout = [
+            client_id for client_id, query_dict in dict_queries.items()
+            if (
+                query_dict['state'] in unfinished_states and (
+                    now - query_dict['startDttm'] >
+                    config.get('SQLLAB_ASYNC_TIME_LIMIT_SEC') * 1000
+                )
+            )
+        ]
+
+        if queries_to_timeout:
+            update(Query).where(
+                and_(
+                    Query.user_id == g.user.get_id(),
+                    Query.client_id in queries_to_timeout,
+                ),
+            ).values(state=utils.QueryStatus.TIMED_OUT)
+
+            for client_id in queries_to_timeout:
+                dict_queries[client_id]['status'] = utils.QueryStatus.TIMED_OUT
+
         return json_success(
             json.dumps(dict_queries, default=utils.json_int_dttm_ser))
 
@@ -3041,7 +3085,7 @@ class Superset(BaseSupersetView):
         get the database query string for this slice
         """
         viz_obj = self.get_viz(slice_id)
-        if not self.datasource_access(viz_obj.datasource):
+        if not security_manager.datasource_access(viz_obj.datasource):
             return json_error_response(DATASOURCE_ACCESS_ERR, status=401)
         return self.get_query_string_response(viz_obj)
 

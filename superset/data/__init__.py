@@ -1,4 +1,5 @@
 """Loads datasets, dashboards and slices in a new superset instance"""
+# pylint: disable=C,R,W
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -18,10 +19,10 @@ import geohash
 import polyline
 from collections import OrderedDict
 from flask_appbuilder.security.sqla import models as ab_models
-from superset import app, db, utils, sm, security
+
+from superset import app, db, security_manager, utils
 from superset.connectors.connector_registry import ConnectorRegistry
 from superset.models import core as models
-from superset.security import get_or_create_main_db
 
 # Shortcuts
 DB = models.Database
@@ -73,7 +74,7 @@ def load_energy():
     if not tbl:
         tbl = TBL(table_name=tbl_name)
     tbl.description = "Energy consumption"
-    tbl.database = get_or_create_main_db()
+    tbl.database = utils.get_or_create_main_db()
     db.session.merge(tbl)
     db.session.commit()
     tbl.fetch_metadata()
@@ -181,7 +182,7 @@ def load_world_bank_health_n_pop():
         tbl = TBL(table_name=tbl_name)
     tbl.description = utils.readfile(os.path.join(DATA_FOLDER, 'countries.md'))
     tbl.main_dttm_col = 'year'
-    tbl.database = get_or_create_main_db()
+    tbl.database = utils.get_or_create_main_db()
     tbl.filter_select_enabled = True
     db.session.merge(tbl)
     db.session.commit()
@@ -191,7 +192,7 @@ def load_world_bank_health_n_pop():
         "compare_lag": "10",
         "compare_suffix": "o10Y",
         "limit": "25",
-        "granularity": "year",
+        "granularity_sqla": "year",
         "groupby": [],
         "metric": 'sum__SP_POP_TOTL',
         "metrics": ["sum__SP_POP_TOTL"],
@@ -585,7 +586,7 @@ def load_birth_names():
     if not obj:
         obj = TBL(table_name='birth_names')
     obj.main_dttm_col = 'ds'
-    obj.database = get_or_create_main_db()
+    obj.database = utils.get_or_create_main_db()
     obj.filter_select_enabled = True
     db.session.merge(obj)
     db.session.commit()
@@ -596,7 +597,7 @@ def load_birth_names():
         "compare_lag": "10",
         "compare_suffix": "o10Y",
         "limit": "25",
-        "granularity": "ds",
+        "granularity_sqla": "ds",
         "groupby": [],
         "metric": 'sum__num',
         "metrics": ["sum__num"],
@@ -645,7 +646,7 @@ def load_birth_names():
             datasource_id=tbl.id,
             params=get_slice_json(
                 defaults,
-                viz_type="big_number", granularity="ds",
+                viz_type="big_number", granularity_sqla="ds",
                 compare_lag="5", compare_suffix="over 5Y")),
         Slice(
             slice_name="Genders",
@@ -678,7 +679,7 @@ def load_birth_names():
             params=get_slice_json(
                 defaults,
                 viz_type="line", groupby=['name'],
-                granularity='ds', rich_tooltip=True, show_legend=True)),
+                granularity_sqla='ds', rich_tooltip=True, show_legend=True)),
         Slice(
             slice_name="Average and Sum Trends",
             viz_type='dual_line',
@@ -687,7 +688,7 @@ def load_birth_names():
             params=get_slice_json(
                 defaults,
                 viz_type="dual_line", metric='avg__num', metric_2='sum__num',
-                granularity='ds')),
+                granularity_sqla='ds')),
         Slice(
             slice_name="Title",
             viz_type='markup',
@@ -732,7 +733,7 @@ def load_birth_names():
             datasource_id=tbl.id,
             params=get_slice_json(
                 defaults,
-                viz_type="big_number_total", granularity="ds",
+                viz_type="big_number_total", granularity_sqla="ds",
                 filters=[{
                     'col': 'gender',
                     'op': 'in',
@@ -872,14 +873,14 @@ def load_unicode_test_data():
     if not obj:
         obj = TBL(table_name='unicode_test')
     obj.main_dttm_col = 'dttm'
-    obj.database = get_or_create_main_db()
+    obj.database = utils.get_or_create_main_db()
     db.session.merge(obj)
     db.session.commit()
     obj.fetch_metadata()
     tbl = obj
 
     slice_data = {
-        "granularity": "dttm",
+        "granularity_sqla": "dttm",
         "groupby": [],
         "metric": 'sum__value',
         "row_limit": config.get("ROW_LIMIT"),
@@ -951,14 +952,14 @@ def load_random_time_series_data():
     if not obj:
         obj = TBL(table_name='random_time_series')
     obj.main_dttm_col = 'ds'
-    obj.database = get_or_create_main_db()
+    obj.database = utils.get_or_create_main_db()
     db.session.merge(obj)
     db.session.commit()
     obj.fetch_metadata()
     tbl = obj
 
     slice_data = {
-        "granularity": "day",
+        "granularity_sqla": "day",
         "row_limit": config.get("ROW_LIMIT"),
         "since": "1 year ago",
         "until": "now",
@@ -1016,14 +1017,14 @@ def load_country_map_data():
     if not obj:
         obj = TBL(table_name='birth_france_by_region')
     obj.main_dttm_col = 'dttm'
-    obj.database = get_or_create_main_db()
+    obj.database = utils.get_or_create_main_db()
     db.session.merge(obj)
     db.session.commit()
     obj.fetch_metadata()
     tbl = obj
 
     slice_data = {
-        "granularity": "",
+        "granularity_sqla": "",
         "since": "",
         "until": "",
         "where": "",
@@ -1092,14 +1093,14 @@ def load_long_lat_data():
     if not obj:
         obj = TBL(table_name='long_lat')
     obj.main_dttm_col = 'datetime'
-    obj.database = get_or_create_main_db()
+    obj.database = utils.get_or_create_main_db()
     db.session.merge(obj)
     db.session.commit()
     obj.fetch_metadata()
     tbl = obj
 
     slice_data = {
-        "granularity": "day",
+        "granularity_sqla": "day",
         "since": "2014-01-01",
         "until": "now",
         "where": "",
@@ -1153,7 +1154,7 @@ def load_multiformat_time_series_data():
     if not obj:
         obj = TBL(table_name='multiformat_time_series')
     obj.main_dttm_col = 'ds'
-    obj.database = get_or_create_main_db()
+    obj.database = utils.get_or_create_main_db()
     dttm_and_expr_dict = {
         'ds': [None, None],
         'ds2': [None, None],
@@ -1179,7 +1180,7 @@ def load_multiformat_time_series_data():
         slice_data = {
             "metric": 'count',
             "granularity_sqla": col.column_name,
-            "granularity": "day",
+            "granularity_sqla": "day",
             "row_limit": config.get("ROW_LIMIT"),
             "since": "1 year ago",
             "until": "now",
@@ -1308,7 +1309,7 @@ def load_deck_dash():
         "row_limit": 5000,
         "since": None,
         "size": "count",
-        "time_grain_sqla": "Time Column",
+        "time_grain_sqla": None,
         "until": None,
         "viewport": {
             "bearing": -4.952916738791771,
@@ -1366,7 +1367,7 @@ def load_deck_dash():
         },
         "point_radius_fixed": {"type": "fix", "value": 2000},
         "datasource": "5__table",
-        "time_grain_sqla": "Time Column",
+        "time_grain_sqla": None,
         "groupby": [],
     }
     print("Creating Screen Grid slice")
@@ -1415,7 +1416,7 @@ def load_deck_dash():
         "where": "",
         "point_radius_fixed": {"type": "fix", "value": 2000},
         "datasource": "5__table",
-        "time_grain_sqla": "Time Column",
+        "time_grain_sqla": None,
         "groupby": [],
     }
     print("Creating Hex slice")
@@ -1464,7 +1465,7 @@ def load_deck_dash():
         "where": "",
         "point_radius_fixed": {"type": "fix", "value": 2000},
         "datasource": "5__table",
-        "time_grain_sqla": "Time Column",
+        "time_grain_sqla": None,
         "groupby": [],
     }
     print("Creating Grid slice")
@@ -1481,7 +1482,6 @@ def load_deck_dash():
     polygon_tbl = db.session.query(TBL) \
                     .filter_by(table_name='sf_population_polygons').first()
     slice_data = {
-
         "datasource": "11__table",
         "viz_type": "deck_polygon",
         "slice_id": 41,
@@ -1530,8 +1530,8 @@ def load_deck_dash():
             "area"
         ],
         "js_datapoint_mutator": "(d) => {\n    d.elevation = d.extraProps.population/d.extraProps.area/10\n \
-             d.fillColor = [d.extraProps.population/d.extraProps.area/60,140,0]\n \
-             return d;\n}",
+         d.fillColor = [d.extraProps.population/d.extraProps.area/60,140,0]\n \
+         return d;\n}",
         "js_tooltip": "",
         "js_onclick_href": "",
         "where": "",
@@ -1778,7 +1778,7 @@ def load_flights():
     if not tbl:
         tbl = TBL(table_name=tbl_name)
     tbl.description = "Random set of flights in the US"
-    tbl.database = get_or_create_main_db()
+    tbl.database = utils.get_or_create_main_db()
     db.session.merge(tbl)
     db.session.commit()
     tbl.fetch_metadata()
@@ -1809,7 +1809,7 @@ def load_paris_iris_geojson():
     if not tbl:
         tbl = TBL(table_name=tbl_name)
     tbl.description = "Map of Paris"
-    tbl.database = get_or_create_main_db()
+    tbl.database = utils.get_or_create_main_db()
     db.session.merge(tbl)
     db.session.commit()
     tbl.fetch_metadata()
@@ -1839,7 +1839,7 @@ def load_sf_population_polygons():
     if not tbl:
         tbl = TBL(table_name=tbl_name)
     tbl.description = "Population density of San Francisco"
-    tbl.database = get_or_create_main_db()
+    tbl.database = utils.get_or_create_main_db()
     db.session.merge(tbl)
     db.session.commit()
     tbl.fetch_metadata()
@@ -1869,7 +1869,7 @@ def load_bart_lines():
     if not tbl:
         tbl = TBL(table_name=tbl_name)
     tbl.description = "BART lines"
-    tbl.database = get_or_create_main_db()
+    tbl.database = utils.get_or_create_main_db()
     db.session.merge(tbl)
     db.session.commit()
     tbl.fetch_metadata()
@@ -1908,7 +1908,7 @@ def load_dictionarys(path):
                 ids.append(idx + 1)
                 idx += 1
             df = pd.DataFrame(dict(id=ids, field_name=names, describe=des))
-            sesh = sm.get_session()
+            sesh = security_manager.get_session()
             sesh.query(dict_model[v]).delete()
             sesh.commit()
             df.to_sql(
@@ -2005,17 +2005,17 @@ def load_companies(path):
         data += [v for d, v in meta['bs_company'].items()]
 
     temp = []
-    sesh = sm.get_session()
+    sesh = security_manager.get_session()
     companies = sesh.query(dictionary.Company).all()
     all_pvs = set()
-    for pv in sm.get_session.query(sm.permissionview_model).all():
+    for pv in security_manager.get_session.query(security_manager.permissionview_model).all():
         if pv.permission and pv.view_menu:
             all_pvs.add((pv.permission.name, pv.view_menu.name))
 
     def merge_pv(view_menu, perm):
         """Create permission view menu only if it doesn't exist"""
         if view_menu and perm and (view_menu, perm) not in all_pvs:
-            security.merge_perm(sm, view_menu, perm)
+            security.merge_perm(security_manager, view_menu, perm)
     c_count = len(companies)
 
     for c in companies:
@@ -2078,7 +2078,7 @@ def is_dict(pvm, perm):
 def set_custom_role():
     print('set custom roles')
 
-    sesh = sm.get_session()
+    sesh = security_manager.get_session()
     pvms = sesh.query(ab_models.PermissionView).all()
     pvms = [p for p in pvms if p.permission and p.view_menu]
 
@@ -2088,8 +2088,8 @@ def set_custom_role():
         print('DATASOURCE[{}]'.format(datasource))
         if 'main' not in datasource.perm:
             role_name = 'DATASOURCE[{}]'.format(datasource)
-            if not sm.find_role(role_name):
-                ds_role = sm.add_role(role_name)
+            if not security_manager.find_role(role_name):
+                ds_role = security_manager.add_role(role_name)
                 ds_role_pvms = [
                     p for p in pvms if is_datasource(p, datasource.perm)]
                 ds_role.permissions = ds_role_pvms
@@ -2099,8 +2099,8 @@ def set_custom_role():
 
     for company in companies:
         role_name = 'COMPANY[{}]'.format(company.field_name)
-        if not sm.find_role(role_name):
-            c_role = sm.add_role(role_name)
+        if not security_manager.find_role(role_name):
+            c_role = security_manager.add_role(role_name)
             c_role_pvms = [p for p in pvms if is_company(
                 p, company.field_name)]
             c_role.permissions = c_role_pvms
@@ -2109,8 +2109,8 @@ def set_custom_role():
     dicts = ['GreenT', 'iRT', 'DSE', 'DSED']
     for d in dicts:
         role_name = 'DICT[{}]'.format(d)
-        if not sm.find_role(role_name):
-            c_role = sm.add_role(role_name)
+        if not security_manager.find_role(role_name):
+            c_role = security_manager.add_role(role_name)
             c_role_pvms = [p for p in pvms if is_dict(
                 p, d)]
             c_role.permissions = c_role_pvms

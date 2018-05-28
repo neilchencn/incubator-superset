@@ -7,10 +7,10 @@ import sys
 import logging
 
 from flask_appbuilder.const import LOGMSG_WAR_SEC_LOGIN_FAILED, LOGMSG_INF_SEC_ADD_USER, LOGMSG_ERR_SEC_ADD_USER
-from flask_appbuilder.security.sqla.manager import SecurityManager
 from werkzeug.security import check_password_hash, generate_password_hash
 from superset.custom_security.security_views import MyAuthRemoteUserView
 from flask_appbuilder.security.views import UserDBModelView, UserRemoteUserModelView
+from superset.security import SupersetSecurityManager
 import requests
 
 import datetime
@@ -175,7 +175,7 @@ def generate_password_django(password, salt=None):
     return "%s$%d$%s$%s" % ("pbkdf2_sha256", 15000, salt, hash)
 
 
-class MySecurityManager(SecurityManager):
+class MySecurityManager(SupersetSecurityManager):
     logger.info("using customize my security manager")
     # authremoteuserview = MyAuthRemoteUserView
     authdbview = MyAuthRemoteUserView
