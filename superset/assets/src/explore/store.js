@@ -40,7 +40,6 @@ export function getControlsState(state, form_data) {
   * */
 
   // Getting a list of active control names for the current viz
-
   const formData = Object.assign({}, form_data);
   const vizType = formData.viz_type || 'table';
 
@@ -58,14 +57,15 @@ export function getControlsState(state, form_data) {
       delete control.mapStateToProps;
     }
 
+    const opts = control.choices || control.options;
     // If the value is not valid anymore based on choices, clear it
     if (
       control.type === 'SelectControl' &&
-      control.choices &&
+      opts &&
       k !== 'datasource' &&
       formData[k]
     ) {
-      const choiceValues = control.choices.map(c => c[0]);
+      const choiceValues = opts.map(c => c[0]);
       if (
         control.multi &&
         formData[k].length > 0 &&
@@ -98,14 +98,14 @@ export function getControlsState(state, form_data) {
       }
     }
     // Removing invalid filters that point to a now inexisting column
-    if (control.type === 'FilterControl' && control.choices) {
-      if (!formData[k]) {
-        formData[k] = [];
+    if (control.type === 'FilterControl') {
+      if (formData[k]) {
+        delete formData[k];
       }
-      const choiceValues = control.choices.map(c => c[0]);
-      formData[k] = formData[k].filter(
-        flt => choiceValues.indexOf(flt.col) >= 0,
-      );
+      // const choiceValues = opts.map(c => c[0]);
+      // formData[k] = formData[k].filter(
+      //   flt => choiceValues.indexOf(flt.col) >= 0,
+      // );
     }
 
     if (typeof control.default === 'function') {

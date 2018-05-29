@@ -1850,6 +1850,7 @@ export const controls = {
     default: [],
     description: '',
     mapStateToProps: state => ({
+      chioces: [],
       datasource: state.datasource,
     }),
   },

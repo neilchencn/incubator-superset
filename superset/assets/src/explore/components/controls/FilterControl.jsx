@@ -4,7 +4,7 @@ import { Button, Row, Col } from 'react-bootstrap';
 import Filter from './Filter';
 import { t } from '../../../locales';
 
-const $ = window.$ = require('jquery');
+const $ = (window.$ = require('jquery'));
 
 const propTypes = {
   name: PropTypes.string,
@@ -19,7 +19,6 @@ const defaultProps = {
 };
 
 export default class FilterControl extends React.Component {
-
   constructor(props) {
     super(props);
     const initialFilters = props.value.map(() => ({
@@ -33,14 +32,28 @@ export default class FilterControl extends React.Component {
   }
 
   componentDidMount() {
-    this.state.filters.forEach((filter, index) => this.fetchFilterValues(index));
+    console.info('filter control did mount', this.state);
+    this.state.filters.forEach((filter, index) =>
+      this.fetchFilterValues(index),
+    );
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.name === 'filters' && nextProps.value.length === 0) {
+      this.setState({ filters: [] });
+    }
   }
 
   fetchFilterValues(index, column) {
     const datasource = this.props.datasource;
     const col = column || this.props.value[index].col;
     const having = this.props.name === 'having_filters';
-    if (col && this.props.datasource && this.props.datasource.filter_select && !having) {
+    if (
+      col &&
+      this.props.datasource &&
+      this.props.datasource.filter_select &&
+      !having
+    ) {
       this.setState((prevState) => {
         const newStateFilters = Object.assign([], prevState.filters);
         newStateFilters[index].valuesLoading = true;
@@ -57,7 +70,10 @@ export default class FilterControl extends React.Component {
           success: (data) => {
             this.setState((prevState) => {
               const newStateFilters = Object.assign([], prevState.filters);
-              newStateFilters[index] = { valuesLoading: false, valueChoices: data };
+              newStateFilters[index] = {
+                valuesLoading: false,
+                valueChoices: data,
+              };
               return { filters: newStateFilters, activeRequest: null };
             });
           },
@@ -68,9 +84,10 @@ export default class FilterControl extends React.Component {
 
   addFilter() {
     const newFilters = Object.assign([], this.props.value);
-    const col = this.props.datasource && this.props.datasource.filterable_cols.length > 0 ?
-      this.props.datasource.filterable_cols[0][0] :
-      null;
+    const col = this.props.datasource &&
+      this.props.datasource.filterable_cols.length > 0
+      ? this.props.datasource.filterable_cols[0][0]
+      : null;
     newFilters.push({
       col,
       op: 'in',
