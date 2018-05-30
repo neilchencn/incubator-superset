@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=C,R,W
 """a collection of model-related helper classes and functions"""
 from __future__ import absolute_import
 from __future__ import division
@@ -20,7 +21,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.exc import MultipleResultsFound
 import yaml
 
-from superset import sm
+from superset import security_manager
 from superset.utils import QueryStatus
 
 
@@ -355,4 +356,4 @@ def set_perm(mapper, connection, target):  # noqa
         )
 
     # add to view menu if not already exists
-    merge_perm(sm, 'datasource_access', target.get_perm(), connection)
+    merge_perm(security_manager, 'datasource_access', target.get_perm(), connection)
