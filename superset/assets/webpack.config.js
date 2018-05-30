@@ -30,14 +30,10 @@ const config = {
     chunkFilename: '[name].[chunkhash].entry.js',
   },
   resolve: {
-    extensions: [
-      '.js',
-      '.jsx',
-    ],
+    extensions: ['.js', '.jsx'],
     alias: {
       webworkify: 'webworkify-webpack',
     },
-
   },
   module: {
     loaders: [
@@ -50,11 +46,7 @@ const config = {
         exclude: /node_modules/,
         loader: 'babel-loader',
         query: {
-          presets: [
-            'airbnb',
-            'env',
-            'react',
-          ],
+          presets: ['airbnb', 'env', 'react'],
         },
       },
       // Extract css files
@@ -125,7 +117,10 @@ if (process.env.NODE_ENV === 'production') {
       cache: true,
       workers: 4,
     },
-    compress: false,
+    uglifyOptions: {
+      compress: true, // hangs without this
+    },
+    compress: true,
   });
   config.plugins.push(UJSplugin);
 }
