@@ -50,6 +50,59 @@ const defaultProps = {
   valueKey: 'value',
 };
 
+const equals = function (ori, array) {
+  // if the other array is a falsy value, return
+  if (!array) return false;
+  // compare lengths - can save a lot of time
+  if (ori.length !== array.length) return false;
+  for (let i = 0, l = ori.length; i < l; i++) {
+    // Check if we have nested arrays
+    if (ori[i] instanceof Array && array[i] instanceof Array) {
+      // recurse into the nested arrays
+      if (!equals(ori[i], array[i])) return false;
+    } else if (ori[i] instanceof Object && array[i] instanceof Object) {
+      if (!equalsObj(ori[i], array[i])) return false;
+    }
+  }
+  return true;
+};
+
+const equalsObj = function (object1, object2) {
+  for (const propName in object1) {
+    if (object1.hasOwnProperty(propName) !== object2.hasOwnProperty(propName)) {
+      return object1;
+    } else if (typeof object1[propName] !== typeof object2[propName]) {
+      // Check instance type
+      // Different types => not equal
+      return false;
+    }
+  }
+  for (const propName in object2) {
+    if (object1.hasOwnProperty(propName) !== object2.hasOwnProperty(propName)) {
+      return false;
+    } else if (typeof object1[propName] !== typeof object2[propName]) {
+      return false;
+    }
+    if (!object1.hasOwnProperty(propName)) continue;
+
+    if (
+      object1[propName] instanceof Array && object2[propName] instanceof Array
+    ) {
+      // recurse into the nested arrays
+      if (!object1[propName].equals(object2[propName])) return false;
+    } else if (
+      object1[propName] instanceof Object && object2[propName] instanceof Object
+    ) {
+      if (!object1[propName].equals(object2[propName])) return false;
+    } else if (object1[propName] !== object2[propName]) {
+      // Normal value comparison for strings and numbers
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export default class SelectControl extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -58,9 +111,13 @@ export default class SelectControl extends React.PureComponent {
   }
   componentWillReceiveProps(nextProps) {
     if (
-      nextProps.choices !== this.props.choices ||
-      nextProps.options !== this.props.options
+      this.props.name === 'groupby' &&
+      !equals(nextProps.options, this.props.options)
     ) {
+      const options = this.getOptions(nextProps);
+      this.setState({ options, value: [] });
+      this.props.onChange(null);
+    } else if (!equals(nextProps.choices, this.props.choices)) {
       const options = this.getOptions(nextProps);
       this.setState({ options });
     }

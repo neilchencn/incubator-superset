@@ -66,10 +66,11 @@ export const sections = {
           'of query results',
       ),
       controlSetRows: [
-        ['rolling_type', 'rolling_periods', 'min_periods'],
-        ['time_compare', null],
+        ['rolling_type', 'rolling_periods'],
+        ['time_compare', 'min_periods'],
         ['num_period_compare', 'period_ratio_type'],
-        ['resample_how', 'resample_rule', 'resample_fillmethod'],
+        ['resample_how', 'resample_rule'],
+        ['resample_fillmethod'],
       ],
     },
   ],
@@ -156,11 +157,7 @@ export const visTypes = {
       {
         label: t('Query'),
         expanded: true,
-        controlSetRows: [
-          ['metrics'],
-          ['groupby'],
-          ['limit'],
-        ],
+        controlSetRows: [['metrics'], ['groupby'], ['limit']],
       },
       {
         label: t('Chart Options'),
@@ -275,26 +272,17 @@ export const visTypes = {
       {
         label: t('Chart Options'),
         expanded: true,
-        controlSetRows: [
-          ['color_scheme'],
-          ['x_axis_format'],
-        ],
+        controlSetRows: [['color_scheme'], ['x_axis_format']],
       },
       {
         label: t('Y Axis 1'),
         expanded: true,
-        controlSetRows: [
-          ['metric'],
-          ['y_axis_format'],
-        ],
+        controlSetRows: [['metric'], ['y_axis_format']],
       },
       {
         label: t('Y Axis 2'),
         expanded: true,
-        controlSetRows: [
-          ['metric_2'],
-          ['y_axis_2_format'],
-        ],
+        controlSetRows: [['metric_2'], ['y_axis_2_format']],
       },
       sections.annotations,
     ],
@@ -369,9 +357,7 @@ export const visTypes = {
       {
         label: t('Chart Options'),
         expanded: true,
-        controlSetRows: [
-          ['color_scheme'],
-        ],
+        controlSetRows: [['color_scheme']],
       },
       {
         label: t('X Axis'),
@@ -678,10 +664,7 @@ export const visTypes = {
         label: t('Chart Options'),
 
         expanded: true,
-        controlSetRows: [
-          ['color_scheme'],
-          ['whisker_options'],
-        ],
+        controlSetRows: [['color_scheme'], ['whisker_options']],
       },
     ],
   },
@@ -703,11 +686,7 @@ export const visTypes = {
         label: t('Chart Options'),
 
         expanded: true,
-        controlSetRows: [
-          ['color_scheme'],
-          ['show_legend', null],
-        ],
-
+        controlSetRows: [['color_scheme'], ['show_legend', null]],
       },
       {
         label: t('X Axis'),
@@ -750,10 +729,7 @@ export const visTypes = {
       {
         label: t('Chart Options'),
         expanded: true,
-        controlSetRows: [
-          ['compare_lag', 'compare_suffix'],
-          ['y_axis_format'],
-        ],
+        controlSetRows: [['compare_lag', 'compare_suffix'], ['y_axis_format']],
       },
     ],
     controlOverrides: {
@@ -774,10 +750,7 @@ export const visTypes = {
       {
         label: t('Chart Options'),
         expanded: true,
-        controlSetRows: [
-          ['subheader'],
-          ['y_axis_format'],
-        ],
+        controlSetRows: [['subheader'], ['y_axis_format']],
       },
     ],
     controlOverrides: {
@@ -793,11 +766,7 @@ export const visTypes = {
       {
         label: t('Query'),
         expanded: true,
-        controlSetRows: [
-          ['all_columns_x'],
-          ['row_limit'],
-          ['groupby'],
-        ],
+        controlSetRows: [['all_columns_x'], ['row_limit'], ['groupby']],
       },
       {
         label: t('Chart Options'),
@@ -847,10 +816,7 @@ export const visTypes = {
         label: t('Chart Options'),
 
         expanded: true,
-        controlSetRows: [
-          ['color_scheme'],
-        ],
-
+        controlSetRows: [['color_scheme']],
       },
     ],
     controlOverrides: {
@@ -888,9 +854,7 @@ export const visTypes = {
         label: t('Chart Options'),
 
         expanded: true,
-        controlSetRows: [
-          ['color_scheme'],
-        ],
+        controlSetRows: [['color_scheme']],
       },
     ],
     controlOverrides: {
@@ -927,20 +891,13 @@ export const visTypes = {
       {
         label: t('Query'),
         expanded: true,
-        controlSetRows: [
-        ['groupby'],
-        ['columns'],
-        ['metric'],
-        ['row_limit']],
+        controlSetRows: [['groupby'], ['columns'], ['metric'], ['row_limit']],
       },
       {
         label: t('Chart Options'),
 
         expanded: true,
-        controlSetRows: [
-          ['y_axis_format'],
-          ['color_scheme'],
-        ],
+        controlSetRows: [['y_axis_format'], ['color_scheme']],
       },
     ],
     controlOverrides: {
@@ -992,7 +949,6 @@ export const visTypes = {
       },
     },
   },
-
 
   para: {
     label: t('Parallel Coordinates'),
@@ -1049,13 +1005,16 @@ export const visTypes = {
       all_columns_y: {
         validators: [v.nonEmpty],
       },
-      normalized: t('Whether to apply a normal distribution based on rank on the color scale'),
+      normalized: t(
+        'Whether to apply a normal distribution based on rank on the color scale',
+      ),
       y_axis_bounds: {
         label: t('Value bounds'),
         renderTrigger: true,
         description: t(
           'Hard value bounds applied for color coding. Is only relevant ' +
-          'and applied when the normalization is applied against the whole heatmap.'),
+            'and applied when the normalization is applied against the whole heatmap.',
+        ),
       },
       y_axis_format: {
         label: t('Value Format'),
@@ -1071,9 +1030,7 @@ export const visTypes = {
         label: t('Chart Options'),
 
         expanded: true,
-        controlSetRows: [
-          ['series_height', 'horizon_color_scale'],
-        ],
+        controlSetRows: [['series_height', 'horizon_color_scale']],
       },
     ],
   },

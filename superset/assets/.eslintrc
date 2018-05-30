@@ -1,12 +1,12 @@
 {
   "extends": "airbnb",
-  "parserOptions":{
+  "parserOptions": {
     "ecmaFeatures": {
       "experimentalObjectRestSpread": true
     }
   },
   "globals": {
-    "document": true,
+    "document": true
   },
   "rules": {
     "prefer-template": 0,
@@ -37,9 +37,10 @@
     "import/prefer-default-export": 0,
     "react/no-unescaped-entities": 0,
     "react/no-unused-prop-types": 0,
+    "no-use-before-define": 0,
     "react/no-string-refs": 0,
     "indent": 0,
     "no-multi-spaces": 0,
-    "padded-blocks": 0,
+    "padded-blocks": 0
   }
 }
