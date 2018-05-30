@@ -1928,7 +1928,7 @@ def load_dictionarys(path):
             if not tbl:
                 tbl = TBL(table_name=tbl_name)
             tbl.description = "dictionary"
-            tbl.database = get_or_create_main_db()
+            tbl.database = utils.get_or_create_main_db()
             db.session.merge(tbl)
             db.session.commit()
             tbl.fetch_metadata()
@@ -2043,7 +2043,7 @@ def load_companies(path):
         if not tbl:
             tbl = TBL(table_name=tbl_name)
         tbl.description = "company list"
-        tbl.database = get_or_create_main_db()
+        tbl.database = utils.get_or_create_main_db()
         db.session.merge(tbl)
         db.session.commit()
 
