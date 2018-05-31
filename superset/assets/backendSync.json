@@ -13,13 +13,12 @@
       "description": "The type of visualization to display"
     },
     "metrics": {
-      "type": "SelectControl",
+      "type": "MetricsControl",
       "multi": true,
       "label": "Metrics",
       "validators": [
         null
       ],
-      "valueKey": "metric_name",
       "description": "One or many metrics to display"
     },
     "percent_metrics": {
@@ -63,7 +62,7 @@
       "description": "Choose the position of the legend",
       "type": "SelectControl",
       "clearable": false,
-      "default": "Top right",
+      "default": "tr",
       "choices": [
         [
           "tl",
@@ -109,14 +108,13 @@
       "renderTrigger": true
     },
     "metric": {
-      "type": "SelectControl",
+      "type": "MetricsControl",
+      "multi": false,
       "label": "Metric",
       "clearable": false,
-      "description": "Choose the metric",
       "validators": [
         null
-      ],
-      "valueKey": "metric_name"
+      ]
     },
     "metric_2": {
       "type": "SelectControl",
@@ -207,10 +205,6 @@
           "fire"
         ],
         [
-          "blue_white_yellow",
-          "blue/white/yellow"
-        ],
-        [
           "white_black",
           "white/black"
         ],
@@ -225,6 +219,34 @@
         [
           "pink_grey",
           "pink/white/grey"
+        ],
+        [
+          "greens",
+          "greens"
+        ],
+        [
+          "purples",
+          "purples"
+        ],
+        [
+          "oranges",
+          "oranges"
+        ],
+        [
+          "blue_white_yellow",
+          "blue/white/yellow"
+        ],
+        [
+          "red_yellow_blue",
+          "red/yellowish/blue"
+        ],
+        [
+          "brown_white_green",
+          "brown/white/green"
+        ],
+        [
+          "purple_white_green",
+          "purple/white/green"
         ]
       ],
       "default": "blue_white_yellow",
@@ -262,6 +284,42 @@
           "#E70B81",
           "#FAFAFA",
           "#666666"
+        ],
+        "greens": [
+          "#ffffcc",
+          "#78c679",
+          "#006837"
+        ],
+        "purples": [
+          "#f2f0f7",
+          "#9e9ac8",
+          "#54278f"
+        ],
+        "oranges": [
+          "#fef0d9",
+          "#fc8d59",
+          "#b30000"
+        ],
+        "red_yellow_blue": [
+          "#d7191c",
+          "#fdae61",
+          "#ffffbf",
+          "#abd9e9",
+          "#2c7bb6"
+        ],
+        "brown_white_green": [
+          "#a6611a",
+          "#dfc27d",
+          "#f5f5f5",
+          "#80cdc1",
+          "#018571"
+        ],
+        "purple_white_green": [
+          "#7b3294",
+          "#c2a5cf",
+          "#f7f7f7",
+          "#a6dba0",
+          "#008837"
         ]
       },
       "isLinear": true
@@ -326,6 +384,7 @@
     "xscale_interval": {
       "type": "SelectControl",
       "label": "XScale Interval",
+      "renderTrigger": true,
       "choices": [
         [
           1,
@@ -529,6 +588,7 @@
         ]
       ],
       "default": "1",
+      "clearable": false,
       "description": "Number of steps to take between ticks when displaying the X scale"
     },
     "yscale_interval": {
@@ -736,7 +796,9 @@
           "50"
         ]
       ],
-      "default": null,
+      "default": "1",
+      "clearable": false,
+      "renderTrigger": true,
       "description": "Number of steps to take between ticks when displaying the Y scale"
     },
     "include_time": {
@@ -859,6 +921,10 @@
         [
           "Italy",
           "Italy"
+        ],
+        [
+          "Portugal",
+          "Portugal"
         ],
         [
           "Morocco",
@@ -1139,6 +1205,7 @@
     },
     "bottom_margin": {
       "type": "SelectControl",
+      "clearable": false,
       "freeForm": true,
       "label": "Bottom Margin",
       "choices": [
@@ -1175,9 +1242,36 @@
       "renderTrigger": true,
       "description": "Bottom margin, in pixels, allowing for more room for axis labels"
     },
+    "x_ticks_layout": {
+      "type": "SelectControl",
+      "label": "X Tick Layout",
+      "choices": [
+        [
+          "auto",
+          "auto"
+        ],
+        [
+          "flat",
+          "flat"
+        ],
+        [
+          "45°",
+          "45°"
+        ],
+        [
+          "staggered",
+          "staggered"
+        ]
+      ],
+      "default": "auto",
+      "clearable": false,
+      "renderTrigger": true,
+      "description": "The way the ticks are laid out on the X axis"
+    },
     "left_margin": {
       "type": "SelectControl",
       "freeForm": true,
+      "clearable": false,
       "label": "Left Margin",
       "choices": [
         [
@@ -1217,42 +1311,42 @@
       "type": "SelectControl",
       "freeForm": true,
       "label": "Time Granularity",
-      "default": "1 day",
+      "default": "P1D",
       "choices": [
         [
           "all",
           "all"
         ],
         [
-          "1 day",
+          "P1D",
           "1 day"
         ],
         [
-          "2 days",
+          "P2D",
           "2 days"
         ],
         [
-          "3 days",
+          "P3D",
           "3 days"
         ],
         [
-          "7 days",
+          "P7D",
           "7 days"
         ],
         [
-          "week",
+          "P1W",
           "week"
         ],
         [
           "week_starting_sunday",
-          "week_starting_sunday"
+          "week starting Sunday"
         ],
         [
           "week_ending_saturday",
-          "week_ending_saturday"
+          "week ending Saturday"
         ],
         [
-          "month",
+          "P1M",
           "month"
         ]
       ],
@@ -1589,31 +1683,35 @@
       "choices": [
         [
           ".1s",
-          ".1s | 12k"
+          ".1s (12345.432 => 10k)"
         ],
         [
           ".3s",
-          ".3s | 12.3k"
+          ".3s (12345.432 => 12.3k)"
+        ],
+        [
+          ",.1%",
+          ",.1% (12345.432 => 1,234,543.2%)"
         ],
         [
           ".3%",
-          ".3% | 1234543.210%"
+          ".3% (12345.432 => 1234543.200%)"
         ],
         [
           ".4r",
-          ".4r | 12350"
+          ".4r (12345.432 => 12350)"
         ],
         [
-          ".3f",
-          ".3f | 12345.432"
+          ",.3f",
+          ",.3f (12345.432 => 12,345.432)"
         ],
         [
           "+,",
-          "+, | +12,345.4321"
+          "+, (12345.432 => +12,345.432)"
         ],
         [
           "$,.2f",
-          "$,.2f | $12,345.43"
+          "$,.2f (12345.432 => $12,345.43)"
         ]
       ],
       "description": "D3 format syntax: https://github.com/d3/d3-format"
@@ -1758,6 +1856,50 @@
       "isInt": true,
       "description": "Defines the size of the rolling window function, relative to the time granularity selected"
     },
+    "cell_size": {
+      "type": "TextControl",
+      "isInt": true,
+      "default": 10,
+      "validators": [
+        null
+      ],
+      "renderTrigger": true,
+      "label": "Cell Size",
+      "description": "The size of the square cell, in pixels"
+    },
+    "cell_padding": {
+      "type": "TextControl",
+      "isInt": true,
+      "validators": [
+        null
+      ],
+      "renderTrigger": true,
+      "default": 0,
+      "label": "Cell Padding",
+      "description": "The distance between cells, in pixels"
+    },
+    "cell_radius": {
+      "type": "TextControl",
+      "isInt": true,
+      "validators": [
+        null
+      ],
+      "renderTrigger": true,
+      "default": 0,
+      "label": "Cell Radius",
+      "description": "The pixel radius"
+    },
+    "steps": {
+      "type": "TextControl",
+      "isInt": true,
+      "validators": [
+        null
+      ],
+      "renderTrigger": true,
+      "default": 10,
+      "label": "Color Steps",
+      "description": "The number color \"steps\""
+    },
     "grid_size": {
       "type": "TextControl",
       "label": "Grid Size",
@@ -1870,6 +2012,7 @@
       "freeForm": true,
       "label": "Table Timestamp Format",
       "default": "%Y-%m-%d %H:%M:%S",
+      "renderTrigger": true,
       "validators": [
         null
       ],
@@ -1954,6 +2097,7 @@
     "page_length": {
       "type": "SelectControl",
       "freeForm": true,
+      "renderTrigger": true,
       "label": "Page Length",
       "default": 0,
       "choices": [
@@ -2005,31 +2149,35 @@
       "choices": [
         [
           ".1s",
-          ".1s | 12k"
+          ".1s (12345.432 => 10k)"
         ],
         [
           ".3s",
-          ".3s | 12.3k"
+          ".3s (12345.432 => 12.3k)"
+        ],
+        [
+          ",.1%",
+          ",.1% (12345.432 => 1,234,543.2%)"
         ],
         [
           ".3%",
-          ".3% | 1234543.210%"
+          ".3% (12345.432 => 1234543.200%)"
         ],
         [
           ".4r",
-          ".4r | 12350"
+          ".4r (12345.432 => 12350)"
         ],
         [
-          ".3f",
-          ".3f | 12345.432"
+          ",.3f",
+          ",.3f (12345.432 => 12,345.432)"
         ],
         [
           "+,",
-          "+, | +12,345.4321"
+          "+, (12345.432 => +12,345.432)"
         ],
         [
           "$,.2f",
-          "$,.2f | $12,345.43"
+          "$,.2f (12345.432 => $12,345.43)"
         ]
       ],
       "description": "D3 format syntax: https://github.com/d3/d3-format"
@@ -2085,31 +2233,35 @@
       "choices": [
         [
           ".1s",
-          ".1s | 12k"
+          ".1s (12345.432 => 10k)"
         ],
         [
           ".3s",
-          ".3s | 12.3k"
+          ".3s (12345.432 => 12.3k)"
+        ],
+        [
+          ",.1%",
+          ",.1% (12345.432 => 1,234,543.2%)"
         ],
         [
           ".3%",
-          ".3% | 1234543.210%"
+          ".3% (12345.432 => 1234543.200%)"
         ],
         [
           ".4r",
-          ".4r | 12350"
+          ".4r (12345.432 => 12350)"
         ],
         [
-          ".3f",
-          ".3f | 12345.432"
+          ",.3f",
+          ",.3f (12345.432 => 12,345.432)"
         ],
         [
           "+,",
-          "+, | +12,345.4321"
+          "+, (12345.432 => +12,345.432)"
         ],
         [
           "$,.2f",
-          "$,.2f | $12,345.43"
+          "$,.2f (12345.432 => $12,345.43)"
         ]
       ],
       "description": "D3 format syntax: https://github.com/d3/d3-format"
@@ -2122,31 +2274,35 @@
       "choices": [
         [
           ".1s",
-          ".1s | 12k"
+          ".1s (12345.432 => 10k)"
         ],
         [
           ".3s",
-          ".3s | 12.3k"
+          ".3s (12345.432 => 12.3k)"
+        ],
+        [
+          ",.1%",
+          ",.1% (12345.432 => 1,234,543.2%)"
         ],
         [
           ".3%",
-          ".3% | 1234543.210%"
+          ".3% (12345.432 => 1234543.200%)"
         ],
         [
           ".4r",
-          ".4r | 12350"
+          ".4r (12345.432 => 12350)"
         ],
         [
-          ".3f",
-          ".3f | 12345.432"
+          ",.3f",
+          ",.3f (12345.432 => 12,345.432)"
         ],
         [
           "+,",
-          "+, | +12,345.4321"
+          "+, (12345.432 => +12,345.432)"
         ],
         [
           "$,.2f",
-          "$,.2f | $12,345.43"
+          "$,.2f (12345.432 => $12,345.43)"
         ]
       ],
       "description": "D3 format syntax: https://github.com/d3/d3-format"
@@ -2434,6 +2590,7 @@
     "table_filter": {
       "type": "CheckboxControl",
       "label": "Table Filter",
+      "renderTrigger": true,
       "default": false,
       "description": "Whether to apply filter when table cell is clicked"
     },
@@ -2472,25 +2629,32 @@
       "default": false,
       "description": "Whether to display the numerical values within the cells"
     },
+    "show_metric_name": {
+      "type": "CheckboxControl",
+      "label": "Show Metric Names",
+      "renderTrigger": true,
+      "default": true,
+      "description": "Whether to display the metric name as a title"
+    },
     "x_axis_showminmax": {
       "type": "CheckboxControl",
       "label": "X bounds",
       "renderTrigger": true,
-      "default": true,
+      "default": false,
       "description": "Whether to display the min and max values of the X axis"
     },
     "y_axis_showminmax": {
       "type": "CheckboxControl",
       "label": "Y bounds",
       "renderTrigger": true,
-      "default": true,
+      "default": false,
       "description": "Whether to display the min and max values of the Y axis"
     },
     "rich_tooltip": {
       "type": "CheckboxControl",
       "label": "Rich Tooltip",
       "renderTrigger": true,
-      "default": true,
+      "default": false,
       "description": "The rich tooltip shows a list of all series for that point in time"
     },
     "y_log_scale": {
@@ -2744,7 +2908,8 @@
         "zoom": 1,
         "bearing": 0,
         "pitch": 0
-      }
+      },
+      "dontRefreshOnChange": true
     },
     "viewport_zoom": {
       "type": "TextControl",
@@ -3012,6 +3177,10 @@
         [
           "fdColorRainbow",
           "fdColorRainbow"
+        ],
+        [
+          "lyftColors",
+          "lyftColors"
         ]
       ],
       "description": "The color scheme for rendering chart",
@@ -3170,9 +3339,10 @@
           "#66FFCC"
         ],
         "fdColorYellow": [
-          "#FFFF66",
-          "#FFFF00",
-          "#FFFFCC"
+          "#fff600",
+          "#ffff00",
+          "#FFFF33",
+          "#FFFF66"
         ],
         "fdColorPurple": [
           "#CC00FF",
@@ -3207,6 +3377,18 @@
           "#33CCCC",
           "#33CCFF",
           "9933FF"
+        ],
+        "lyftColors": [
+          "#EA0B8C",
+          "#6C838E",
+          "#29ABE2",
+          "#33D9C1",
+          "#9DACB9",
+          "#7560AA",
+          "#2D5584",
+          "#831C4A",
+          "#333D47",
+          "#AC2077"
         ]
       }
     },
@@ -3386,7 +3568,7 @@
       ],
       "default": [],
       "description": "Pick a set of deck.gl charts to layer on top of one another",
-      "dataEndpoint": "/sliceasync/api/read?_flt_0_viz_type=deck_",
+      "dataEndpoint": "/sliceasync/api/read?_flt_0_viz_type=deck_&_flt_7_viz_type=deck_multi",
       "placeholder": "Select charts",
       "onAsyncErrorMessage": "Error while fetching charts"
     },
@@ -3430,7 +3612,7 @@
                         "key": null,
                         "ref": null,
                         "props": {
-                          "href": "https://github.com/apache/incubator-superset/blob/master/superset/assets/javascripts/modules/sandbox.js",
+                          "href": "https://github.com/apache/incubator-superset/blob/master/superset/assets/src/modules/sandbox.js",
                           "children": [
                             " source code of Superset's sandboxed parser",
                             "."
@@ -3496,7 +3678,7 @@
                         "key": null,
                         "ref": null,
                         "props": {
-                          "href": "https://github.com/apache/incubator-superset/blob/master/superset/assets/javascripts/modules/sandbox.js",
+                          "href": "https://github.com/apache/incubator-superset/blob/master/superset/assets/src/modules/sandbox.js",
                           "children": [
                             " source code of Superset's sandboxed parser",
                             "."
@@ -3562,7 +3744,7 @@
                         "key": null,
                         "ref": null,
                         "props": {
-                          "href": "https://github.com/apache/incubator-superset/blob/master/superset/assets/javascripts/modules/sandbox.js",
+                          "href": "https://github.com/apache/incubator-superset/blob/master/superset/assets/src/modules/sandbox.js",
                           "children": [
                             " source code of Superset's sandboxed parser",
                             "."
@@ -3628,7 +3810,7 @@
                         "key": null,
                         "ref": null,
                         "props": {
-                          "href": "https://github.com/apache/incubator-superset/blob/master/superset/assets/javascripts/modules/sandbox.js",
+                          "href": "https://github.com/apache/incubator-superset/blob/master/superset/assets/src/modules/sandbox.js",
                           "children": [
                             " source code of Superset's sandboxed parser",
                             "."

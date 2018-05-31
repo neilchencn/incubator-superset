@@ -66,4 +66,16 @@ class APIClient(AbsAPIClient):
             raise Exception(e.msg)
 
 
+# SSO_API_AUTH_SETTING = {
+#     "apikey": "c900b268",
+#     "seckey": "6e1cda4b00114ef19c03b2049f201eee",
+#     "url": "http://cmc.futuredial.com",
+# }
+
+SSO_API_AUTH_SETTING = {
+    "apikey": "a9d8bfee",
+    "seckey": "a2d4e2422ef6412fbe540941d8726bfb",
+    "url": "http://cmcqa.futuredial.com",
+}
+
 client = APIClient(**SSO_API_AUTH_SETTING)

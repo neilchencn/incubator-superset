@@ -43,6 +43,9 @@ from superset.utils import DTTM_ALIAS, JS_MAX_INTEGER, merge_extra_filters
 
 config = app.config
 stats_logger = config.get('STATS_LOGGER')
+import sys  
+reload(sys)                 
+sys.setdefaultencoding('utf-8')
 
 
 class BaseViz(object):
@@ -165,7 +168,7 @@ class BaseViz(object):
         self.query = self.results.query
         self.status = self.results.status
         self.error_message = self.results.error_message
-  
+
         df = self.results.df
         # Transform the timestamp we received from database to pandas supported
         # datetime format. If no python_date_format is specified, the pattern will
@@ -218,11 +221,13 @@ class BaseViz(object):
 
         # Add extra filters into the query form data
         merge_extra_filters(form_data)
-
+        print(form_data)
         granularity = (
             form_data.get('granularity') or
             form_data.get('granularity_sqla')
         )
+        if granularity == 'all':
+            granularity = None
         limit = int(form_data.get('limit') or 0)
         timeseries_limit_metric = form_data.get('timeseries_limit_metric')
         row_limit = int(form_data.get('row_limit') or config.get('ROW_LIMIT'))
@@ -301,6 +306,7 @@ class BaseViz(object):
             'prequeries': [],
             'is_prequery': False,
         }
+        print('=={}=='.format(d))
         return d
 
     @property
@@ -1819,20 +1825,20 @@ class FilterBoxViz(BaseViz):
     def filter_query_obj(self):
         qry = super(FilterBoxViz, self).query_obj()
         groupby = self.form_data.get('groupby')
-        if len(groupby) < 1 and not self.form_data.get('date_filter'):
+        if not groupby or len(groupby) < 1 and not self.form_data.get('date_filter'):
             raise Exception(_('Pick at least one filter field'))
         qry['metrics'] = [
             self.form_data['metric']]
         return qry
 
     def get_data(self, df):
-        # if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-        #     raise Exception(_('No data was returned'))
-
         d = {}
         filters = [g for g in self.form_data['groupby']]
         for flt in filters:
             df = self.dataframes[flt]
+            if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+                raise Exception(_('No data was returned'))
+
             d[flt] = [{
                 'id': row[0],
                 'text': row[0],
