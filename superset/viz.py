@@ -221,7 +221,7 @@ class BaseViz(object):
 
         # Add extra filters into the query form data
         merge_extra_filters(form_data)
-        print(form_data)
+
         granularity = (
             form_data.get('granularity') or
             form_data.get('granularity_sqla')
@@ -306,7 +306,7 @@ class BaseViz(object):
             'prequeries': [],
             'is_prequery': False,
         }
-        print('=={}=='.format(d))
+
         return d
 
     @property
@@ -398,7 +398,6 @@ class BaseViz(object):
                     is_loaded = True
             except Exception as e:
                 logging.exception(e)
-                print('get payload, errrr:{}'.format(e))
 
                 if not self.error_message:
                     self.error_message = '{}'.format(e)
@@ -1401,8 +1400,8 @@ class NVD3TimePivotViz(NVD3TimeSeriesViz):
         # print(df.ranked)
         df['series'] = '-' + df.ranked.map(str)
         df['series'] = df['series'].str.replace('-0', 'current')
-        for row in df.to_dict(orient='records'):
-            print(row)
+        # for row in df.to_dict(orient='records'):
+        #     print(row)
         rank_lookup = {
             row['series']: row['ranked']
             for row in df.to_dict(orient='records')
