@@ -43,8 +43,8 @@ from superset.utils import DTTM_ALIAS, JS_MAX_INTEGER, merge_extra_filters
 
 config = app.config
 stats_logger = config.get('STATS_LOGGER')
-import sys  
-reload(sys)                 
+import sys
+reload(sys)
 sys.setdefaultencoding('utf-8')
 
 
@@ -1178,16 +1178,20 @@ class NVD3TimeSeriesViz(NVD3Viz):
         df = df.fillna(0)
         if fd.get('granularity') == 'all':
             raise Exception(_('Pick a time granularity for your time series'))
+
+        metrics = fd.get('metrics')
+        if metrics is None:
+            metrics = [fd.get('metric')]
         if not aggregate:
             df = df.pivot_table(
                 index=DTTM_ALIAS,
                 columns=fd.get('groupby'),
-                values=utils.get_metric_names(fd.get('metrics')))
+                values=utils.get_metric_names(metrics))
         else:
             df = df.pivot_table(
                 index=DTTM_ALIAS,
                 columns=fd.get('groupby'),
-                values=utils.get_metric_names(fd.get('metrics')),
+                values=utils.get_metric_names(metrics),
                 fill_value=0,
                 aggfunc=sum)
 
