@@ -43,3 +43,5 @@ venv
 @eaDir/
 superset/data/*.json
 superset/custom_security_manager.py
+
+superset/custom_security/

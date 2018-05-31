@@ -766,9 +766,9 @@ export const controls = {
     type: 'SelectControl',
     freeForm: true,
     label: t('Time Granularity'),
-    default: 'one day',
+    default: 'P1D',
     choices: [
-      [null, 'all'],
+      ['all', 'all'],
       ['P1D', '1 day'],
       ['P2D', '2 days'],
       ['P3D', '3 days'],

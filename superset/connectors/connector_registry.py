@@ -41,6 +41,17 @@ class ConnectorRegistry(object):
         return datasources
 
     @classmethod
+    def get_all_druid_datasources(cls, session):
+        datasources = []
+        for source_type in ConnectorRegistry.sources:
+            if(source_type == 'druid'):
+                source_class = ConnectorRegistry.sources[source_type]
+                qry = session.query(source_class)
+                qry = source_class.default_query(qry)
+                datasources.extend(qry.all())
+        return datasources
+
+    @classmethod
     def get_datasource_by_name(cls, session, datasource_type, datasource_name,
                                schema, database_name):
         datasource_class = ConnectorRegistry.sources[datasource_type]

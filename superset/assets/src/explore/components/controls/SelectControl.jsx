@@ -117,7 +117,7 @@ export default class SelectControl extends React.PureComponent {
       const options = this.getOptions(nextProps);
       this.setState({ options, value: [] });
       this.props.onChange(null);
-    } else if (!equals(nextProps.choices, this.props.choices)) {
+    } else {
       const options = this.getOptions(nextProps);
       this.setState({ options });
     }

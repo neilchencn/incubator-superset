@@ -43,6 +43,9 @@ from superset.utils import DTTM_ALIAS, JS_MAX_INTEGER, merge_extra_filters
 
 config = app.config
 stats_logger = config.get('STATS_LOGGER')
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 
 class BaseViz(object):
@@ -165,7 +168,7 @@ class BaseViz(object):
         self.query = self.results.query
         self.status = self.results.status
         self.error_message = self.results.error_message
-  
+
         df = self.results.df
         # Transform the timestamp we received from database to pandas supported
         # datetime format. If no python_date_format is specified, the pattern will
@@ -223,6 +226,8 @@ class BaseViz(object):
             form_data.get('granularity') or
             form_data.get('granularity_sqla')
         )
+        if granularity == 'all':
+            granularity = None
         limit = int(form_data.get('limit') or 0)
         timeseries_limit_metric = form_data.get('timeseries_limit_metric')
         row_limit = int(form_data.get('row_limit') or config.get('ROW_LIMIT'))
@@ -301,6 +306,7 @@ class BaseViz(object):
             'prequeries': [],
             'is_prequery': False,
         }
+
         return d
 
     @property
@@ -392,7 +398,6 @@ class BaseViz(object):
                     is_loaded = True
             except Exception as e:
                 logging.exception(e)
-                print('get payload, errrr:{}'.format(e))
 
                 if not self.error_message:
                     self.error_message = '{}'.format(e)
@@ -1172,16 +1177,20 @@ class NVD3TimeSeriesViz(NVD3Viz):
         df = df.fillna(0)
         if fd.get('granularity') == 'all':
             raise Exception(_('Pick a time granularity for your time series'))
+
+        metrics = fd.get('metrics')
+        if metrics is None:
+            metrics = [fd.get('metric')]
         if not aggregate:
             df = df.pivot_table(
                 index=DTTM_ALIAS,
                 columns=fd.get('groupby'),
-                values=utils.get_metric_names(fd.get('metrics')))
+                values=utils.get_metric_names(metrics))
         else:
             df = df.pivot_table(
                 index=DTTM_ALIAS,
                 columns=fd.get('groupby'),
-                values=utils.get_metric_names(fd.get('metrics')),
+                values=utils.get_metric_names(metrics),
                 fill_value=0,
                 aggfunc=sum)
 
@@ -1391,8 +1400,8 @@ class NVD3TimePivotViz(NVD3TimeSeriesViz):
         # print(df.ranked)
         df['series'] = '-' + df.ranked.map(str)
         df['series'] = df['series'].str.replace('-0', 'current')
-        for row in df.to_dict(orient='records'):
-            print(row)
+        # for row in df.to_dict(orient='records'):
+        #     print(row)
         rank_lookup = {
             row['series']: row['ranked']
             for row in df.to_dict(orient='records')
@@ -1819,20 +1828,20 @@ class FilterBoxViz(BaseViz):
     def filter_query_obj(self):
         qry = super(FilterBoxViz, self).query_obj()
         groupby = self.form_data.get('groupby')
-        if len(groupby) < 1 and not self.form_data.get('date_filter'):
+        if not groupby or len(groupby) < 1 and not self.form_data.get('date_filter'):
             raise Exception(_('Pick at least one filter field'))
         qry['metrics'] = [
             self.form_data['metric']]
         return qry
 
     def get_data(self, df):
-        # if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-        #     raise Exception(_('No data was returned'))
-
         d = {}
         filters = [g for g in self.form_data['groupby']]
         for flt in filters:
             df = self.dataframes[flt]
+            if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+                raise Exception(_('No data was returned'))
+
             d[flt] = [{
                 'id': row[0],
                 'text': row[0],

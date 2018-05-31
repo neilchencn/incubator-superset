@@ -226,7 +226,7 @@ class MySecurityManager(SupersetSecurityManager):
             logger.error(LOGMSG_ERR_SEC_ADD_USER.format(str(e)))
             return False
 
-    def auth_user_db(self, login_user, is_cmc=False):
+    def auth_user_db(self, login_user, is_cmc=False, roles=[]):
         """
             this is a overwrite method
 

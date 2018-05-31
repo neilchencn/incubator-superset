@@ -511,7 +511,7 @@ class SliceModelView(SupersetModelView, DeleteMixin):  # noqa
         'slice_link', 'viz_type', 'datasource_link', 'creator', 'modified']
     order_columns = ['viz_type', 'datasource_link', 'modified']
     edit_columns = [
-        'slice_name', 'description', 'viz_type', 'owners', 'dashboards',
+        'slice_name', 'description',
         'params', 'cache_timeout']
     base_order = ('changed_on', 'desc')
     description_columns = {
@@ -629,7 +629,7 @@ class DashboardModelView(SupersetModelView, DeleteMixin):  # noqa
     list_columns = ['dashboard_link', 'creator', 'modified']
     order_columns = ['modified']
     edit_columns = [
-        'dashboard_title', 'slug', 'slices', 'owners', 'position_json', 'css',
+        'dashboard_title', 'slug', 'slices', 'position_json', 'css',
         'json_metadata']
     show_columns = edit_columns + ['table_names']
     search_columns = ('dashboard_title', 'slug', 'owners')
