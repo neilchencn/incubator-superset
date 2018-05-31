@@ -22,7 +22,7 @@ import urlparse
 # import the remote server here
 # remote server API to authenticate username/Email
 # from . import remote_server_api
-
+from superset.connectors.connector_registry import ConnectorRegistry
 import logging
 logger = logging.getLogger(__name__)
 
@@ -143,17 +143,41 @@ class MyAuthRemoteUserView(AuthDBView):
         auth_token = request.args.get("auth_token")
         redirect_to = request.args.get("redirect", "/login/")
 
+        roles = []
+
         user = self.authenticate(
             request_token=request_token, auth_token=auth_token)
-        # print(user)
+        print(user)
+        res_group = client.send_request('/restapi/group/')
+        cmc_group = res_group[1].get('data') if str(
+            res_group[0]) == '200' else []
+
+        if user['groups'][0] in [2, 6]:
+            roles.append('Gamma')
+            datasources = ConnectorRegistry.get_all_druid_datasources(
+                self.appbuilder.sm.get_session)
+
+            res_product = client.send_request(
+                '/restapi/user/{}/availableproducts/'.format(user['id']))
+            res_company = client.send_request('/restapi/company/')
+
+            cmc_product = res_product[1].get('data') if str(
+                res_product[0]) == '200' else []
+            cmc_company = res_company[1].get('data') if str(
+                res_company[0]) == '200' else []
+
+            print(cmc_product)
+            print(cmc_company)
+            print(cmc_group)
+        else:
+            roles.append('Alpha')
+
         local_user = self.appbuilder.sm.auth_user_db(
-            user, is_cmc=True)
+            user, True, roles)
         # import pydevd
         # pydevd.settrace('localhost', port=12345,
         #                 stdoutToServer=True, stderrToServer=True)
-        # print(client.send_request('/restapi/product/'))
-        # print(client.send_request('/restapi/company/'))
-        # print(client.send_request('/restapi/group/'))
+
         if local_user is not None:
             login_user(local_user)
             return redirect(self.appbuilder.get_url_for_index)
