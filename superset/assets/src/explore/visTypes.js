@@ -790,7 +790,7 @@ export const visTypes = {
       link_length: {
         label: t('No of Bins'),
         description: t('Select number of bins for the histogram'),
-        default: 5,
+        default: '10',
       },
       global_opacity: {
         description: t('Opacity of the bars. Between 0 and 1'),

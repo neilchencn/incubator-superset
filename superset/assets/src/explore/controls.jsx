@@ -875,7 +875,7 @@ export const controls = {
     freeForm: true,
     label: t('Resample Rule'),
     default: null,
-    choices: formatSelectOptions(['', '1T', '1H', '1D', '7D', '1M', '1AS']),
+    choices: formatSelectOptions(['1T', '1H', '1D', '7D', '1M', '1AS']),
     description: t('Pandas resample rule'),
   },
 
@@ -884,7 +884,7 @@ export const controls = {
     freeForm: true,
     label: t('Resample How'),
     default: null,
-    choices: formatSelectOptions(['', 'mean', 'sum', 'median']),
+    choices: formatSelectOptions(['mean', 'sum', 'median']),
     description: t('Pandas resample how'),
   },
 
@@ -893,7 +893,7 @@ export const controls = {
     freeForm: true,
     label: t('Resample Fill Method'),
     default: null,
-    choices: formatSelectOptions(['', 'ffill', 'bfill']),
+    choices: formatSelectOptions(['ffill', 'bfill']),
     description: t('Pandas resample fill method'),
   },
 

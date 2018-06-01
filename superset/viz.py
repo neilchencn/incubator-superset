@@ -772,7 +772,10 @@ class TreemapViz(BaseViz):
         if df is None or (isinstance(df, pd.DataFrame) and df.empty):
             raise Exception(_('No data was returned'))
 
-        df = df.set_index(self.form_data.get('groupby'))
+        groupby = self.form_data.get('groupby')
+        if not groupby:
+            raise Exception("Pick at lease one column to 'Group By'")
+        df = df.set_index(groupby)
         chart_data = [{'name': metric, 'children': self._nest(metric, df)}
                       for metric in df.columns]
         return chart_data
@@ -954,12 +957,20 @@ class BubbleViz(NVD3Viz):
         ]
         if form_data.get('series'):
             d['groupby'].append(form_data.get('series'))
+
+        
         self.x_metric = form_data.get('x')
         self.y_metric = form_data.get('y')
         self.z_metric = form_data.get('size')
         self.entity = form_data.get('entity')
         self.series = form_data.get('series') or self.entity
         d['row_limit'] = form_data.get('limit')
+        
+        if self.entity == self.series:
+            raise Exception(_('Pick a different entity and series'))
+
+        if self.x_metric == self.y_metric or self.x_metric == self.z_metric or self.y_metric == self.z_metric:
+            raise Exception(_('Pick a different metric for x, y and size'))
 
         d['metrics'] = [
             self.z_metric,
@@ -1474,7 +1485,7 @@ class HistogramViz(BaseViz):
         numeric_columns = self.form_data.get('all_columns_x')
         if numeric_columns is None:
             raise Exception(
-                _('Must have at least one numeric column specified'))
+                _('Pick at least one numeric column specified'))
         self.columns = numeric_columns
         d['columns'] = numeric_columns + self.groupby
         # override groupby entry to avoid aggregation

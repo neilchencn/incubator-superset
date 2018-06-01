@@ -1517,10 +1517,6 @@
       "default": null,
       "choices": [
         [
-          "",
-          ""
-        ],
-        [
           "1T",
           "1T"
         ],
@@ -1554,10 +1550,6 @@
       "default": null,
       "choices": [
         [
-          "",
-          ""
-        ],
-        [
           "mean",
           "mean"
         ],
@@ -1578,10 +1570,6 @@
       "label": "Resample Fill Method",
       "default": null,
       "choices": [
-        [
-          "",
-          ""
-        ],
         [
           "ffill",
           "ffill"
