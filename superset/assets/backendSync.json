@@ -1751,6 +1751,37 @@
         ]
       ]
     },
+    "row_limit_low": {
+      "type": "SelectControl",
+      "freeForm": true,
+      "label": "Row limit",
+      "validators": [
+        null
+      ],
+      "default": 500,
+      "choices": [
+        [
+          10,
+          "10"
+        ],
+        [
+          50,
+          "50"
+        ],
+        [
+          100,
+          "100"
+        ],
+        [
+          250,
+          "250"
+        ],
+        [
+          500,
+          "500"
+        ]
+      ]
+    },
     "limit": {
       "type": "SelectControl",
       "freeForm": true,

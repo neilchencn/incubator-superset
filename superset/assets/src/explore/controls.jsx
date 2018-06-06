@@ -68,6 +68,9 @@ const D3_FORMAT_OPTIONS = [
 
 const ROW_LIMIT_OPTIONS = [10, 50, 100, 250, 500, 1000, 5000, 10000, 50000];
 
+const ROW_LIMIT_LOW_OPTIONS = [10, 50, 100, 250, 500];
+
+
 const SERIES_LIMITS = [0, 5, 10, 25, 50, 100, 500];
 
 export const D3_TIME_FORMAT_OPTIONS = [
@@ -959,6 +962,15 @@ export const controls = {
     validators: [v.integer],
     default: 10000,
     choices: formatSelectOptions(ROW_LIMIT_OPTIONS),
+  },
+
+  row_limit_low: {
+    type: 'SelectControl',
+    freeForm: true,
+    label: t('Row limit'),
+    validators: [v.integer],
+    default: 500,
+    choices: formatSelectOptions(ROW_LIMIT_LOW_OPTIONS),
   },
 
   limit: {
