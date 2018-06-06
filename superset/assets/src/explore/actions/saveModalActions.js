@@ -1,6 +1,6 @@
 import { getExploreUrlAndPayload } from '../exploreUtils';
 
-const $ = window.$ = require('jquery');
+const $ = (window.$ = require('jquery'));
 
 export const FETCH_DASHBOARDS_SUCCEEDED = 'FETCH_DASHBOARDS_SUCCEEDED';
 export function fetchDashboardsSucceeded(choices) {
@@ -21,7 +21,10 @@ export function fetchDashboards(userId) {
       success: (data) => {
         const choices = [];
         for (let i = 0; i < data.pks.length; i++) {
-          choices.push({ value: data.pks[i], label: data.result[i].dashboard_title });
+          choices.push({
+            value: data.pks[i],
+            label: data.result[i].dashboard_title,
+          });
         }
         dispatch(fetchDashboardsSucceeded(choices));
       },
@@ -61,12 +64,12 @@ export function saveSlice(formData, requestParams) {
       data: {
         form_data: JSON.stringify(payload),
       },
-      success: ((data) => {
+      success: (data) => {
         dispatch(saveSliceSuccess(data));
-      }),
-      error: (() => {
+      },
+      error: () => {
         dispatch(saveSliceFailed());
-      }),
+      },
     });
   };
 }
