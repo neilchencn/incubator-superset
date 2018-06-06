@@ -565,12 +565,11 @@ class SliceModelView(SupersetModelView, DeleteMixin):  # noqa
         # ]
         _temp = []
         perms = []
-        if not has_all_datasource_access():
-            perms = get_view_menus('datasource_access')
 
         for d in datasources:
             if d.type == 'druid':
-                if len(perms) > 0:
+                if not has_all_datasource_access():
+                    perms = get_view_menus('datasource_access')
                     if d.perm in perms:
                         _temp.append({'value': str(d.id) + '__' +
                                       d.type, 'label': repr(d)})
@@ -1370,8 +1369,9 @@ class Superset(BaseSupersetView):
             slc = db.session.query(models.Slice).filter_by(id=slice_id).first()
             slice_form_data = slc.form_data.copy()
             # allow form_data in request override slice from_data
-            slice_form_data.update(form_data)
-            form_data = slice_form_data
+            if not form_data.get('viz_type') or slice_form_data.get('viz_type') == form_data.get('viz_type'):
+                slice_form_data.update(form_data)
+                form_data = slice_form_data
 
         return form_data, slc
 

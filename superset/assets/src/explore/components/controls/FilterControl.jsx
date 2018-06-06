@@ -32,7 +32,6 @@ export default class FilterControl extends React.Component {
   }
 
   componentDidMount() {
-    console.info('filter control did mount', this.state);
     this.state.filters.forEach((filter, index) =>
       this.fetchFilterValues(index),
     );

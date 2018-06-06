@@ -230,8 +230,10 @@ class BaseViz(object):
             granularity = None
         limit = int(form_data.get('limit') or 0)
         timeseries_limit_metric = form_data.get('timeseries_limit_metric')
-        row_limit = int(form_data.get('row_limit') or config.get('ROW_LIMIT'))
 
+        row_limit = int(form_data.get('row_limit') or config.get('ROW_LIMIT'))
+        if form_data.get('row_limit_low'):
+            row_limit = int(form_data.get('row_limit_low'))
         # default order direction
         order_desc = form_data.get('order_desc', True)
 
@@ -772,7 +774,10 @@ class TreemapViz(BaseViz):
         if df is None or (isinstance(df, pd.DataFrame) and df.empty):
             raise Exception(_('No data was returned'))
 
-        df = df.set_index(self.form_data.get('groupby'))
+        groupby = self.form_data.get('groupby')
+        if not groupby:
+            raise Exception("Pick at lease one column to 'Group By'")
+        df = df.set_index(groupby)
         chart_data = [{'name': metric, 'children': self._nest(metric, df)}
                       for metric in df.columns]
         return chart_data
@@ -933,6 +938,8 @@ class BoxPlotViz(NVD3Viz):
             return set(above.tolist() + below.tolist())
 
         aggregate = [Q1, np.median, Q3, whisker_high, whisker_low, outliers]
+        if not form_data.get('groupby'):
+            raise Exception(_('Pick at least one groupby'))
         df = df.groupby(form_data.get('groupby')).agg(aggregate)
         chart_data = self.to_series(df)
         return chart_data
@@ -954,12 +961,19 @@ class BubbleViz(NVD3Viz):
         ]
         if form_data.get('series'):
             d['groupby'].append(form_data.get('series'))
+
         self.x_metric = form_data.get('x')
         self.y_metric = form_data.get('y')
         self.z_metric = form_data.get('size')
         self.entity = form_data.get('entity')
         self.series = form_data.get('series') or self.entity
         d['row_limit'] = form_data.get('limit')
+
+        if form_data.get('series') and self.entity == self.series:
+            raise Exception(_('Pick a different entity and series'))
+
+        if self.x_metric == self.y_metric or self.x_metric == self.z_metric or self.y_metric == self.z_metric:
+            raise Exception(_('Pick a different metric for x, y and size'))
 
         d['metrics'] = [
             self.z_metric,
@@ -1448,7 +1462,8 @@ class DistributionPieViz(NVD3Viz):
     def get_data(self, df):
         if df is None or (isinstance(df, pd.DataFrame) and df.empty):
             raise Exception(_('No data was returned'))
-
+        if len(self.groupby) > 1:
+            raise Exception(_('Pack at only one groupby'))
         df = df.pivot_table(
             index=self.groupby,
             values=[self.metrics[0]])
@@ -1474,7 +1489,7 @@ class HistogramViz(BaseViz):
         numeric_columns = self.form_data.get('all_columns_x')
         if numeric_columns is None:
             raise Exception(
-                _('Must have at least one numeric column specified'))
+                _('Pick at least one numeric column specified'))
         self.columns = numeric_columns
         d['columns'] = numeric_columns + self.groupby
         # override groupby entry to avoid aggregation
@@ -1672,7 +1687,7 @@ class DirectedForceViz(BaseViz):
     def query_obj(self):
         qry = super(DirectedForceViz, self).query_obj()
         if len(self.form_data['groupby']) != 2:
-            raise Exception(_("Pick exactly 2 columns to 'Group By'"))
+            raise Exception(_("Pick exactly 2 columns to 'Source/Target'"))
         qry['metrics'] = [self.form_data['metric']]
         return qry
 

@@ -33,8 +33,12 @@ const propTypes = {
 
 class ExploreChartHeader extends React.PureComponent {
   runQuery() {
-    this.props.actions.runQuery(this.props.form_data, true,
-      this.props.timeout, this.props.chart.chartKey);
+    this.props.actions.runQuery(
+      this.props.form_data,
+      true,
+      this.props.timeout,
+      this.props.chart.chartKey,
+    );
   }
 
   updateChartTitleOrSaveSlice(newTitle) {
@@ -43,17 +47,23 @@ class ExploreChartHeader extends React.PureComponent {
       slice_name: newTitle,
       action: isNewSlice ? 'saveas' : 'overwrite',
     };
-    this.props.actions.saveSlice(this.props.form_data, params)
-      .then((data) => {
-        if (isNewSlice) {
-          this.props.actions.createNewSlice(
-            data.can_add, data.can_download, data.can_overwrite,
-            data.slice, data.form_data);
-          this.props.addHistory({ isReplace: true, title: `[chart] ${data.slice.slice_name}` });
-        } else {
-          this.props.actions.updateChartTitle(newTitle);
-        }
-      });
+    this.props.actions.saveSlice(this.props.form_data, params).then((data) => {
+      if (isNewSlice) {
+        this.props.actions.createNewSlice(
+          data.can_add,
+          data.can_download,
+          data.can_overwrite,
+          data.slice,
+          data.form_data,
+        );
+        this.props.addHistory({
+          isReplace: true,
+          title: `[chart] ${data.slice.slice_name}`,
+        });
+      } else {
+        this.props.actions.updateChartTitle(newTitle);
+      }
+    });
   }
 
   renderChartTitle() {
@@ -73,13 +83,12 @@ class ExploreChartHeader extends React.PureComponent {
       chartUpdateEndTime,
       chartUpdateStartTime,
       latestQueryFormData,
-      queryResponse } = this.props.chart;
-    const chartSucceeded = ['success', 'rendered'].indexOf(this.props.chart.chartStatus) > 0;
+      queryResponse,
+    } = this.props.chart;
+    const chartSucceeded =
+      ['success', 'rendered'].indexOf(this.props.chart.chartStatus) > 0;
     return (
-      <div
-        id="slice-header"
-        className="clearfix panel-title-large"
-      >
+      <div id="slice-header" className="clearfix panel-title-large">
         <EditableTitle
           title={this.renderChartTitle()}
           canEdit={!this.props.slice || this.props.can_overwrite}
@@ -87,40 +96,41 @@ class ExploreChartHeader extends React.PureComponent {
         />
 
         {this.props.slice &&
-        <span>
-          <FaveStar
-            itemId={this.props.slice.slice_id}
-            fetchFaveStar={this.props.actions.fetchFaveStar}
-            saveFaveStar={this.props.actions.saveFaveStar}
-            isStarred={this.props.isStarred}
-          />
+          <span>
+            <FaveStar
+              itemId={this.props.slice.slice_id}
+              fetchFaveStar={this.props.actions.fetchFaveStar}
+              saveFaveStar={this.props.actions.saveFaveStar}
+              isStarred={this.props.isStarred}
+            />
 
-          <TooltipWrapper
-            label="edit-desc"
-            tooltip={t('Edit chart properties')}
-          >
-            <a
-              className="edit-desc-icon"
-              href={`/slicemodelview/edit/${this.props.slice.slice_id}`}
+            <TooltipWrapper
+              label="edit-desc"
+              tooltip={t('Edit chart properties')}
             >
-              <i className="fa fa-edit" />
-            </a>
-          </TooltipWrapper>
-        </span>
-        }
+              <a
+                className="edit-desc-icon"
+                href={`/slicemodelview/edit/${this.props.slice.slice_id}`}
+              >
+                <i className="fa fa-edit" />
+              </a>
+            </TooltipWrapper>
+          </span>}
         {this.props.chart.sliceFormData &&
           <AlteredSliceTag
             origFormData={this.props.chart.sliceFormData}
             currentFormData={formData}
-          />
-        }
+          />}
         <div className="pull-right">
-          {chartSucceeded && queryResponse &&
+          {chartSucceeded &&
+            queryResponse &&
             <RowCountLabel
               rowcount={queryResponse.rowcount}
-              limit={formData.row_limit}
+              limit={+(formData.row_limit || formData.row_limit_low)}
             />}
-          {chartSucceeded && queryResponse && queryResponse.is_cached &&
+          {chartSucceeded &&
+            queryResponse &&
+            queryResponse.is_cached &&
             <CachedLabel
               onClick={this.runQuery.bind(this)}
               cachedTimestamp={queryResponse.cached_dttm}

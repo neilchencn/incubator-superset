@@ -1517,10 +1517,6 @@
       "default": null,
       "choices": [
         [
-          "",
-          ""
-        ],
-        [
           "1T",
           "1T"
         ],
@@ -1554,10 +1550,6 @@
       "default": null,
       "choices": [
         [
-          "",
-          ""
-        ],
-        [
           "mean",
           "mean"
         ],
@@ -1578,10 +1570,6 @@
       "label": "Resample Fill Method",
       "default": null,
       "choices": [
-        [
-          "",
-          ""
-        ],
         [
           "ffill",
           "ffill"
@@ -1760,6 +1748,37 @@
         [
           50000,
           "50000"
+        ]
+      ]
+    },
+    "row_limit_low": {
+      "type": "SelectControl",
+      "freeForm": true,
+      "label": "Row limit",
+      "validators": [
+        null
+      ],
+      "default": 500,
+      "choices": [
+        [
+          10,
+          "10"
+        ],
+        [
+          50,
+          "50"
+        ],
+        [
+          100,
+          "100"
+        ],
+        [
+          250,
+          "250"
+        ],
+        [
+          500,
+          "500"
         ]
       ]
     },

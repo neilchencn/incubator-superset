@@ -357,7 +357,7 @@ export const visTypes = {
       {
         label: t('Chart Options'),
         expanded: true,
-        controlSetRows: [['color_scheme']],
+        controlSetRows: [['color_scheme'], ['show_legend']],
       },
       {
         label: t('X Axis'),
@@ -600,7 +600,8 @@ export const visTypes = {
         expanded: true,
         controlSetRows: [
           ['color_scheme'],
-          ['treemap_ratio'],
+          ['treemap_ratio',
+          'show_legend'],
           ['number_format'],
         ],
       },
@@ -790,7 +791,7 @@ export const visTypes = {
       link_length: {
         label: t('No of Bins'),
         description: t('Select number of bins for the histogram'),
-        default: 5,
+        default: '10',
       },
       global_opacity: {
         description: t('Opacity of the bars. Between 0 and 1'),
@@ -1044,7 +1045,7 @@ export const visTypes = {
         controlSetRows: [
           ['entity'],
           ['all_columns_x'],
-          ['row_limit'],
+          ['row_limit_low'],
           ['order_by_entity'],
           ['min_leaf_node_event_count'],
         ],
@@ -1067,7 +1068,7 @@ export const visTypes = {
             ? control.choices[0][0]
             : null),
       },
-      row_limit: {
+      row_limit_low: {
         label: t('Event count limit'),
         description: t(
           'The maximum number of events to return, equivalent to number of rows',
