@@ -204,7 +204,6 @@ class MySecurityManager(SupersetSecurityManager):
         """
             Generic function to create user
         """
-
         try:
             user = self.user_model()
             user.first_name = first_name
@@ -225,6 +224,49 @@ class MySecurityManager(SupersetSecurityManager):
         except Exception as e:
             logger.error(LOGMSG_ERR_SEC_ADD_USER.format(str(e)))
             return False
+
+    def create_role(self, name):
+        role = self.find_role(name)
+        if role is None:
+            role = self.add_role(name)
+            _pre = name.split('[')[0]
+
+            _name = name.split('[')[1][:-1]
+            # if _pre == 'DICT':
+            #     pvm = self.find_permission_view_menu('menu_access', _name)
+            #     if not pvm:
+            #         pvm = self.add_permission_view_menu('menu_access', _name)
+            #     role.permissions.append(pvm)
+            # if _pre == 'DATASOURCE':
+            #     pvm = self.find_permission_view_menu(
+            #         'datasource_access', _name)
+            #     if not pvm:
+            #         pvm = self.add_permission_view_menu(
+            #             'datasource_access', _name)
+            #     role.permissions.append(pvm)
+            if _pre == 'COMPANY':
+                pvm = self.find_permission_view_menu(
+                    'company_access', _name)
+                if not pvm:
+                    pvm = self.add_permission_view_menu(
+                        'company_access', _name)
+                role.permissions.append(pvm)
+        return role
+
+    def checkRoles(self, user, roles):
+        cr_names = [cr.name for cr in user.roles]
+        for cr in cr_names[:]:
+            if cr not in roles:
+                print('delete role {}'.format(cr))
+                user.roles.remove(self.find_role(cr))
+                cr_names.remove(cr)
+        for c in roles:
+            if c not in cr_names:
+                print('add role {}'.format(c))
+                self.create_role(c)
+                user.roles.append(self.find_role(c))
+        print('final roles:{}'.format(user.roles))
+        return user
 
     def auth_user_db(self, login_user, is_cmc=False, roles=[]):
         """
@@ -258,6 +300,8 @@ class MySecurityManager(SupersetSecurityManager):
             return None
 
         if is_cmc or self.verify(login_user.get('password'), user.password):
+            # if is_cmc:
+            #     user = self.checkRoles(user, roles)
             self.update_user_auth_stat(user, True)
             return user
         else:
