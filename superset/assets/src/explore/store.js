@@ -50,6 +50,11 @@ export function getControlsState(state, form_data) {
   const viz = visTypes[vizType];
   const controlOverrides = viz.controlOverrides || {};
   const controlsState = {};
+  for (const key of Object.keys(formData)) {
+    if (controlNames.indexOf(key) < 0) {
+      delete formData[key];
+    }
+  }
   controlNames.forEach((k) => {
     const control = Object.assign({}, controls[k], controlOverrides[k]);
     if (control.mapStateToProps) {
@@ -58,6 +63,15 @@ export function getControlsState(state, form_data) {
     }
 
     // If the value is not valid anymore based on choices, clear it
+    if (
+      formData[k] &&
+      control.type === 'SelectControl' &&
+      k === 'groupby' &&
+      control.label === 'Source / Target' &&
+      formData[k].length > 2
+    ) {
+      delete formData[k];
+    }
     if (
       control.type === 'SelectControl' &&
       control.choices &&
