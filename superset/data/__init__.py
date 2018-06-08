@@ -2085,10 +2085,10 @@ def set_custom_role():
     datasources = ConnectorRegistry.get_all_datasources(db.session)
 
     for datasource in datasources:
-        print('DATASOURCE[{}]'.format(datasource))
         if 'main' not in datasource.perm:
             role_name = 'DATASOURCE[{}]'.format(datasource)
             if not security_manager.find_role(role_name):
+                print('add role:'.format(role_name))
                 ds_role = security_manager.add_role(role_name)
                 ds_role_pvms = [
                     p for p in pvms if is_datasource(p, datasource.perm)]
@@ -2100,6 +2100,7 @@ def set_custom_role():
     for company in companies:
         role_name = 'COMPANY[{}]'.format(company.field_name)
         if not security_manager.find_role(role_name):
+            print('add role:'.format(role_name))
             c_role = security_manager.add_role(role_name)
             c_role_pvms = [p for p in pvms if is_company(
                 p, company.field_name)]
@@ -2110,6 +2111,7 @@ def set_custom_role():
     for d in dicts:
         role_name = 'DICT[{}]'.format(d)
         if not security_manager.find_role(role_name):
+            print('add role:'.format(role_name))
             c_role = security_manager.add_role(role_name)
             c_role_pvms = [p for p in pvms if is_dict(
                 p, d)]
