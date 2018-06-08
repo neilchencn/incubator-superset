@@ -111,7 +111,7 @@ export default class SelectControl extends React.PureComponent {
   }
   componentWillReceiveProps(nextProps) {
     if (
-      this.props.name === 'groupby' &&
+      (this.props.name === 'groupby' || this.props.name === 'columns') &&
       !equals(nextProps.options, this.props.options)
     ) {
       const options = this.getOptions(nextProps);
