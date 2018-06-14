@@ -35,6 +35,9 @@
             $('.filters a.remove-filter').on('click', checkSearchButton);
             $('.filter-action').toggle(true);
         } else {
+            if ($('.filter-action:visible').length > 0) {
+                $('#search-action').click();    
+            }
             $('.filter-action').toggle(false);
         }
     }
