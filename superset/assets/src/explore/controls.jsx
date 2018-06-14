@@ -706,7 +706,7 @@ export const controls = {
     default: null,
     description: t('Columns to display'),
     mapStateToProps: state => ({
-      choices: (state.datasource) ? state.datasource.all_cols : [],
+      choices: (state.datasource) ? state.datasource.gb_cols : [],
     }),
   },
 
@@ -716,7 +716,7 @@ export const controls = {
     default: null,
     description: t('Columns to display'),
     mapStateToProps: state => ({
-      choices: (state.datasource) ? state.datasource.all_cols : [],
+      choices: (state.datasource) ? state.datasource.gb_cols : [],
     }),
   },
 

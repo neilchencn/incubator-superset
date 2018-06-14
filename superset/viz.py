@@ -201,7 +201,8 @@ class BaseViz(object):
         """Converting metrics to numeric when pandas.read_sql cannot"""
         for col, dtype in df.dtypes.items():
             if dtype.type == np.object_ and col in metrics:
-                df[col] = pd.to_numeric(df[col])
+                # print(df[df['min_wipe_results_speed'].apply(lambda x: not isinstance(x, str))])
+                df[col] = pd.to_numeric(df[col], errors='coerce')
 
     def query_obj(self):
         """Building a query object"""
@@ -210,6 +211,10 @@ class BaseViz(object):
         metrics = form_data.get('metrics') or []
         columns = form_data.get('columns') or []
         groupby = []
+        if not isinstance(gb, list):
+            gb = [gb]
+        if not isinstance(columns, list):
+            columns = [columns]
         for o in gb + columns:
             if o not in groupby:
                 groupby.append(o)
@@ -511,6 +516,7 @@ class TableViz(BaseViz):
     def query_obj(self):
         d = super(TableViz, self).query_obj()
         fd = self.form_data
+        print("tgable:{}".format(fd))
 
         if fd.get('all_columns') and (fd.get('groupby') or fd.get('metrics')):
             raise Exception(_(
@@ -534,7 +540,9 @@ class TableViz(BaseViz):
                 lambda m: m not in d['metrics'],
                 fd['percent_metrics'],
             ))
-
+        if len(d['metrics']) < 1 and d['groupby'] and len(d['groupby']) < 2:
+            raise Exception(
+                'You must set up least two fields for [Groupby]  or set least one field for [Metrics] or [Percentage Metrics]')
         d['is_timeseries'] = self.should_be_timeseries()
         return d
 
@@ -602,7 +610,7 @@ class TimeTableViz(BaseViz):
         fd = self.form_data
 
         if not fd.get('metrics'):
-            raise Exception(_('Pick at least one metric'))
+            raise Exception(_('Pick at least one field for [Metric]'))
 
         if fd.get('groupby') and len(fd.get('metrics')) > 1:
             raise Exception(_(
@@ -628,7 +636,8 @@ class TimeTableViz(BaseViz):
         return dict(
             records=pt.to_dict(orient='index'),
             columns=list(pt.columns),
-            is_group_by=len(fd.get('groupby')) > 0,
+            is_group_by=fd.get('groupby') is not None and len(
+                fd.get('groupby')) > 0,
         )
 
 
@@ -736,6 +745,9 @@ class WordCloudViz(BaseViz):
     def query_obj(self):
         d = super(WordCloudViz, self).query_obj()
 
+        if not self.form_data.get('series'):
+            raise Exception("Pick one field for [Series]")
+
         d['metrics'] = [self.form_data.get('metric')]
         d['groupby'] = [self.form_data.get('series')]
         return d
@@ -776,7 +788,7 @@ class TreemapViz(BaseViz):
 
         groupby = self.form_data.get('groupby')
         if not groupby:
-            raise Exception("Pick at lease one column to 'Group By'")
+            raise Exception("Pick at lease one field for [Group By]")
         df = df.set_index(groupby)
         chart_data = [{'name': metric, 'children': self._nest(metric, df)}
                       for metric in df.columns]
@@ -939,7 +951,7 @@ class BoxPlotViz(NVD3Viz):
 
         aggregate = [Q1, np.median, Q3, whisker_high, whisker_low, outliers]
         if not form_data.get('groupby'):
-            raise Exception(_('Pick at least one groupby'))
+            raise Exception(_('Pick at least one field for [Group by]'))
         df = df.groupby(form_data.get('groupby')).agg(aggregate)
         chart_data = self.to_series(df)
         return chart_data
@@ -1070,7 +1082,7 @@ class BigNumberViz(BaseViz):
         d = super(BigNumberViz, self).query_obj()
         metric = self.form_data.get('metric')
         if not metric:
-            raise Exception(_('Pick a metric!'))
+            raise Exception(_('Pick one field for [Metric]'))
         d['metrics'] = [self.form_data.get('metric')]
         self.form_data['metric'] = metric
         return d
@@ -1102,7 +1114,7 @@ class BigNumberTotalViz(BaseViz):
         d = super(BigNumberTotalViz, self).query_obj()
         metric = self.form_data.get('metric')
         if not metric:
-            raise Exception(_('Pick a metric!'))
+            raise Exception(_('Pick one field for [Metric]'))
         d['metrics'] = [self.form_data.get('metric')]
         self.form_data['metric'] = metric
         return d
@@ -1313,9 +1325,9 @@ class NVD3DualLineViz(NVD3Viz):
         m2 = self.form_data.get('metric_2')
         d['metrics'] = [m1, m2]
         if not m1:
-            raise Exception(_('Pick a metric for left axis!'))
+            raise Exception(_('Pick one field for [Left Axis Metric]'))
         if not m2:
-            raise Exception(_('Pick a metric for right axis!'))
+            raise Exception(_('Pick one field for [Right Axis Metric]'))
         if m1 == m2:
             raise Exception(_('Please choose different metrics'
                               ' on left and right axis'))
@@ -1462,8 +1474,11 @@ class DistributionPieViz(NVD3Viz):
     def get_data(self, df):
         if df is None or (isinstance(df, pd.DataFrame) and df.empty):
             raise Exception(_('No data was returned'))
-        if len(self.groupby) > 1:
-            raise Exception(_('Pack at only one groupby'))
+        # groupby = []
+        # # if self.groupby and not isinstance(self.groupby, list):
+        # #     groupby = [self.groupby]
+        # if len(self.groupby) > 1:
+        #     raise Exception(_('Pack at only one groupby'))
         df = df.pivot_table(
             index=self.groupby,
             values=[self.metrics[0]])
@@ -1489,7 +1504,13 @@ class HistogramViz(BaseViz):
         numeric_columns = self.form_data.get('all_columns_x')
         if numeric_columns is None:
             raise Exception(
-                _('Pick at least one numeric column specified'))
+                _('Pick one field for [Numeric Column]'))
+        if any(el in numeric_columns for el in self.groupby):
+            raise Exception(
+                _('Numeric columns and Groupby cannot contain the same fields'))
+
+        if self.form_data.get('having_filters'):
+            raise Exception(_('This chart does not support result filtering'))
         self.columns = numeric_columns
         d['columns'] = numeric_columns + self.groupby
         # override groupby entry to avoid aggregation
@@ -1529,14 +1550,17 @@ class DistributionBarViz(DistributionPieViz):
     def query_obj(self):
         d = super(DistributionBarViz, self).query_obj()  # noqa
         fd = self.form_data
+        groupby = []
+        if fd.get('groupby') and not isinstance(fd.get('groupby'), list):
+            groupby = [fd.get('groupby')]
         if (
             len(d['groupby']) <
-            len(fd.get('groupby') or []) + len(fd.get('columns') or [])
+            len(groupby) + len(fd.get('columns') or [])
         ):
             raise Exception(
                 _("Can't have overlap between Series and Breakdowns"))
         if not fd.get('metrics'):
-            raise Exception(_('Pick at least one metric'))
+            raise Exception(_('Pick at least one field for [Metrics]'))
         if not fd.get('groupby'):
             raise Exception(_('Pick at least one field for [Series]'))
         return d
@@ -1635,7 +1659,7 @@ class SankeyViz(BaseViz):
     def query_obj(self):
         qry = super(SankeyViz, self).query_obj()
         if len(qry['groupby']) != 2:
-            raise Exception(_('Pick exactly 2 columns as [Source / Target]'))
+            raise Exception(_('Pick exactly 2 fields for [Source / Target]'))
         qry['metrics'] = [
             self.form_data['metric']]
         return qry
@@ -1687,7 +1711,7 @@ class DirectedForceViz(BaseViz):
     def query_obj(self):
         qry = super(DirectedForceViz, self).query_obj()
         if len(self.form_data['groupby']) != 2:
-            raise Exception(_("Pick exactly 2 columns to 'Source/Target'"))
+            raise Exception(_("Pick exactly 2 fields for [Source / Target]"))
         qry['metrics'] = [self.form_data['metric']]
         return qry
 
@@ -1711,6 +1735,9 @@ class ChordViz(BaseViz):
     def query_obj(self):
         qry = super(ChordViz, self).query_obj()
         fd = self.form_data
+        if fd.get('groupby') == fd.get('columns'):
+            raise Exception(_('Source and target must be different'))
+
         qry['groupby'] = [fd.get('groupby'), fd.get('columns')]
         qry['metrics'] = [fd.get('metric')]
         return qry
@@ -1844,7 +1871,7 @@ class FilterBoxViz(BaseViz):
         qry = super(FilterBoxViz, self).query_obj()
         groupby = self.form_data.get('groupby')
         if not groupby or len(groupby) < 1 and not self.form_data.get('date_filter'):
-            raise Exception(_('Pick at least one filter field'))
+            raise Exception(_('Pick at least one field for [Filter]'))
         qry['metrics'] = [
             self.form_data['metric']]
         return qry
@@ -1902,7 +1929,11 @@ class ParallelCoordinatesViz(BaseViz):
         d = super(ParallelCoordinatesViz, self).query_obj()
         fd = self.form_data
         d['metrics'] = copy.copy(fd.get('metrics'))
+        if not fd.get('series'):
+            raise Exception(_('Pick one field for [Series]'))
         second = fd.get('secondary_metric')
+        if not second:
+            raise Exception(_('Pick one field for [Color Metric]'))
         if second not in d['metrics']:
             d['metrics'] += [second]
         d['groupby'] = [fd.get('series')]
@@ -1929,6 +1960,8 @@ class HeatmapViz(BaseViz):
     def query_obj(self):
         d = super(HeatmapViz, self).query_obj()
         fd = self.form_data
+        if fd.get('all_columns_x') == fd.get('all_columns_y'):
+            raise Exception(_('Columns X and Y must be different'))
         d['metrics'] = [fd.get('metric')]
         d['groupby'] = [fd.get('all_columns_x'), fd.get('all_columns_y')]
         return d
@@ -1942,6 +1975,7 @@ class HeatmapViz(BaseViz):
         y = fd.get('all_columns_y')
         v = fd.get('metric')
         if x == y:
+            raise Exception(_('Columns X and Y must be different'))
             df.columns = ['x', 'y', 'v']
         else:
             df = df[[x, y, v]]
@@ -2854,7 +2888,7 @@ class PartitionViz(NVD3TimeSeriesViz):
         fd = self.form_data
         groups = fd.get('groupby', [])
         time_op = fd.get('time_series_option', 'not_time')
-        if not len(groups):
+        if not groups or not len(groups):
             raise ValueError('Please choose at least one groupby')
         if time_op == 'not_time':
             levels = self.levels_for('agg_sum', groups, df)

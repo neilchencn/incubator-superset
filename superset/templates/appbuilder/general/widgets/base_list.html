@@ -27,8 +27,6 @@ can_show = "can_show" | is_item_visible(modelview_name) %} {% set can_edit = "ca
         console.info('check all:',checkAllFlag);
         checkAllFlag = !checkAllFlag;
         $('.action_check').prop('checked', checkAllFlag).trigger("change");
-        
-        
     });
     
     $('.action_check').change(function(e) {
@@ -46,6 +44,13 @@ can_show = "can_show" | is_item_visible(modelview_name) %} {% set can_edit = "ca
             checkAllFlag = false;
         }
     });
+
+    $('#modal-confirm').on('show.bs.modal', function(e) {
+        if (e.hasOwnProperty('relatedTarget')) {
+            $('.modal-text').html('You sure you want to delete this item?');
+        }
+    });
+    
 </script> {% else %}
 <b>{{_("No records found")}}</b>
 {% endif %}

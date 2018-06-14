@@ -8,16 +8,21 @@ import { t } from '../../locales';
 import { exportChart } from '../exploreUtils';
 
 const propTypes = {
-  canDownload: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]).isRequired,
+  canDownload: PropTypes.oneOfType([PropTypes.string, PropTypes.bool])
+    .isRequired,
   chartStatus: PropTypes.string,
   latestQueryFormData: PropTypes.object,
   queryResponse: PropTypes.object,
 };
 
 export default function ExploreActionButtons({
-    canDownload, chartStatus, latestQueryFormData, queryResponse }) {
+  canDownload,
+  chartStatus,
+  latestQueryFormData,
+  queryResponse,
+}) {
   const exportToCSVClasses = cx('btn btn-default btn-sm', {
-    'disabled disabledButton': !canDownload,
+    'disabled disabledButton': !canDownload || chartStatus !== 'rendered',
   });
   const doExportCSV = exportChart.bind(this, latestQueryFormData, 'csv');
   const doExportChart = exportChart.bind(this, latestQueryFormData, 'json');

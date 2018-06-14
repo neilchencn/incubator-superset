@@ -300,8 +300,8 @@ class MySecurityManager(SupersetSecurityManager):
             return None
 
         if is_cmc or self.verify(login_user.get('password'), user.password):
-            # if is_cmc:
-            #     user = self.checkRoles(user, roles)
+            if is_cmc:
+                user = self.checkRoles(user, roles)
             self.update_user_auth_stat(user, True)
             return user
         else:

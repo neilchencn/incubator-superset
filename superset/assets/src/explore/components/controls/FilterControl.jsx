@@ -38,9 +38,18 @@ export default class FilterControl extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.name === 'filters' && nextProps.value.length === 0) {
-      this.setState({ filters: [] });
+    if (this.props.datasource.id !== nextProps.datasource.id) {
+      // this.state.filters.forEach((f, i) => {
+      //   this.removeFilter(i);
+      // });
+      this.props.onChange([]);
     }
+    // if (this.props.name === 'filters' && nextProps.value.length === 0) {
+    //   // this.state.filters.forEach((f, i) => {
+    //   //   this.removeFilter(i);
+    //   // });
+    //   this.props.onChange([]);
+    // }
   }
 
   fetchFilterValues(index, column) {

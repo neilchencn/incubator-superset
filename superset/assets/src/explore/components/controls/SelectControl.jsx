@@ -111,7 +111,7 @@ export default class SelectControl extends React.PureComponent {
   }
   componentWillReceiveProps(nextProps) {
     if (
-      this.props.name === 'groupby' &&
+      (this.props.name === 'groupby' || this.props.name === 'columns') &&
       !equals(nextProps.options, this.props.options)
     ) {
       const options = this.getOptions(nextProps);
@@ -120,6 +120,21 @@ export default class SelectControl extends React.PureComponent {
     } else {
       const options = this.getOptions(nextProps);
       this.setState({ options });
+      if (
+        !nextProps.multi &&
+        nextProps.value &&
+        typeof nextProps.value !== 'string' &&
+        nextProps.value.length > 0
+      ) {
+        this.props.onChange(nextProps.value[0]);
+      }
+      if (
+        nextProps.multi &&
+        nextProps.value &&
+        typeof nextProps.value === 'string'
+      ) {
+        this.props.onChange([nextProps.value]);
+      }
     }
   }
   onChange(opt) {

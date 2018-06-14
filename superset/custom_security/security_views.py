@@ -148,51 +148,51 @@ class MyAuthRemoteUserView(AuthDBView):
         user = self.authenticate(
             request_token=request_token, auth_token=auth_token)
 
-        # res_group = client.send_request('/restapi/group/')
-        # cmc_group = res_group[1].get('data') if str(
-        #     res_group[0]) == '200' else []
+        res_group = client.send_request('/restapi/group/')
+        cmc_group = res_group[1].get('data') if str(
+            res_group[0]) == '200' else []
 
-        # if user['groups'][0] in [2, 6]:
-        #     roles.append('Gamma')
-        #     datasources = ConnectorRegistry.get_all_druid_datasources(
-        #         self.appbuilder.sm.get_session)
+        if user['groups'][0] in [2, 6]:
+            roles.append('Gamma')
+            datasources = ConnectorRegistry.get_all_druid_datasources(
+                self.appbuilder.sm.get_session)
 
-        #     res_product = client.send_request(
-        #         '/restapi/user/{}/availableproducts/'.format(user['id']))
-        #     cmc_product = res_product[1].get('data') if str(
-        #         res_product[0]) == '200' else []
+            res_product = client.send_request(
+                '/restapi/user/{}/availableproducts/'.format(user['id']))
+            cmc_product = res_product[1].get('data') if str(
+                res_product[0]) == '200' else []
 
-        #     for p in cmc_product:
-        #         pname = [ds.name for ds in datasources if ds.name.upper() ==
-        #                  p['name'].upper()]
-        #         if len(pname) > 0:
-        #             pname = pname[0]
-        #         else:
-        #             pname = None
+            for p in cmc_product:
+                pname = [ds.name for ds in datasources if ds.name.upper() ==
+                         p['name'].upper()]
+                if len(pname) > 0:
+                    pname = pname[0]
+                else:
+                    pname = None
 
-        #         if pname:
-        #             roles.append('DATASOURCE[{}]'.format(pname))
-        #             if pname == 'GreenT':
-        #                 roles.append('DATASOURCE[GreenT-hourly]')
-        #                 roles.append('DICT[GreenT]')
-        #             if pname == 'iRT':
-        #                 roles.append('DATASOURCE[iRT-hourly]')
-        #                 roles.append('DICT[iRT]')
-        #             if pname == 'DSE':
-        #                 roles.append('DICT[DSE]')
-        #             if pname == 'DSED':
-        #                 roles.append('DICT[DSED]')
+                if pname:
+                    roles.append('DATASOURCE[{}]'.format(pname))
+                    if pname == 'GreenT':
+                        roles.append('DATASOURCE[GreenT-hourly]')
+                        roles.append('DICT[GreenT]')
+                    if pname == 'iRT':
+                        roles.append('DATASOURCE[iRT-hourly]')
+                        roles.append('DICT[iRT]')
+                    if pname == 'DSE':
+                        roles.append('DICT[DSE]')
+                    if pname == 'DSED':
+                        roles.append('DICT[DSED]')
 
-        #     res_company = client.send_request('/restapi/company/')
-        #     cmc_company = res_company[1].get('data') if str(
-        #         res_company[0]) == '200' else []
+            res_company = client.send_request('/restapi/company/')
+            cmc_company = res_company[1].get('data') if str(
+                res_company[0]) == '200' else []
 
-        #     user_company = [
-        #         c['name'] for c in cmc_company if c['id'] == user['company']][0]
-        #     roles.append('COMPANY[{}]'.format(user_company))
+            user_company = [
+                c['name'] for c in cmc_company if c['id'] == user['company']][0]
+            roles.append('COMPANY[{}]'.format(user_company))
 
-        # else:
-        #     roles.append('Alpha')
+        else:
+            roles.append('Alpha')
 
         local_user = self.appbuilder.sm.auth_user_db(
             user, True, roles)

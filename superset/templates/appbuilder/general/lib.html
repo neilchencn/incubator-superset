@@ -171,7 +171,7 @@
             <a href="javascript:void(0)">&gt;</a>
         </li>
     {% endif %}
-    {% if (max-1) < pages %}
+    {% if max < pages %}
         <li>
             <a href="{{ (pages - 1) | link_page(modelview_name) }}">&raquo;</a>
         </li>

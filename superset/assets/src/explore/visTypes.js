@@ -170,6 +170,11 @@ export const visTypes = {
         ],
       },
     ],
+    controlOverrides: {
+      groupby: {
+        multi: false,
+      },
+    },
   },
 
   line: {
@@ -500,7 +505,7 @@ export const visTypes = {
     ],
     controlOverrides: {
       groupby: {
-        multiple: false,
+        multi: false,
       },
       url: {
         description: t(
