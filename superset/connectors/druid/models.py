@@ -54,21 +54,23 @@ POST_AGG_TYPE = 'postagg'
 def _fetch_metadata_for(datasource):
     return datasource.latest_metadata()
 
+
 def is_number(s):
     try:
         float(s)
         return True
     except ValueError:
         pass
- 
+
     try:
         import unicodedata
         unicodedata.numeric(s)
         return True
     except (TypeError, ValueError):
         pass
-    
+
     return False
+
 
 class JavascriptPostAggregator(Postaggregator):
     def __init__(self, name, field_names, function):
@@ -1466,7 +1468,7 @@ class DruidDatasource(Model, BaseDatasource):
             cond = Aggregation(col) < eq
 
         return cond
-    
+
     def get_having_filters(self, raw_filters):
         filters = None
         reversed_op_map = {
@@ -1484,9 +1486,10 @@ class DruidDatasource(Model, BaseDatasource):
 
             if not eq or eq is None:
                 continue
-            
+
             if not is_number(eq):
-                raise Exception('The result filtering option must be set to a numeric type')
+                raise Exception(
+                    'The result filtering option must be set to a numeric type')
 
             cond = None
             if op in ['==', '>', '<']:
