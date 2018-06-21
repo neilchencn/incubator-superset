@@ -178,6 +178,10 @@ class MyAuthRemoteUserView(AuthDBView):
                     if pname == 'iRT':
                         roles.append('DATASOURCE[iRT-hourly]')
                         roles.append('DICT[iRT]')
+                    if pname == 'GreenT_asia':
+                        roles.append('DATASOURCE[GreenT-asia-hourly]')
+                    if pname == 'iRT_asia':
+                        roles.append('DATASOURCE[iRT-aisa-hourly]')
                     if pname == 'DSE':
                         roles.append('DICT[DSE]')
                     if pname == 'DSED':
