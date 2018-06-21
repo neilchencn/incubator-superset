@@ -117,15 +117,14 @@
       ]
     },
     "metric_2": {
-      "type": "SelectControl",
+      "type": "MetricsControl",
       "label": "Right Axis Metric",
-      "default": null,
+      "multi": false,
       "validators": [
         null
       ],
-      "clearable": true,
-      "description": "Choose a metric for right axis",
-      "valueKey": "metric_name"
+      "clearable": false,
+      "description": "Choose a metric for right axis"
     },
     "stacked_style": {
       "type": "SelectControl",

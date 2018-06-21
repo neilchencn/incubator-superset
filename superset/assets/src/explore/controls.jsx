@@ -281,17 +281,17 @@ export const controls = {
   },
 
   metric_2: {
-    type: 'SelectControl',
+    type: 'MetricsControl',
     label: t('Right Axis Metric'),
-    default: null,
+    multi: false,
+    default: props => mainMetric(props.savedMetrics),
     validators: [v.nonEmpty],
-    clearable: true,
+    clearable: false,
     description: t('Choose a metric for right axis'),
-    valueKey: 'metric_name',
-    optionRenderer: m => <MetricOption metric={m} showType />,
-    valueRenderer: m => <MetricOption metric={m} />,
     mapStateToProps: state => ({
-      options: (state.datasource) ? state.datasource.metrics : [],
+      columns: state.datasource ? state.datasource.columns : [],
+      savedMetrics: state.datasource ? state.datasource.metrics : [],
+      datasourceType: state.datasource && state.datasource.type,
     }),
   },
 

@@ -184,7 +184,7 @@ export default class MetricsControl extends React.PureComponent {
       !equals(this.props.savedMetrics, nextProps.savedMetrics)
     ) {
       this.setState({ options: this.optionsForSelect(nextProps) });
-      this.props.onChange(nextProps.default);
+      this.props.onChange([nextProps.default]);
     }
     if (this.props.value !== nextProps.value) {
       this.setState({ value: coerceAdhocMetrics(nextProps.value) });
