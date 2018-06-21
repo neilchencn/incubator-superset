@@ -982,7 +982,7 @@ class BubbleViz(NVD3Viz):
         d['row_limit'] = form_data.get('limit')
 
         if self.entity is None or len(self.entity) < 1:
-            raise Exception('Pick least one field for Entity') 
+            raise Exception('Pick at least one field for Entity')
         if form_data.get('series') and self.entity == self.series:
             raise Exception(_('Pick a different Entity and Series'))
 
@@ -1480,7 +1480,7 @@ class DistributionPieViz(NVD3Viz):
             raise Exception(_('No data was returned'))
 
         if self.groupby is None or len(self.groupby) < 1:
-            raise Exception(_('Pick at one field for Group by'))
+            raise Exception(_('Pick at least one field for Group by'))
         df = df.pivot_table(
             index=self.groupby,
             values=[self.metrics[0]])
