@@ -68,7 +68,14 @@ class SaveModal extends React.PureComponent {
       },
       error(error) {
         saveModal.close();
-        const errorMsg = getAjaxErrorMsg(error);
+        let errorMsg = getAjaxErrorMsg(error);
+        const esgArr = errorMsg.split(':');
+
+        if (esgArr[esgArr.length - 1].indexOf('\\n') >= 0) {
+          errorMsg = esgArr[esgArr.length - 1].split('\\n')[0];
+        } else {
+          errorMsg = esgArr[esgArr.length - 1];
+        }
         notify.error(
           t('Sorry, there was an error saving this dashboard: ') + errorMsg,
         );

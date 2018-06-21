@@ -90,10 +90,18 @@ class SliceAdder extends React.Component {
       // if successful, page will be reloaded.
       .fail((error) => {
         adder.errored = true;
+        let errorMsg = this.getAjaxErrorMsg(error);
+        const esgArr = errorMsg.split(':');
+
+        if (esgArr[esgArr.length - 1].indexOf('\\n') >= 0) {
+          errorMsg = esgArr[esgArr.length - 1].split('\\n')[0];
+        } else {
+          errorMsg = esgArr[esgArr.length - 1];
+        }
         adder.setState({
           errorMsg: t(
             'Sorry, there was an error adding charts to this dashboard: ',
-          ) + this.getAjaxErrorMsg(error),
+          ) + errorMsg,
         });
       });
   }
