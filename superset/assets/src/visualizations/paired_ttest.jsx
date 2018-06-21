@@ -9,7 +9,6 @@ import PropTypes from 'prop-types';
 import './paired_ttest.css';
 
 class TTestTable extends React.Component {
-
   constructor(props) {
     super(props);
     this.state = {
@@ -63,8 +62,9 @@ class TTestTable extends React.Component {
       sumValues += values[i].y;
       sumControl += control[i].y;
     }
-    return (((sumValues - sumControl) / sumControl) * 100)
-      .toFixed(this.props.liftValPrec);
+    return ((sumValues - sumControl) / sumControl * 100).toFixed(
+      this.props.liftValPrec,
+    );
   }
 
   computePValue(values, control) {
@@ -81,12 +81,16 @@ class TTestTable extends React.Component {
         diffSqSum += diff * diff;
       }
     }
-    const tvalue = -Math.abs(diffSum *
-      Math.sqrt((finiteCount - 1) /
-      (finiteCount * diffSqSum - diffSum * diffSum)));
+    const tvalue = -Math.abs(
+      diffSum *
+        Math.sqrt(
+          (finiteCount - 1) / (finiteCount * diffSqSum - diffSum * diffSum),
+        ),
+    );
     try {
-      return (2 * new dist.Studentt(finiteCount - 1).cdf(tvalue))
-        .toFixed(this.props.pValPrec); // two-sided test
+      return (2 * new dist.Studentt(finiteCount - 1).cdf(tvalue)).toFixed(
+        this.props.pValPrec,
+      ); // two-sided test
     } catch (err) {
       return NaN;
     }
@@ -116,7 +120,7 @@ class TTestTable extends React.Component {
   render() {
     const data = this.props.data;
     const metric = this.props.metric;
-    const groups = this.props.groups;
+    const groups = this.props.groups || [];
     // Render column header for each group
     const columns = groups.map((group, i) => (
       <Th key={i} column={group}>{group}</Th>
@@ -206,11 +210,7 @@ class TTestTable extends React.Component {
     return (
       <div>
         <h3>{metric}</h3>
-        <Table
-          className="table"
-          id={`table_${metric}`}
-          sortable={sortConfig}
-        >
+        <Table className="table" id={`table_${metric}`} sortable={sortConfig}>
           <Thead>
             {columns}
           </Thead>
