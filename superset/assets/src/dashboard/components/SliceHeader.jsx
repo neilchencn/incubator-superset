@@ -60,7 +60,7 @@ class SliceHeader extends React.PureComponent {
   render() {
     const slice = this.props.slice;
     const isCached = this.props.isCached;
-    const cachedWhen = moment.utc(this.props.cachedDttm).fromNow();
+    const cachedWhen = moment(this.props.cachedDttm).fromNow();
     const refreshTooltip = isCached ?
       t('Served from data cached %s . Click to force refresh.', cachedWhen) :
       t('Force refresh data');

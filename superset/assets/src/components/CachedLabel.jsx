@@ -24,7 +24,7 @@ class CacheLabel extends React.PureComponent {
     const cachedText = this.props.cachedTimestamp ? (
       <span>
         {t('Loaded data cached')}
-        <b> {moment.utc(this.props.cachedTimestamp).fromNow()}</b>
+        <b> {moment(this.props.cachedTimestamp).fromNow()}</b>
       </span>) :
       t('Loaded from cache');
 

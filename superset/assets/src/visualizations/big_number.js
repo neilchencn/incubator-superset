@@ -45,7 +45,7 @@ function bigNumberVis(slice, payload) {
 
   const vMargin = 20;
   const hMargin = 10;
-  const scaleX = d3.time.scale.utc().domain(dateExt).range([hMargin, width - hMargin]);
+  const scaleX = d3.time.scale().domain(dateExt).range([hMargin, width - hMargin]);
   const scaleY = d3.scale.linear().domain(valueExt).range([height - (vMargin), vMargin]);
   const colorRange = [d3.hsl(0, 1, 0.3), d3.hsl(120, 1, 0.3)];
   const scaleColor = d3.scale

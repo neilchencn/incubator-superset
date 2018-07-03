@@ -23,7 +23,7 @@ export default class Favorites extends React.PureComponent {
       data.map(slice => ({
         chart: <a href={slice.url}>{slice.title}</a>,
         creator: <span>{slice.creator}</span>,
-        favorited: moment.utc(slice.dttm).fromNow(),
+        favorited: moment(slice.dttm).fromNow(),
         _favorited: slice.dttm,
         _chart: slice.title,
         _creator: slice.creator,
@@ -44,7 +44,7 @@ export default class Favorites extends React.PureComponent {
       data.map(dash => ({
         dashboard: <a href={dash.url}>{dash.title}</a>,
         creator: <span>{dash.creator}</span>,
-        favorited: moment.utc(dash.dttm).fromNow(),
+        favorited: moment(dash.dttm).fromNow(),
         _favorited: dash.dttm,
         _dashboard: dash.title,
         _creator: dash.creator,

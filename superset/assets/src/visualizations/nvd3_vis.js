@@ -183,17 +183,17 @@ export default function nvd3Vis(slice, payload) {
             chart.focus.margin({ bottom: 40 });
             chart.focusHeight(80);
           }
-          chart.focus.xScale(d3.time.scale.utc());
+          chart.focus.xScale(d3.time.scale());
         } else {
           chart = nv.models.lineChart();
         }
-        chart.xScale(d3.time.scale.utc());
+        chart.xScale(d3.time.scale());
         chart.interpolate(fd.line_interpolation);
         break;
 
       case 'time_pivot':
         chart = nv.models.lineChart();
-        chart.xScale(d3.time.scale.utc());
+        chart.xScale(d3.time.scale());
         chart.interpolate(fd.line_interpolation);
         break;
 
@@ -284,7 +284,7 @@ export default function nvd3Vis(slice, payload) {
 
       case 'compare':
         chart = nv.models.cumulativeLineChart();
-        chart.xScale(d3.time.scale.utc());
+        chart.xScale(d3.time.scale());
         chart.useInteractiveGuideline(true);
         chart.xAxis.showMaxMin(false);
         break;
@@ -315,7 +315,7 @@ export default function nvd3Vis(slice, payload) {
         chart = nv.models.stackedAreaChart();
         chart.showControls(fd.show_controls);
         chart.style(fd.stacked_style);
-        chart.xScale(d3.time.scale.utc());
+        chart.xScale(d3.time.scale());
         break;
 
       case 'box_plot':
@@ -676,7 +676,7 @@ export default function nvd3Vis(slice, payload) {
 
             const tip = tipFactory(e);
             const records = (slice.annotationData[e.name].records || []).map((r) => {
-              const timeValue = new Date(moment.utc(r[e.timeColumn]));
+              const timeValue = new Date(moment(r[e.timeColumn]));
 
               return {
                 ...r,
@@ -734,8 +734,8 @@ export default function nvd3Vis(slice, payload) {
             const tip = tipFactory(e);
 
             const records = (slice.annotationData[e.name].records || []).map((r) => {
-              const timeValue = new Date(moment.utc(r[e.timeColumn]));
-              const intervalEndValue = new Date(moment.utc(r[e.intervalEndColumn]));
+              const timeValue = new Date(moment(r[e.timeColumn]));
+              const intervalEndValue = new Date(moment(r[e.intervalEndColumn]));
               return {
                 ...r,
                 [e.timeColumn]: timeValue,
