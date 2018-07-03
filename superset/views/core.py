@@ -1932,6 +1932,13 @@ class Superset(BaseSupersetView):
             dash.slices = original_dash.slices
         dash.params = original_dash.params
 
+        if data.get('default_filters') and data['duplicate_slices']:
+            flts = json.loads(data.get('default_filters'))
+            for k, v in flts.items():
+                if str(k) in old_to_new_sliceids.keys():
+                    flts.update({old_to_new_sliceids.get(str(k)): v})
+                    del flts[str(k)]
+            data.update({'default_filters': json.dumps(flts)})
         self._set_dash_metadata(dash, data)
         session.add(dash)
         session.commit()
