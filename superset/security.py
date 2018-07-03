@@ -60,6 +60,7 @@ ALPHA_ONLY_VIEW_MENUS = {
     'Upload a CSV',
     'iRT',
     'Company',
+    'Product'
     'GreenT',
     'DSED',
     'DSE',

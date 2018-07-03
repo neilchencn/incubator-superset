@@ -12,7 +12,7 @@ from flask_babel import lazy_gettext
 from flask_login import login_user
 from wtforms import StringField, PasswordField
 from wtforms.validators import Required, Email
-from superset.models.dictionary import Company
+from superset.models.dictionary import Company, Product
 from .apiclient import client, SSO_API_AUTH_SETTING
 from . import REMOTE_REQUEST_TOKEN_URL, REMOTE_SSO_LOGIN_URL, REMOTE_AUTH_TOKEN_URL
 from flask import request
@@ -147,24 +147,26 @@ class MyAuthRemoteUserView(AuthDBView):
 
         user = self.authenticate(
             request_token=request_token, auth_token=auth_token)
-
+        print('user:{}'.format(user))
         res_group = client.send_request('/restapi/group/')
         cmc_group = res_group[1].get('data') if str(
             res_group[0]) == '200' else []
 
         if user['groups'][0] in [2, 6]:
             roles.append('Gamma')
-            datasources = ConnectorRegistry.get_all_druid_datasources(
-                self.appbuilder.sm.get_session)
-
+            products = self.appbuilder.sm.get_session.query(Product).all()
+            # datasources = ConnectorRegistry.get_all_druid_datasources(
+            #     self.appbuilder.sm.get_session)
+            # print('datasources:{}'.format(datasources))
             res_product = client.send_request(
                 '/restapi/user/{}/availableproducts/'.format(user['id']))
             cmc_product = res_product[1].get('data') if str(
                 res_product[0]) == '200' else []
-
+            print('cmc_product:{}'.format(cmc_product))
             for p in cmc_product:
-                pname = [ds.name for ds in datasources if ds.name.upper() ==
-                         p['name'].upper()]
+                pname = [pb.bi_name for pb in products if str(pb.cmc_id) ==
+                         str(p.get('id'))]
+                print('pname:{}'.format(pname))
                 if len(pname) > 0:
                     pname = pname[0]
                 else:
@@ -190,14 +192,14 @@ class MyAuthRemoteUserView(AuthDBView):
             res_company = client.send_request('/restapi/company/')
             cmc_company = res_company[1].get('data') if str(
                 res_company[0]) == '200' else []
-
+            print('cmc_company:{}'.format(cmc_company))
             user_company = [
                 c['name'] for c in cmc_company if c['id'] == user['company']][0]
             roles.append('COMPANY[{}]'.format(user_company))
 
         else:
             roles.append('Alpha')
-
+        print('rolse:{}'.format(roles))
         local_user = self.appbuilder.sm.auth_user_db(
             user, True, roles)
         # import pydevd

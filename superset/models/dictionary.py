@@ -38,3 +38,10 @@ class Company(Model):
     __tablename__ = 'company'
     id = Column(Integer, primary_key=True)
     field_name = Column(Text, unique=False, nullable=False)
+
+
+class Product(Model):
+    __tablename__ = 'product'
+    id = Column(Integer, primary_key=True)
+    cmc_id = Column(Text, unique=False, nullable=False)
+    bi_name = Column(Text, unique=False, nullable=False)

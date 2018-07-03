@@ -2015,7 +2015,7 @@ def load_companies(path):
     def merge_pv(view_menu, perm):
         """Create permission view menu only if it doesn't exist"""
         if view_menu and perm and (view_menu, perm) not in all_pvs:
-            security.merge_perm(security_manager, view_menu, perm)
+            security_manager.merge_perm(view_menu, perm)
     c_count = len(companies)
 
     for c in companies:
@@ -2118,3 +2118,50 @@ def set_custom_role():
             c_role.permissions = c_role_pvms
             sesh.merge(c_role)
     sesh.commit()
+
+
+def load_product(path):
+    DATA_FOLDER = '/bi/'
+    if path:
+        DATA_FOLDER = path
+    tbl_name = 'product'
+    if not os.path.isfile(os.path.join(DATA_FOLDER, 'products.json')):
+        print('can not find products.json')
+        return
+    with open(os.path.join(DATA_FOLDER, 'products.json')) as f:
+        meta = json.load(f)
+
+    ids= []
+    cmc_ids = []
+    bi_names = []
+    idx = 0
+    for cmc_id, bi_name in meta.items():
+        cmc_ids.append(cmc_id)
+        bi_names.append(bi_name)
+        ids.append(idx + 1)
+        idx += 1
+    df = pd.DataFrame(dict(id=ids, cmc_id=cmc_ids, bi_name=bi_names))
+    sesh = security_manager.get_session()
+    sesh.query(dictionary.Product).delete()
+    sesh.commit()
+    df.to_sql(
+        tbl_name,
+        db.engine,
+        if_exists='append',
+        chunksize=500,
+        dtype={
+            'id': Integer(),
+            'cmc_id': String(255),
+            'bi_name': String(255),
+        },
+        index=False
+    )
+    print("Creating table {} reference".format(tbl_name))
+    tbl = db.session.query(TBL).filter_by(table_name=tbl_name).first()
+    if not tbl:
+        tbl = TBL(table_name=tbl_name)
+    tbl.description = "product"
+    tbl.database = utils.get_or_create_main_db()
+    db.session.merge(tbl)
+    db.session.commit()
+    tbl.fetch_metadata()

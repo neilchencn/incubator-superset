@@ -150,6 +150,14 @@ def load_dict(path):
     data.load_dictionarys(path)
 
 
+@manager.option('-p', '--path', help=('Load product data'))
+def load_product(path):
+    """Loads product data for futuredial database field """
+    from superset import data
+    print('Loading examples into {}'.format(db))
+    data.load_product(path)
+
+
 @manager.option(
     '-p', '--path', help=('Load company data')
 )
