@@ -187,24 +187,24 @@ IMG_UPLOAD_URL = '/static/uploads/'
 # IMG_SIZE = (300, 200, True)
 
 CACHE_DEFAULT_TIMEOUT = 60 * 60 * 24
-CACHE_CONFIG = {
-    'CACHE_TYPE': 'redis',
-    'CACHE_REDIS_HOST': 'localhost',
-    'CACHE_REDIS_PORT': '6379',
-    'CACHE_REDIS_URL': 'redis://localhost:6379'
-}
-TABLE_NAMES_CACHE_CONFIG = {
-    'CACHE_TYPE': 'redis',
-    'CACHE_REDIS_HOST': 'localhost',
-    'CACHE_REDIS_PORT': '6379',
-    'CACHE_REDIS_URL': 'redis://localhost:6379'
-}
-
 # CACHE_CONFIG = {
-#     'CACHE_TYPE': 'null'}
-
+#     'CACHE_TYPE': 'redis',
+#     'CACHE_REDIS_HOST': 'localhost',
+#     'CACHE_REDIS_PORT': '6379',
+#     'CACHE_REDIS_URL': 'redis://localhost:6379'
+# }
 # TABLE_NAMES_CACHE_CONFIG = {
-#     'CACHE_TYPE': 'null'}
+#     'CACHE_TYPE': 'redis',
+#     'CACHE_REDIS_HOST': 'localhost',
+#     'CACHE_REDIS_PORT': '6379',
+#     'CACHE_REDIS_URL': 'redis://localhost:6379'
+# }
+
+CACHE_CONFIG = {
+    'CACHE_TYPE': 'null'}
+
+TABLE_NAMES_CACHE_CONFIG = {
+    'CACHE_TYPE': 'null'}
 # CORS Options
 ENABLE_CORS = False
 CORS_OPTIONS = {}
