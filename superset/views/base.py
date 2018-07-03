@@ -14,12 +14,12 @@ from datetime import datetime
 
 import yaml
 from flask import (Response, abort, flash, g, get_flashed_messages, redirect,
-                   request)
+                   request, session)
 from flask_appbuilder import BaseView, ModelView
 from flask_appbuilder.actions import action
 from flask_appbuilder.models.sqla.filters import BaseFilter
 from flask_appbuilder.urltools import (get_filter_args, get_order_args,
-                                       get_page_args, get_page_size_args)
+                                       get_page_args, get_page_size_args, Stack)
 from flask_appbuilder.widgets import ListWidget
 from flask_babel import gettext as __
 from flask_babel import lazy_gettext as _
@@ -114,6 +114,26 @@ class SupersetListWidget(ListWidget):
 class SupersetModelView(ModelView):
     page_size = 100
     list_widget = SupersetListWidget
+
+    def post_delete_redirect(self):
+        """Override this function to control the redirect after edit endpoint is called."""
+        return redirect(self.get_redirect())
+
+    def get_redirect(self):
+        """
+        Returns the previous url.
+        """
+        index_url = self.appbuilder.get_url_for_index
+        page_history = Stack(session.get('page_history', []))
+
+        last_url = page_history.pop()
+        if last_url is None:
+            return index_url
+        elif 'list' not in last_url:
+            last_url = page_history.pop()
+        session['page_history'] = page_history.to_json()
+        url = last_url or index_url
+        return url
 
 
 class ListWidgetWithCheckboxes(ListWidget):
