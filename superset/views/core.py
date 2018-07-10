@@ -1759,7 +1759,7 @@ class Superset(BaseSupersetView):
                 .filter_by(id=int(request.args.get('save_to_dashboard_id')))
                 .one()
             )
-
+            
             # check edit dashboard permissions
             dash_overwrite_perm = check_ownership(dash, raise_if_false=False)
             if not dash_overwrite_perm:
@@ -1768,6 +1768,8 @@ class Superset(BaseSupersetView):
                     _('dashboard'),
                     status=400)
 
+            dash.changed_on = datetime.now()
+            
             flash(
                 'Slice [{}] was added to dashboard [{}]'.format(
                     slc.slice_name,
@@ -1958,6 +1960,7 @@ class Superset(BaseSupersetView):
         check_ownership(dash, raise_if_false=True)
         data = json.loads(request.form.get('data'))
         self._set_dash_metadata(dash, data)
+        dash.changed_on = datetime.now()
         session.merge(dash)
         session.commit()
         session.close()
@@ -1999,6 +2002,7 @@ class Superset(BaseSupersetView):
         new_slices = session.query(Slice).filter(
             Slice.id.in_(data['slice_ids']))
         dash.slices += new_slices
+        dash.changed_on = datetime.now()
         session.merge(dash)
         session.commit()
         session.close()
