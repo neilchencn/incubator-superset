@@ -106,7 +106,7 @@ class BaseDatasource(AuditMixinNullable, ImportMixin):
 
     @property
     def url(self):
-        return '/{}/edit/{}'.format(self.baselink, self.id)
+        return '/{}/show/{}'.format(self.baselink, self.id)
 
     @property
     def explore_url(self):
