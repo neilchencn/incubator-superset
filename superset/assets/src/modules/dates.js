@@ -126,7 +126,7 @@ export const formatDateThunk = function (format) {
 
 export const fDuration = function (t1, t2, format = 'HH:mm:ss.SS') {
   const diffSec = t2 - t1;
-  const duration = moment(new Date(diffSec));
+  const duration = moment.utc(new Date(diffSec));
   return duration.format(format);
 };
 
