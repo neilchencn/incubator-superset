@@ -32,11 +32,13 @@ class SliceAdder extends React.Component {
 
     this.addSlices = this.addSlices.bind(this);
     this.toggleSlice = this.toggleSlice.bind(this);
+    this.onSelectAll = this.onSelectAll.bind(this);
 
     this.selectRowProp = {
       mode: 'checkbox',
       clickToSelect: true,
       onSelect: this.toggleSlice,
+      onSelectAll: this.onSelectAll,
     };
   }
 
@@ -44,6 +46,18 @@ class SliceAdder extends React.Component {
     if (this.slicesRequest) {
       this.slicesRequest.abort();
     }
+  }
+
+  onSelectAll(isSelected, rows) {
+    let selectionMap = {};
+    if (isSelected) {
+      rows.forEach((r) => {
+        selectionMap[r.id] = !selectionMap[r.id];
+      });
+    } else {
+      selectionMap = {};
+    }
+    this.setState({ selectionMap });
   }
 
   onEnterModal() {
@@ -59,6 +73,7 @@ class SliceAdder extends React.Component {
           vizType: slice.viz_type,
           datasourceLink: slice.datasource_link,
           modified: slice.modified,
+          changed_on: slice.changed_on,
         }));
 
         this.setState({
