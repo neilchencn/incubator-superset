@@ -540,7 +540,12 @@ class TableViz(BaseViz):
                 lambda m: m not in d['metrics'],
                 fd['percent_metrics'],
             ))
+
         if len(d['metrics']) < 1 and d['groupby'] and len(d['groupby']) < 2:
+            raise Exception(
+                'You must set up at least two fields for Group by, or set at least one field for Metrics or Percentage Metrics')
+
+        if len(d['metrics']) < 1 and len(d['groupby']) < 1:
             raise Exception(
                 'You must set up at least two fields for Group by, or set at least one field for Metrics or Percentage Metrics')
         d['is_timeseries'] = self.should_be_timeseries()
@@ -1715,7 +1720,7 @@ class DirectedForceViz(BaseViz):
 
     def query_obj(self):
         qry = super(DirectedForceViz, self).query_obj()
-        if len(self.form_data['groupby']) != 2:
+        if not self.form_data['groupby'] or len(self.form_data['groupby']) != 2:
             raise Exception(_("Pick exactly 2 fields for Source / Target"))
         qry['metrics'] = [self.form_data['metric']]
         return qry
