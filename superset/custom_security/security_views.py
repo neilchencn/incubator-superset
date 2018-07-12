@@ -151,8 +151,10 @@ class MyAuthRemoteUserView(AuthDBView):
         res_group = client.send_request('/restapi/group/')
         cmc_group = res_group[1].get('data') if str(
             res_group[0]) == '200' else []
-
-        if user['groups'][0] in [2, 6]:
+        if user['groups'][0] in [3, 4]:
+            flash(as_unicode(self.invalid_login_message), 'warning')
+            return redirect(redirect_to)
+        elif user['groups'][0] in [2, 6]:
             roles.append('Gamma')
             products = self.appbuilder.sm.get_session.query(Product).all()
             # datasources = ConnectorRegistry.get_all_druid_datasources(
@@ -210,7 +212,7 @@ class MyAuthRemoteUserView(AuthDBView):
             login_user(local_user)
             return redirect(self.appbuilder.get_url_for_index)
         else:
-            raise PermissionDenied
+            flash(as_unicode(self.invalid_login_message), 'warning')
         return redirect(redirect_to)
 
     @expose('/login/', methods=['GET', 'POST'])
