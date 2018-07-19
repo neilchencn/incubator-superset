@@ -276,6 +276,16 @@ class BaseViz(object):
         }
         filters = form_data.get('filters', [])
 
+        for f in filters:
+            if f.has_key('val') and len(f['val']) > 0:
+                temp = []
+                for v in f['val']:
+                    if v in ('Null'):
+                        temp.append('null')
+                    else:
+                        temp.append(v)
+                f['val'] = temp
+
         username = g.user.username
         user = (
             db.session.query(ab_models.User)
@@ -407,7 +417,8 @@ class BaseViz(object):
                 logging.exception(e)
 
                 if not self.error_message:
-                    self.error_message = '{}'.format(e)
+                    # self.error_message = '{}'.format(e)
+                    self.error_message = 'An unknown error occurred'
 
                 if self.error_message == "'NoneType' object has no attribute '__getitem__'":
                     self.error_message = 'No data was returned'
@@ -535,17 +546,17 @@ class TableViz(BaseViz):
             d['orderby'] = [(sort_by, not fd.get('order_desc', True))]
 
         # Add all percent metrics that are not already in the list
-        if 'percent_metrics' in fd:
+        if 'percent_metrics' in fd and fd['percent_metrics'] is not None:
             d['metrics'] = d['metrics'] + list(filter(
                 lambda m: m not in d['metrics'],
                 fd['percent_metrics'],
             ))
 
-        if len(d['metrics']) < 1 and d['groupby'] and len(d['groupby']) < 2:
+        if not fd.get('all_columns') and len(d['metrics']) < 1 and d['groupby'] and len(d['groupby']) < 2:
             raise Exception(
                 'You must set up at least two fields for Group by, or set at least one field for Metrics or Percentage Metrics')
 
-        if len(d['metrics']) < 1 and len(d['groupby']) < 1:
+        if not fd.get('all_columns') and len(d['metrics']) < 1 and len(d['groupby']) < 1:
             raise Exception(
                 'You must set up at least two fields for Group by, or set at least one field for Metrics or Percentage Metrics')
         d['is_timeseries'] = self.should_be_timeseries()
@@ -565,6 +576,8 @@ class TableViz(BaseViz):
 
         # Sum up and compute percentages for all percent metrics
         percent_metrics = fd.get('percent_metrics', [])
+        if percent_metrics is None:
+            percent_metrics = []
         if len(percent_metrics):
             percent_metrics = list(filter(lambda m: m in df, percent_metrics))
             metric_sums = {
