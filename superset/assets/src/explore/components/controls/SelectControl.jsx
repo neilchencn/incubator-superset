@@ -111,8 +111,9 @@ export default class SelectControl extends React.PureComponent {
   }
   componentWillReceiveProps(nextProps) {
     if (
-      ['groupby', 'columns', 'x', 'y', 'size'].indexOf(this.props.name) >= 0 &&
-      !equals(nextProps.options, this.props.options)
+      ['groupby', 'columns', 'percent_metrics', 'x', 'y', 'size'].indexOf(
+        this.props.name,
+      ) >= 0 && !equals(nextProps.options, this.props.options)
     ) {
       const options = this.getOptions(nextProps);
       this.setState({ options, value: [] });
@@ -130,7 +131,7 @@ export default class SelectControl extends React.PureComponent {
       }
       if (
         nextProps.multi &&
-        nextProps.value &&
+        (nextProps.value || nextProps.value === 'Null') &&
         typeof nextProps.value === 'string'
       ) {
         this.props.onChange([nextProps.value]);
@@ -138,10 +139,15 @@ export default class SelectControl extends React.PureComponent {
     }
   }
   onChange(opt) {
-    let optionValue = opt ? opt[this.props.valueKey] : null;
+    let optionValue = opt ? opt[this.props.valueKey] : 'Null';
     // if multi, return options values as an array
     if (this.props.multi) {
-      optionValue = opt ? opt.map(o => o[this.props.valueKey]) : null;
+      optionValue = opt
+        ? opt.map(
+            o =>
+              (o[this.props.valueKey] == null ? 'Null' : o[this.props.valueKey]),
+          )
+        : 'Null';
     }
     this.props.onChange(optionValue);
   }
@@ -162,8 +168,8 @@ export default class SelectControl extends React.PureComponent {
         option = c;
       } else {
         option = {
-          value: c,
-          label: c,
+          value: c || 'Null',
+          label: c || 'Null',
         };
       }
       return option;
