@@ -731,21 +731,26 @@ def merge_extra_filters(form_data):
 
         def get_filter_key(f):
             return f['col'] + '__' + f['op']
+
         existing_filters = {}
         for existing in form_data['filters']:
             if existing['col'] is not None:
-                existing_filters[get_filter_key(existing)] = existing['val']
+                if existing['op'] in ('IS NULL', 'IS NOT NULL'):
+                    existing_filters[get_filter_key(
+                        existing)] = 'null'
+                else:
+                    existing_filters[get_filter_key(
+                        existing)] = existing['val']
         for filtr in form_data['extra_filters']:
             # Pull out time filters/options and merge into form data
             if date_options.get(filtr['col']):
-                if filtr.get('val'):
-                    form_data[date_options[filtr['col']]] = filtr['val']
-            elif filtr['val'] and len(filtr['val']):
+                form_data[date_options[filtr['col']]] = filtr['val']
+            elif filtr['op'] in ('IS NULL', 'IS NOT NULL') or filtr['val'] and len(filtr['val']):
                 # Merge column filters
                 filter_key = get_filter_key(filtr)
                 if filter_key in existing_filters:
                     # Check if the filter already exists
-                    if isinstance(filtr['val'], list):
+                    if filtr['op'] not in ('IS NULL', 'IS NOT NULL') and isinstance(filtr['val'], list):
                         if isinstance(existing_filters[filter_key], list):
                             # Add filters for unequal lists
                             # order doesn't matter
@@ -758,7 +763,7 @@ def merge_extra_filters(form_data):
                             form_data['filters'] += [filtr]
                     else:
                         # Do not add filter if same value already exists
-                        if filtr['val'] != existing_filters[filter_key]:
+                        if filtr['op'] not in ('IS NULL', 'IS NOT NULL') and filtr['val'] != existing_filters[filter_key]:
                             form_data['filters'] += [filtr]
                 else:
                     # Filter not found, add it
