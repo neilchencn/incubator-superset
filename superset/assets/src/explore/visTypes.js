@@ -463,7 +463,6 @@ export const visTypes = {
         description: t('Use this section if you want to query atomic rows'),
         controlSetRows: [
           ['all_columns'],
-          ['order_by_cols'],
           ['row_limit', null],
         ],
       },
