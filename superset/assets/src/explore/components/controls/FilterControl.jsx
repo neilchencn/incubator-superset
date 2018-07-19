@@ -123,7 +123,7 @@ export default class FilterControl extends React.Component {
     }
     // Clear selected values and refresh upon column change
     if (control === 'col') {
-      if (modifiedFilter.val.constructor === Array) {
+      if (modifiedFilter.val && modifiedFilter.val.constructor === Array) {
         modifiedFilter.val = [];
       } else if (typeof modifiedFilter.val === 'string') {
         modifiedFilter.val = '';
