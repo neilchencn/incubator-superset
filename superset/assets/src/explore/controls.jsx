@@ -197,6 +197,7 @@ export const controls = {
     type: 'SelectControl',
     multi: true,
     label: t('Percentage Metrics'),
+    default: [],
     valueKey: 'metric_name',
     optionRenderer: m => <MetricOption metric={m} showType />,
     valueRenderer: m => <MetricOption metric={m} />,
@@ -221,10 +222,12 @@ export const controls = {
     type: 'SelectControl',
     multi: true,
     label: t('Ordering'),
-    default: [],
+    valueKey: 'order_by_cols',
     description: t('One or many metrics to display'),
+    optionRenderer: m => <MetricOption metric={m} showType />,
+    valueRenderer: m => <MetricOption metric={m} />,
     mapStateToProps: state => ({
-      choices: (state.datasource) ? state.datasource.order_by_choices : [],
+      options: (state.datasource) ? state.datasource.metrics : [],
     }),
   },
   color_picker: {
@@ -606,7 +609,7 @@ export const controls = {
     valueRenderer: c => <ColumnOption column={c} />,
     valueKey: 'column_name',
     mapStateToProps: state => ({
-      options: (state.datasource) ? state.datasource.columns : [],
+      options: (state.datasource) ? state.datasource.columns.filter(c => c.groupby) : [],
     }),
   },
 
@@ -777,8 +780,6 @@ export const controls = {
       ['P3D', '3 days'],
       ['P7D', '7 days'],
       ['P1W', 'week'],
-      ['week_starting_sunday', 'week starting Sunday'],
-      ['week_ending_saturday', 'week ending Saturday'],
       ['P1M', 'month'],
     ],
     description: t('The time granularity for the visualization. Note that you ' +

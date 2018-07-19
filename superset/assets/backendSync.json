@@ -25,6 +25,7 @@
       "type": "SelectControl",
       "multi": true,
       "label": "Percentage Metrics",
+      "default": [],
       "valueKey": "metric_name",
       "description": "Metrics for which percentage of total are to be displayed"
     },
@@ -42,7 +43,7 @@
       "type": "SelectControl",
       "multi": true,
       "label": "Ordering",
-      "default": [],
+      "valueKey": "order_by_cols",
       "description": "One or many metrics to display"
     },
     "color_picker": {
@@ -1335,14 +1336,6 @@
         [
           "P1W",
           "week"
-        ],
-        [
-          "week_starting_sunday",
-          "week starting Sunday"
-        ],
-        [
-          "week_ending_saturday",
-          "week ending Saturday"
         ],
         [
           "P1M",
