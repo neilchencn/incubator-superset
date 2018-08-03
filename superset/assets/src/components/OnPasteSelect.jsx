@@ -26,19 +26,23 @@ export default class OnPasteSelect extends React.Component {
       options.push({ [this.props.labelKey]: v, [this.props.valueKey]: v });
       existing[v] = 1;
     });
-    options = options.concat(values
-      .filter((v) => {
-        const notExists = !existing[v];
-        existing[v] = 1;
-        return notExists && (validator ? validator({ [this.props.labelKey]: v }) : !!v);
-      })
-      .map((v) => {
-        const opt = { [this.props.labelKey]: v, [this.props.valueKey]: v };
-        if (!existingOptions[v]) {
-          this.props.options.unshift(opt);
-        }
-        return opt;
-      }),
+    options = options.concat(
+      values
+        .filter((v) => {
+          const notExists = !existing[v];
+          existing[v] = 1;
+          return (
+            notExists &&
+            (validator ? validator({ [this.props.labelKey]: v }) : !!v)
+          );
+        })
+        .map((v) => {
+          const opt = { [this.props.labelKey]: v, [this.props.valueKey]: v };
+          if (!existingOptions[v]) {
+            this.props.options.unshift(opt);
+          }
+          return opt;
+        }),
     );
     if (options.length) {
       if (this.props.onChange) {
@@ -56,11 +60,7 @@ export default class OnPasteSelect extends React.Component {
     };
     const inputProps = { onPaste: this.onPaste.bind(this) };
     return (
-      <SelectComponent
-        {...this.props}
-        ref={refFunc}
-        inputProps={inputProps}
-      />
+      <SelectComponent {...this.props} ref={refFunc} inputProps={inputProps} />
     );
   }
 }

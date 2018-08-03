@@ -131,7 +131,7 @@ export default class SelectControl extends React.PureComponent {
       }
       if (
         nextProps.multi &&
-        (nextProps.value || nextProps.value === 'Null') &&
+        nextProps.value &&
         typeof nextProps.value === 'string'
       ) {
         this.props.onChange([nextProps.value]);
@@ -139,15 +139,10 @@ export default class SelectControl extends React.PureComponent {
     }
   }
   onChange(opt) {
-    let optionValue = opt ? opt[this.props.valueKey] : 'Null';
+    let optionValue = opt ? opt[this.props.valueKey] : null;
     // if multi, return options values as an array
     if (this.props.multi) {
-      optionValue = opt
-        ? opt.map(
-            o =>
-              (o[this.props.valueKey] == null ? 'Null' : o[this.props.valueKey]),
-          )
-        : 'Null';
+      optionValue = opt ? opt.map(o => o[this.props.valueKey]) : null;
     }
     this.props.onChange(optionValue);
   }
@@ -168,8 +163,8 @@ export default class SelectControl extends React.PureComponent {
         option = c;
       } else {
         option = {
-          value: c || 'Null',
-          label: c || 'Null',
+          value: c,
+          label: c,
         };
       }
       return option;
@@ -189,7 +184,12 @@ export default class SelectControl extends React.PureComponent {
         });
       }
     }
-    return options;
+    return options.sort((a, b) => {
+      if (typeof a === 'object' && a.hasOwnProperty('label')) {
+        return a.label > b.label ? 1 : -1;
+      }
+      return a > b ? 1 : -1;
+    });
   }
   render() {
     //  Tab, comma or Enter will trigger a new option created for FreeFormSelect
