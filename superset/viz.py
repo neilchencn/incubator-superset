@@ -206,6 +206,10 @@ class BaseViz(object):
 
     def query_obj(self):
         """Building a query object"""
+        # import pydevd
+        # pydevd.settrace('localhost', port=12345,
+        #                 stdoutToServer=True, stderrToServer=True)
+
         form_data = self.form_data
         gb = form_data.get('groupby') or []
         metrics = form_data.get('metrics') or []
@@ -280,9 +284,6 @@ class BaseViz(object):
             if f.has_key('val') and len(f['val']) > 0:
                 temp = []
                 for v in f['val']:
-                    if v in ('Null'):
-                        temp.append('null')
-                    else:
                         temp.append(v)
                 f['val'] = temp
 
@@ -530,9 +531,8 @@ class TableViz(BaseViz):
         print("tgable:{}".format(fd))
 
         if fd.get('all_columns') and (fd.get('groupby') or fd.get('metrics')):
-            raise Exception(_(
-                'Pick either fields to Group by and Metrics or '
-                'Columns, not both'))
+            raise Exception(
+                _('Pick either fields to Group by/Metrics or Columns, not both'))
 
         sort_by = fd.get('timeseries_limit_metric')
         if fd.get('all_columns'):
