@@ -45,112 +45,127 @@ function bigNumberVis(slice, payload) {
 
   const vMargin = 20;
   const hMargin = 10;
-  const scaleX = d3.time.scale().domain(dateExt).range([hMargin, width - hMargin]);
-  const scaleY = d3.scale.linear().domain(valueExt).range([height - (vMargin), vMargin]);
+  const scaleX = d3.time.scale
+    .utc()
+    .domain(dateExt)
+    .range([hMargin, width - hMargin]);
+  const scaleY = d3.scale
+    .linear()
+    .domain(valueExt)
+    .range([height - vMargin, vMargin]);
   const colorRange = [d3.hsl(0, 1, 0.3), d3.hsl(120, 1, 0.3)];
   const scaleColor = d3.scale
-  .linear().domain([-1, 1])
-  .interpolate(d3.interpolateHsl)
-  .range(colorRange)
-  .clamp(true);
-  const line = d3.svg.line()
-  .x(function (d) {
-    return scaleX(d[0]);
-  })
-  .y(function (d) {
-    return scaleY(d[1]);
-  })
-  .interpolate('cardinal');
+    .linear()
+    .domain([-1, 1])
+    .interpolate(d3.interpolateHsl)
+    .range(colorRange)
+    .clamp(true);
+  const line = d3.svg
+    .line()
+    .x(function (d) {
+      return scaleX(d[0]);
+    })
+    .y(function (d) {
+      return scaleY(d[1]);
+    })
+    .interpolate('cardinal');
 
   let y = height / 2;
   let g = svg.append('g');
   // Printing big number
-  g.append('g').attr('class', 'digits')
-  .attr('opacity', 1)
-  .append('text')
-  .attr('x', width / 2)
-  .attr('y', y)
-  .attr('class', 'big')
-  .attr('alignment-baseline', 'middle')
-  .attr('id', 'bigNumber')
-  .style('font-weight', 'bold')
-  .style('cursor', 'pointer')
-  .text(f(v))
-  .style('font-size', d3.min([height, width]) / 3.5)
-  .style('text-anchor', 'middle')
-  .attr('fill', 'black');
+  g
+    .append('g')
+    .attr('class', 'digits')
+    .attr('opacity', 1)
+    .append('text')
+    .attr('x', width / 2)
+    .attr('y', y)
+    .attr('class', 'big')
+    .attr('alignment-baseline', 'middle')
+    .attr('id', 'bigNumber')
+    .style('font-weight', 'bold')
+    .style('cursor', 'pointer')
+    .text(f(v))
+    .style('font-size', d3.min([height, width]) / 3.5)
+    .style('text-anchor', 'middle')
+    .attr('fill', 'black');
 
   // Printing big number subheader text
   if (json.subheader !== null) {
-    g.append('text')
-    .attr('x', width / 2)
-    .attr('y', (height / 16) * 12)
-    .text(json.subheader)
-    .attr('id', 'subheader_text')
-    .style('font-size', d3.min([height, width]) / 8)
-    .style('text-anchor', 'middle');
+    g
+      .append('text')
+      .attr('x', width / 2)
+      .attr('y', height / 16 * 12)
+      .text(json.subheader)
+      .attr('id', 'subheader_text')
+      .style('font-size', d3.min([height, width]) / 8)
+      .style('text-anchor', 'middle');
   }
 
   if (fd.viz_type === 'big_number') {
     // Drawing trend line
 
-    g.append('path')
-    .attr('d', function () {
-      return line(data);
-    })
-    .attr('stroke-width', 5)
-    .attr('opacity', 0.5)
-    .attr('fill', 'none')
-    .attr('stroke-linecap', 'round')
-    .attr('stroke', 'grey');
+    g
+      .append('path')
+      .attr('d', function () {
+        return line(data);
+      })
+      .attr('stroke-width', 5)
+      .attr('opacity', 0.5)
+      .attr('fill', 'none')
+      .attr('stroke-linecap', 'round')
+      .attr('stroke', 'grey');
 
-    g = svg.append('g')
-    .attr('class', 'digits')
-    .attr('opacity', 1);
+    g = svg.append('g').attr('class', 'digits').attr('opacity', 1);
 
     if (vCompare !== null) {
-      y = (height / 8) * 3;
+      y = height / 8 * 3;
     }
 
     const c = scaleColor(vCompare);
 
     // Printing compare %
     if (vCompare) {
-      g.append('text')
-      .attr('x', width / 2)
-      .attr('y', (height / 16) * 12)
-      .text(fp(vCompare) + json.compare_suffix)
-      .style('font-size', d3.min([height, width]) / 8)
-      .style('text-anchor', 'middle')
-      .attr('fill', c)
-      .attr('stroke', c);
+      g
+        .append('text')
+        .attr('x', width / 2)
+        .attr('y', height / 16 * 12)
+        .text(fp(vCompare) + json.compare_suffix)
+        .style('font-size', d3.min([height, width]) / 8)
+        .style('text-anchor', 'middle')
+        .attr('fill', c)
+        .attr('stroke', c);
     }
 
     const gAxis = svg.append('g').attr('class', 'axis').attr('opacity', 0);
     g = gAxis.append('g');
-    const xAxis = d3.svg.axis()
-    .scale(scaleX)
-    .orient('bottom')
-    .ticks(Math.round(2 + (width / 150)))
-    .tickFormat(formatDate);
+    const xAxis = d3.svg
+      .axis()
+      .scale(scaleX)
+      .orient('bottom')
+      .ticks(Math.round(2 + width / 150))
+      .tickFormat(formatDate);
     g.call(xAxis);
     g.attr('transform', 'translate(0,' + (height - vMargin) + ')');
 
-    g = gAxis.append('g').attr('transform', 'translate(' + (width - hMargin) + ',0)');
-    const yAxis = d3.svg.axis()
-    .scale(scaleY)
-    .orient('left')
-    .tickFormat(f)
-    .tickValues(valueExt);
+    g = gAxis
+      .append('g')
+      .attr('transform', 'translate(' + (width - hMargin) + ',0)');
+    const yAxis = d3.svg
+      .axis()
+      .scale(scaleY)
+      .orient('left')
+      .tickFormat(f)
+      .tickValues(valueExt);
 
     g.call(yAxis);
-    g.selectAll('text')
-    .style('text-anchor', 'end')
-    .attr('y', '-7')
-    .attr('x', '-4');
+    g
+      .selectAll('text')
+      .style('text-anchor', 'end')
+      .attr('y', '-7')
+      .attr('x', '-4');
 
-    g.selectAll('text')
-    .style('font-size', '10px');
+    g.selectAll('text').style('font-size', '10px');
 
     const renderTooltip = (d) => {
       const date = formatDate(d[0]);
@@ -192,38 +207,33 @@ function bigNumberVis(slice, payload) {
         tip.hide(d);
       });
 
-    div.on('mouseover', function () {
-      const el = d3.select(this);
-      el.selectAll('path')
-      .transition()
-      .duration(500)
-      .attr('opacity', 1)
-      .style('stroke-width', '2px');
-      el.selectAll('g.digits')
-      .transition()
-      .duration(500)
-      .attr('opacity', 0.1);
-      el.selectAll('g.axis')
-      .transition()
-      .duration(500)
-      .attr('opacity', 1);
-    })
-    .on('mouseout', function () {
-      const el = d3.select(this);
-      el.select('path')
-      .transition()
-      .duration(500)
-      .attr('opacity', 0.5)
-      .style('stroke-width', '5px');
-      el.selectAll('g.digits')
-      .transition()
-      .duration(500)
-      .attr('opacity', 1);
-      el.selectAll('g.axis')
-      .transition()
-      .duration(500)
-      .attr('opacity', 0);
-    });
+    div
+      .on('mouseover', function () {
+        const el = d3.select(this);
+        el
+          .selectAll('path')
+          .transition()
+          .duration(500)
+          .attr('opacity', 1)
+          .style('stroke-width', '2px');
+        el
+          .selectAll('g.digits')
+          .transition()
+          .duration(500)
+          .attr('opacity', 0.1);
+        el.selectAll('g.axis').transition().duration(500).attr('opacity', 1);
+      })
+      .on('mouseout', function () {
+        const el = d3.select(this);
+        el
+          .select('path')
+          .transition()
+          .duration(500)
+          .attr('opacity', 0.5)
+          .style('stroke-width', '5px');
+        el.selectAll('g.digits').transition().duration(500).attr('opacity', 1);
+        el.selectAll('g.axis').transition().duration(500).attr('opacity', 0);
+      });
   }
 }
 

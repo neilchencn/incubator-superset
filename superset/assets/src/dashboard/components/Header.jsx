@@ -57,7 +57,9 @@ class Header extends React.PureComponent {
     if (!this.props.dashboard.dash_save_perm) {
       return null;
     }
-    const btnText = this.props.editMode ? 'Switch to View Mode' : 'Edit Dashboard';
+    const btnText = this.props.editMode
+      ? 'Switch to View Mode'
+      : 'Edit Dashboard';
     return (
       <Button
         bsStyle="default"
@@ -66,7 +68,8 @@ class Header extends React.PureComponent {
         onClick={this.toggleEditMode}
       >
         {btnText}
-      </Button>);
+      </Button>
+    );
   }
   render() {
     const dashboard = this.props.dashboard;
@@ -90,6 +93,9 @@ class Header extends React.PureComponent {
             </span>
             {this.renderUnsaved()}
           </h1>
+          <p style={{ marginLeft: '8px', color: '#777272', fontSize: '14px' }}>
+            Time Zone: UTC
+          </p>
         </div>
         <div className="pull-right" style={{ marginTop: '35px' }}>
           {this.renderEditButton()}

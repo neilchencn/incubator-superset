@@ -22,7 +22,7 @@ class CreatedContent extends React.PureComponent {
     const mutator = data =>
       data.map(slice => ({
         chart: <a href={slice.url}>{slice.title}</a>,
-        favorited: moment(slice.dttm).fromNow(),
+        favorited: moment.utc(slice.dttm).fromNow(),
         _favorited: slice.dttm,
         _chart: slice.title,
       }));
@@ -41,7 +41,7 @@ class CreatedContent extends React.PureComponent {
     const mutator = data =>
       data.map(dash => ({
         dashboard: <a href={dash.url}>{dash.title}</a>,
-        favorited: moment(dash.dttm).fromNow(),
+        favorited: moment.utc(dash.dttm).fromNow(),
         _favorited: dash.dttm,
         _dashboard: dash.title,
       }));

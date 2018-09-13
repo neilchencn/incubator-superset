@@ -150,6 +150,9 @@ class ExploreChartHeader extends React.PureComponent {
             queryResponse={queryResponse}
           />
         </div>
+        <p style={{ marginLeft: '8px', color: '#777272', fontSize: '14px' }}>
+          Time Zone: UTC
+        </p>
       </div>
     );
   }

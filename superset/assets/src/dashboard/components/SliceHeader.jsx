@@ -43,7 +43,10 @@ class SliceHeader extends React.PureComponent {
     this.onToggleExpandSlice = this.onToggleExpandSlice.bind(this);
     this.exportCSV = this.props.exportCSV.bind(this, this.props.slice);
     this.exploreChart = this.props.exploreChart.bind(this, this.props.slice);
-    this.forceRefresh = this.props.forceRefresh.bind(this, this.props.slice.slice_id);
+    this.forceRefresh = this.props.forceRefresh.bind(
+      this,
+      this.props.slice.slice_id,
+    );
     this.removeSlice = this.props.removeSlice.bind(this, this.props.slice);
   }
 
@@ -60,10 +63,10 @@ class SliceHeader extends React.PureComponent {
   render() {
     const slice = this.props.slice;
     const isCached = this.props.isCached;
-    const cachedWhen = moment(this.props.cachedDttm).fromNow();
-    const refreshTooltip = isCached ?
-      t('Served from data cached %s . Click to force refresh.', cachedWhen) :
-      t('Force refresh data');
+    const cachedWhen = moment.utc(this.props.cachedDttm).fromNow();
+    const refreshTooltip = isCached
+      ? t('Served from data cached %s . Click to force refresh.', cachedWhen)
+      : t('Force refresh data');
     const annoationsLoading = t('Annotation layers are still loading.');
     const annoationsError = t('One ore more annotation layers failed loading.');
 
@@ -76,7 +79,9 @@ class SliceHeader extends React.PureComponent {
               canEdit={!!this.props.updateSliceName && this.props.editMode}
               onSaveTitle={this.onSaveTitle}
               showTooltip={this.props.editMode}
-              noPermitTooltip={'You don\'t have the rights to alter this dashboard.'}
+              noPermitTooltip={
+                "You don't have the rights to alter this dashboard."
+              }
             />
             {!!Object.values(this.props.annotationQuery || {}).length &&
               <TooltipWrapper
@@ -85,8 +90,7 @@ class SliceHeader extends React.PureComponent {
                 tooltip={annoationsLoading}
               >
                 <i className="fa fa-refresh warning" />
-              </TooltipWrapper>
-            }
+              </TooltipWrapper>}
             {!!Object.values(this.props.annotationError || {}).length &&
               <TooltipWrapper
                 label="annoation-errors"
@@ -94,8 +98,7 @@ class SliceHeader extends React.PureComponent {
                 tooltip={annoationsError}
               >
                 <i className="fa fa-exclamation-circle danger" />
-              </TooltipWrapper>
-            }
+              </TooltipWrapper>}
           </div>
           <div className="chart-controls">
             <div id={'controls_' + slice.slice_id} className="pull-right">
@@ -108,9 +111,11 @@ class SliceHeader extends React.PureComponent {
                   >
                     <i className="fa fa-arrows drag" />
                   </TooltipWrapper>
-                </a>
-              }
-              <a className={`refresh ${isCached ? 'danger' : ''}`} onClick={this.forceRefresh}>
+                </a>}
+              <a
+                className={`refresh ${isCached ? 'danger' : ''}`}
+                onClick={this.forceRefresh}
+              >
                 <TooltipWrapper
                   placement="top"
                   label="refresh"
@@ -120,16 +125,15 @@ class SliceHeader extends React.PureComponent {
                 </TooltipWrapper>
               </a>
               {slice.description &&
-              <a onClick={this.onToggleExpandSlice}>
-                <TooltipWrapper
-                  placement="top"
-                  label="description"
-                  tooltip={t('Toggle chart description')}
-                >
-                  <i className="fa fa-info-circle slice_info" />
-                </TooltipWrapper>
-              </a>
-              }
+                <a onClick={this.onToggleExpandSlice}>
+                  <TooltipWrapper
+                    placement="top"
+                    label="description"
+                    tooltip={t('Toggle chart description')}
+                  >
+                    <i className="fa fa-info-circle slice_info" />
+                  </TooltipWrapper>
+                </a>}
               {this.props.sliceCanEdit &&
                 <a href={slice.edit_url} target="_blank">
                   <TooltipWrapper
@@ -139,8 +143,7 @@ class SliceHeader extends React.PureComponent {
                   >
                     <i className="fa fa-pencil" />
                   </TooltipWrapper>
-                </a>
-              }
+                </a>}
               <a className="exportCSV" onClick={this.exportCSV}>
                 <TooltipWrapper
                   placement="top"
@@ -159,8 +162,7 @@ class SliceHeader extends React.PureComponent {
                   >
                     <i className="fa fa-share" />
                   </TooltipWrapper>
-                </a>
-              }
+                </a>}
               {this.props.editMode &&
                 <a className="remove-chart" onClick={this.removeSlice}>
                   <TooltipWrapper
@@ -170,8 +172,7 @@ class SliceHeader extends React.PureComponent {
                   >
                     <i className="fa fa-close" />
                   </TooltipWrapper>
-                </a>
-              }
+                </a>}
             </div>
           </div>
         </div>

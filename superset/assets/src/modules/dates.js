@@ -13,6 +13,17 @@ export function UTC(dttm) {
   );
 }
 
+export function LOCAL(dttm) {
+  return new Date(
+    dttm.getFullYear(),
+    dttm.getMonth(),
+    dttm.getDate(),
+    dttm.getHours(),
+    dttm.getMinutes(),
+    dttm.getSeconds(),
+  );
+}
+
 export const tickMultiFormat = (() => {
   const formatMillisecond = d3.time.format('.%Lms');
   const formatSecond = d3.time.format(':%Ss');
@@ -100,15 +111,16 @@ export const tickMultiFormatVerbose = d3.time.format.multi([
     function () {
       return true;
     },
-  ],  // fall back on just year: '2020'
+  ], // fall back on just year: '2020'
 ]);
 export const formatDate = function (dttm) {
-  const d = new Date(dttm);
+  const d = UTC(new Date(dttm));
   return tickMultiFormat(d);
 };
 
 export const formatDateVerbose = function (dttm) {
-  const d = new Date(dttm);
+  const d = UTC(new Date(dttm));
+
   return tickMultiFormatVerbose(d);
 };
 
@@ -119,7 +131,7 @@ export const formatDateThunk = function (format) {
 
   const formatter = d3.time.format(format);
   return (dttm) => {
-    const d = new Date(dttm);
+    const d = UTC(new Date(dttm));
     return formatter(d);
   };
 };
@@ -132,23 +144,17 @@ export const fDuration = function (t1, t2, format = 'HH:mm:ss.SS') {
 
 export const now = function () {
   // seconds from EPOCH as a float
-  return moment().valueOf();
+  return moment().utc().valueOf();
 };
 
 export const epochTimeXHoursAgo = function (h) {
-  return moment()
-    .subtract(h, 'hours')
-    .valueOf();
+  return moment().subtract(h, 'hours').utc().valueOf();
 };
 
 export const epochTimeXDaysAgo = function (d) {
-  return moment()
-    .subtract(d, 'days')
-    .valueOf();
+  return moment().subtract(d, 'days').utc().valueOf();
 };
 
 export const epochTimeXYearsAgo = function (y) {
-  return moment()
-    .subtract(y, 'years')
-    .valueOf();
+  return moment().subtract(y, 'years').utc().valueOf();
 };
