@@ -28,19 +28,17 @@ export function updateDashboardTitle(title) {
 }
 
 export function addSlicesToDashboard(dashboardId, sliceIds) {
-  return () => (
+  return () =>
     $.ajax({
       type: 'POST',
       url: `/superset/add_slices/${dashboardId}/`,
       data: {
         data: JSON.stringify({ slice_ids: sliceIds }),
       },
-    })
-      .done(() => {
-        // Refresh page to allow for slices to re-render
-        window.location.reload();
-      })
-  );
+    }).done(() => {
+      // Refresh page to allow for slices to re-render
+      window.location.reload();
+    });
 }
 
 export const REMOVE_SLICE = 'REMOVE_SLICE';
@@ -96,13 +94,13 @@ export function toggleFaveStar(isStarred) {
 export const FETCH_FAVE_STAR = 'FETCH_FAVE_STAR';
 export function fetchFaveStar(id) {
   return function (dispatch) {
-    const url = `${FAVESTAR_BASE_URL}/${id}/count`;
-    return $.get(url)
-      .done((data) => {
-        if (data.count > 0) {
-          dispatch(toggleFaveStar(true));
-        }
-      });
+    const origin = window.location.origin;
+    const url = `${origin}${FAVESTAR_BASE_URL}/${id}/count/`;
+    return $.get(url).done((data) => {
+      if (data.count > 0) {
+        dispatch(toggleFaveStar(true));
+      }
+    });
   };
 }
 

@@ -106,7 +106,7 @@ export function toggleFaveStar(isStarred) {
 export const FETCH_FAVE_STAR = 'FETCH_FAVE_STAR';
 export function fetchFaveStar(sliceId) {
   return function (dispatch) {
-    const url = `${FAVESTAR_BASE_URL}/${sliceId}/count`;
+    const url = `${FAVESTAR_BASE_URL}/${sliceId}/count/`;
     $.get(url, (data) => {
       if (data.count > 0) {
         dispatch(toggleFaveStar(true));

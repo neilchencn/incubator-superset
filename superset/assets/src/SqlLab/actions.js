@@ -21,7 +21,8 @@ export const QUERY_EDITOR_SET_SCHEMA = 'QUERY_EDITOR_SET_SCHEMA';
 export const QUERY_EDITOR_SET_TITLE = 'QUERY_EDITOR_SET_TITLE';
 export const QUERY_EDITOR_SET_AUTORUN = 'QUERY_EDITOR_SET_AUTORUN';
 export const QUERY_EDITOR_SET_SQL = 'QUERY_EDITOR_SET_SQL';
-export const QUERY_EDITOR_SET_TEMPLATE_PARAMS = 'QUERY_EDITOR_SET_TEMPLATE_PARAMS';
+export const QUERY_EDITOR_SET_TEMPLATE_PARAMS =
+  'QUERY_EDITOR_SET_TEMPLATE_PARAMS';
 export const QUERY_EDITOR_SET_SELECTED_TEXT = 'QUERY_EDITOR_SET_SELECTED_TEXT';
 export const QUERY_EDITOR_PERSIST_HEIGHT = 'QUERY_EDITOR_PERSIST_HEIGHT';
 
@@ -51,7 +52,7 @@ export function resetState() {
 }
 
 export function saveQuery(query) {
-  const url = '/savedqueryviewapi/api/create';
+  const url = '/savedqueryviewapi/api/create/';
   $.ajax({
     type: 'POST',
     url,
@@ -68,7 +69,7 @@ export function startQuery(query) {
     id: query.id ? query.id : shortid.generate(),
     progress: 0,
     startDttm: now(),
-    state: (query.runAsync) ? 'pending' : 'running',
+    state: query.runAsync ? 'pending' : 'running',
     cached: false,
   });
   return { type: START_QUERY, query };
@@ -255,7 +256,11 @@ export function queryEditorSetSql(queryEditor, sql) {
 }
 
 export function queryEditorSetTemplateParams(queryEditor, templateParams) {
-  return { type: QUERY_EDITOR_SET_TEMPLATE_PARAMS, queryEditor, templateParams };
+  return {
+    type: QUERY_EDITOR_SET_TEMPLATE_PARAMS,
+    queryEditor,
+    templateParams,
+  };
 }
 
 export function queryEditorSetSelectedText(queryEditor, sql) {
@@ -274,11 +279,15 @@ export function addTable(query, tableName, schemaName) {
       schema: schemaName,
       name: tableName,
     };
-    dispatch(mergeTable(Object.assign({}, table, {
-      isMetadataLoading: true,
-      isExtraMetadataLoading: true,
-      expanded: false,
-    })));
+    dispatch(
+      mergeTable(
+        Object.assign({}, table, {
+          isMetadataLoading: true,
+          isExtraMetadataLoading: true,
+          expanded: false,
+        }),
+      ),
+    );
 
     let url = `/superset/table/${query.dbId}/${tableName}/${schemaName}/`;
     $.get(url, (data) => {
@@ -300,8 +309,7 @@ export function addTable(query, tableName, schemaName) {
       dispatch(mergeTable(newTable, dataPreviewQuery));
       // Run query to get preview data for table
       dispatch(runQuery(dataPreviewQuery));
-    })
-    .fail(() => {
+    }).fail(() => {
       const newTable = Object.assign({}, table, {
         isMetadataLoading: false,
       });
@@ -313,8 +321,7 @@ export function addTable(query, tableName, schemaName) {
     $.get(url, (data) => {
       table = Object.assign({}, table, data, { isExtraMetadataLoading: false });
       dispatch(mergeTable(table));
-    })
-    .fail(() => {
+    }).fail(() => {
       const newTable = Object.assign({}, table, {
         isExtraMetadataLoading: false,
       });
@@ -369,7 +376,7 @@ export function popStoredQuery(urlId) {
   return function (dispatch) {
     $.ajax({
       type: 'GET',
-      url: `/kv/${urlId}`,
+      url: `/kv/${urlId}/`,
       success: (data) => {
         const newQuery = JSON.parse(data);
         const queryEditorProps = {
@@ -381,7 +388,7 @@ export function popStoredQuery(urlId) {
         };
         dispatch(addQueryEditor(queryEditorProps));
       },
-      error: () => notify.error(t('The query couldn\'t be loaded')),
+      error: () => notify.error(t("The query couldn't be loaded")),
     });
   };
 }
@@ -389,7 +396,7 @@ export function popSavedQuery(saveQueryId) {
   return function (dispatch) {
     $.ajax({
       type: 'GET',
-      url: `/savedqueryviewapi/api/get/${saveQueryId}`,
+      url: `/savedqueryviewapi/api/get/${saveQueryId}/`,
       success: (data) => {
         const sq = data.result;
         const queryEditorProps = {
@@ -401,7 +408,7 @@ export function popSavedQuery(saveQueryId) {
         };
         dispatch(addQueryEditor(queryEditorProps));
       },
-      error: () => notify.error(t('The query couldn\'t be loaded')),
+      error: () => notify.error(t("The query couldn't be loaded")),
     });
   };
 }
@@ -435,7 +442,11 @@ export function createDatasource(vizOptions, context) {
         dispatch(createDatasourceSuccess(resp));
       },
       error: () => {
-        dispatch(createDatasourceFailed(t('An error occurred while creating the data source')));
+        dispatch(
+          createDatasourceFailed(
+            t('An error occurred while creating the data source'),
+          ),
+        );
       },
     });
   };
