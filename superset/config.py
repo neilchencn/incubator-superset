@@ -84,7 +84,7 @@ WTF_CSRF_EXEMPT_LIST = ['bi.futuredial.com',
 
 
 # Whether to run the web server in debug mode or not
-DEBUG = True
+DEBUG = False
 FLASK_USE_RELOAD = False
 
 # Whether to show the stacktrace on 500 error

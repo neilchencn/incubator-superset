@@ -93,6 +93,7 @@ class BaseViz(object):
         self._any_cache_key = None
         self._any_cached_dttm = None
         self._extra_chart_data = None
+        print("base tgable:{}".format(self.form_data))
 
     @staticmethod
     def handle_js_int_overflow(data):
@@ -228,9 +229,10 @@ class BaseViz(object):
             groupby.remove(DTTM_ALIAS)
             is_timeseries = True
 
+        print('begin merge: {}'.format(form_data))
         # Add extra filters into the query form data
         merge_extra_filters(form_data)
-
+        print('after merge: {}'.format(form_data))
         granularity = (
             form_data.get('granularity') or
             form_data.get('granularity_sqla')
@@ -279,13 +281,13 @@ class BaseViz(object):
             'druid_time_origin': form_data.get('druid_time_origin', ''),
         }
         filters = form_data.get('filters', [])
-
-        for f in filters:
-            if f.has_key('val') and len(f['val']) > 0:
-                temp = []
-                for v in f['val']:
-                        temp.append(v)
-                f['val'] = temp
+        print('filters: {}'.format(filters))
+        # for f in filters:
+        #     if f.has_key('val') and len(f['val']) > 0:
+        #         temp = []
+        #         for v in f['val']:
+        #                 temp.append(v)
+        #         f['val'] = temp
 
         username = g.user.username
         user = (

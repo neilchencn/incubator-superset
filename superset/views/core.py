@@ -216,6 +216,9 @@ class DashboardFilter(SupersetFilter):
         Slice = models.Slice  # noqa
         Dash = models.Dashboard  # noqa
         # TODO(bogdan): add `schema_access` support here
+        # import pydevd
+        # pydevd.settrace('localhost', port=12345,
+        #                 stdoutToServer=True, stderrToServer=True)
         datasource_perms = self.get_view_menus('datasource_access')
         slice_ids_qry = (
             db.session
