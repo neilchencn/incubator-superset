@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import VirtualizedSelect from 'react-virtualized-select';
 import ControlHeader from '../ControlHeader';
 import { t } from '../../../locales';
-import VirtualizedRendererWrap
-  from '../../../components/VirtualizedRendererWrap';
+import VirtualizedRendererWrap from '../../../components/VirtualizedRendererWrap';
 import OnPasteSelect from '../../../components/OnPasteSelect';
 import MetricDefinitionOption from '../MetricDefinitionOption';
 import MetricDefinitionValue from '../MetricDefinitionValue';
@@ -66,18 +65,9 @@ function getDefaultAggregateForColumn(column) {
     return AGGREGATES.COUNT;
   } else if (type === '' || type === 'expression') {
     return AGGREGATES.SUM;
-  } else if (
-    type.match(/.*char.*/i) ||
-    type.match(/string.*/i) ||
-    type.match(/.*text.*/i)
-  ) {
+  } else if (type.match(/.*char.*/i) || type.match(/string.*/i) || type.match(/.*text.*/i)) {
     return AGGREGATES.COUNT_DISTINCT;
-  } else if (
-    type.match(/.*int.*/i) ||
-    type === 'LONG' ||
-    type === 'DOUBLE' ||
-    type === 'FLOAT'
-  ) {
+  } else if (type.match(/.*int.*/i) || type === 'LONG' || type === 'DOUBLE' || type === 'FLOAT') {
     return AGGREGATES.SUM;
   } else if (type.match(/.*bool.*/i)) {
     return AGGREGATES.MAX;
@@ -88,7 +78,6 @@ function getDefaultAggregateForColumn(column) {
   }
   return null;
 }
-
 
 const equals = function (ori, array) {
   // if the other array is a falsy value, return
@@ -106,7 +95,6 @@ const equals = function (ori, array) {
   }
   return true;
 };
-
 
 const equalsObj = function (object1, object2) {
   for (const propName in object1) {
@@ -126,14 +114,10 @@ const equalsObj = function (object1, object2) {
     }
     if (!object1.hasOwnProperty(propName)) continue;
 
-    if (
-      object1[propName] instanceof Array && object2[propName] instanceof Array
-    ) {
+    if (object1[propName] instanceof Array && object2[propName] instanceof Array) {
       // recurse into the nested arrays
       if (!object1[propName].equals(object2[propName])) return false;
-    } else if (
-      object1[propName] instanceof Object && object2[propName] instanceof Object
-    ) {
+    } else if (object1[propName] instanceof Object && object2[propName] instanceof Object) {
       if (!object1[propName].equals(object2[propName])) return false;
     } else if (object1[propName] !== object2[propName]) {
       // Normal value comparison for strings and numbers
@@ -260,7 +244,22 @@ export default class MetricsControl extends React.PureComponent {
       // neil modify
       // ...props.columns,
       // ...Object.keys(AGGREGATES).map(aggregate => ({ aggregate_name: aggregate })),
-      ...props.savedMetrics,
+      ...props.savedMetrics.sort((a, b) => {
+        if (typeof a === 'object' && a.hasOwnProperty('label')) {
+          return a.label > b.label ? 1 : -1;
+        } else if (typeof a === 'object' && a.hasOwnProperty('column_name')) {
+          return (a.verbose_name ? a.verbose_name : a.column_name) >
+            (b.verbose_name ? b.verbose_name : b.column_name)
+            ? 1
+            : -1;
+        } else if (typeof a === 'object' && a.hasOwnProperty('metric_name')) {
+          return (a.verbose_name ? a.verbose_name : a.metric_name) >
+            (b.verbose_name ? b.verbose_name : b.metric_name)
+            ? 1
+            : -1;
+        }
+        return a > b ? 1 : -1;
+      }),
     ];
 
     return options.map((option) => {
@@ -289,15 +288,10 @@ export default class MetricsControl extends React.PureComponent {
       if (filterValue.endsWith(')')) {
         endIndex = filterValue.length - 1;
       }
-      const valueAfterAggregate = filterValue.substring(
-        filterValue.indexOf('(') + 1,
-        endIndex,
-      );
+      const valueAfterAggregate = filterValue.substring(filterValue.indexOf('(') + 1, endIndex);
       return (
         option.column_name &&
-        option.column_name
-          .toLowerCase()
-          .indexOf(valueAfterAggregate.toLowerCase()) >= 0
+        option.column_name.toLowerCase().indexOf(valueAfterAggregate.toLowerCase()) >= 0
       );
     }
     return (

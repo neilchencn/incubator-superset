@@ -1,5 +1,6 @@
 /* global notify */
-import moment from 'moment';
+// import dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
@@ -58,10 +59,7 @@ class VisualizeModal extends React.PureComponent {
   }
   getColumnFromProps() {
     const props = this.props;
-    if (!props ||
-        !props.query ||
-        !props.query.results ||
-        !props.query.results.columns) {
+    if (!props || !props.query || !props.query.results || !props.query.results.columns) {
       return {};
     }
     const columns = {};
@@ -89,10 +87,14 @@ class VisualizeModal extends React.PureComponent {
       if (!re.test(colName)) {
         hints.push(
           <div>
-            {t('%s is not right as a column name, please alias it ' +
-            '(as in SELECT count(*) ', colName)} <strong>{t('AS my_alias')}</strong>) {t('using only ' +
-            'alphanumeric characters and underscores')}
-          </div>);
+            {t(
+              '%s is not right as a column name, please alias it ' + '(as in SELECT count(*) ',
+              colName,
+            )}{' '}
+            <strong>{t('AS my_alias')}</strong>){' '}
+            {t('using only ' + 'alphanumeric characters and underscores')}
+          </div>,
+        );
       }
     });
     if (this.state.chartType === null) {
@@ -138,22 +140,23 @@ class VisualizeModal extends React.PureComponent {
   buildVisualizeAdvise() {
     let advise;
     const timeout = this.props.timeout;
-    const queryDuration = moment.duration(this.props.query.endDttm - this.props.query.startDttm);
+    const queryDuration = dayjs.duration(this.props.query.endDttm - this.props.query.startDttm);
     if (Math.round(queryDuration.asMilliseconds()) > timeout * 1000) {
       advise = (
         <Alert bsStyle="warning">
-          This query took {Math.round(queryDuration.asSeconds())} seconds to run,
-          and the explore view times out at {timeout} seconds,
-          following this flow will most likely lead to your query timing out.
-          We recommend your summarize your data further before following that flow.
-          If activated you can use the <strong>CREATE TABLE AS</strong> feature
-          to store a summarized data set that you can then explore.
-        </Alert>);
+          This query took {Math.round(queryDuration.asSeconds())} seconds to run, and the explore
+          view times out at {timeout} seconds, following this flow will most likely lead to your
+          query timing out. We recommend your summarize your data further before following that
+          flow. If activated you can use the <strong>CREATE TABLE AS</strong> feature to store a
+          summarized data set that you can then explore.
+        </Alert>
+      );
     }
     return advise;
   }
   visualize() {
-    this.props.actions.createDatasource(this.buildVizOptions(), this)
+    this.props.actions
+      .createDatasource(this.buildVizOptions(), this)
       .done((resp) => {
         const columns = Object.keys(this.state.columns).map(k => this.state.columns[k]);
         const data = JSON.parse(resp);
@@ -187,19 +190,17 @@ class VisualizeModal extends React.PureComponent {
   }
   changeAggFunction(columnName, option) {
     let columns = this.mergedColumns();
-    const val = (option) ? option.value : null;
+    const val = option ? option.value : null;
     const column = Object.assign({}, columns[columnName], { agg: val });
     columns = Object.assign({}, columns, { [columnName]: column });
     this.setState({ columns }, this.validate);
   }
   render() {
-    if (!(this.props.query) || !(this.props.query.results) || !(this.props.query.results.columns)) {
+    if (!this.props.query || !this.props.query.results || !this.props.query.results.columns) {
       return (
         <div className="VisualizeModal">
           <Modal show={this.props.show} onHide={this.props.onHide}>
-            <Modal.Body>
-              {t('No results available for this query')}
-            </Modal.Body>
+            <Modal.Body>{t('No results available for this query')}</Modal.Body>
           </Modal>
         </div>
       );
@@ -210,7 +211,7 @@ class VisualizeModal extends React.PureComponent {
         <input
           type="checkbox"
           onChange={this.changeCheckbox.bind(this, 'is_dim', col.name)}
-          checked={(this.state.columns[col.name]) ? this.state.columns[col.name].is_dim : false}
+          checked={this.state.columns[col.name] ? this.state.columns[col.name].is_dim : false}
           className="form-control"
         />
       ),
@@ -219,7 +220,7 @@ class VisualizeModal extends React.PureComponent {
           type="checkbox"
           className="form-control"
           onChange={this.changeCheckbox.bind(this, 'is_date', col.name)}
-          checked={(this.state.columns[col.name]) ? this.state.columns[col.name].is_date : false}
+          checked={this.state.columns[col.name] ? this.state.columns[col.name].is_date : false}
         />
       ),
       agg_func: (
@@ -231,12 +232,14 @@ class VisualizeModal extends React.PureComponent {
             { value: 'count_distinct', label: 'COUNT(DISTINCT x)' },
           ]}
           onChange={this.changeAggFunction.bind(this, col.name)}
-          value={(this.state.columns[col.name]) ? this.state.columns[col.name].agg : null}
+          value={this.state.columns[col.name] ? this.state.columns[col.name].agg : null}
         />
       ),
     }));
     const alerts = this.state.hints.map((hint, i) => (
-      <Alert bsStyle="warning" key={i}>{hint}</Alert>
+      <Alert bsStyle="warning" key={i}>
+        {hint}
+      </Alert>
     ));
     const modal = (
       <div className="VisualizeModal">
@@ -254,7 +257,7 @@ class VisualizeModal extends React.PureComponent {
                   name="select-chart-type"
                   placeholder={t('[Chart Type]')}
                   options={CHART_TYPES}
-                  value={(this.state.chartType) ? this.state.chartType.value : null}
+                  value={this.state.chartType ? this.state.chartType.value : null}
                   autosize={false}
                   onChange={this.changeChartType.bind(this)}
                 />
@@ -279,7 +282,7 @@ class VisualizeModal extends React.PureComponent {
             <Button
               onClick={this.visualize.bind(this)}
               bsStyle="primary"
-              disabled={(this.state.hints.length > 0)}
+              disabled={this.state.hints.length > 0}
             >
               {t('Visualize')}
             </Button>
@@ -308,4 +311,7 @@ function mapDispatchToProps(dispatch) {
 }
 
 export { VisualizeModal };
-export default connect(mapStateToProps, mapDispatchToProps)(VisualizeModal);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(VisualizeModal);

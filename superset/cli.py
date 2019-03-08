@@ -93,7 +93,9 @@ def console_log_run(app, port, use_reloader):
     help='Path to a UNIX socket as an alternative to address:port, e.g. '
          '/var/run/superset.sock. '
          'Will override the address and port values. [DEPRECATED]')
-def runserver(debug, console_log, use_reloader, address, port, timeout, workers, socket):
+def runserver(
+        debug, console_log, use_reloader, address, port, timeout, workers,
+        socket):
     """Starts a Superset web server."""
     debug = debug or config.get('DEBUG') or console_log
     if debug:
@@ -156,6 +158,13 @@ def load_product(path):
     from superset import data
     print('Loading examples into {}'.format(db))
     data.load_product(path)
+
+
+@manager.option('-p', '--path', help=('Load custom roles data'))
+def load_role(path):
+    """Loads custom roles data for futuredial database field """
+    from superset import data
+    data.load_role(path)
 
 
 @manager.option(

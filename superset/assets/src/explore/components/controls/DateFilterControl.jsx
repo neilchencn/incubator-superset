@@ -1,13 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-  Button, ButtonGroup, FormControl, InputGroup,
-  Label, OverlayTrigger, Popover, Glyphicon,
+  Button,
+  ButtonGroup,
+  FormControl,
+  InputGroup,
+  Label,
+  OverlayTrigger,
+  Popover,
+  Glyphicon,
 } from 'react-bootstrap';
 import Select from 'react-select';
 import Datetime from 'react-datetime';
 import 'react-datetime/css/react-datetime.css';
-import moment from 'moment';
+// import dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 import ControlHeader from '../ControlHeader';
 import PopoverSection from '../../../components/PopoverSection';
@@ -49,7 +56,7 @@ export default class DateFilterControl extends React.Component {
       this.state.grain = words[1];
       this.state.rel = words[2];
       this.state.type = 'rel';
-    } else if (moment(value).isValid()) {
+    } else if (dayjs(value).isValid()) {
       this.state.dttm = value;
       this.state.type = 'fix';
     } else {
@@ -169,9 +176,7 @@ export default class DateFilterControl extends React.Component {
             >
               Ok
             </Button>
-            <ButtonGroup
-              className="float-right"
-            >
+            <ButtonGroup className="float-right">
               <Button
                 bsSize="small"
                 className="now"
@@ -206,9 +211,7 @@ export default class DateFilterControl extends React.Component {
           placement="right"
           overlay={this.renderPopover()}
         >
-          <Label style={{ cursor: 'pointer' }}>
-            {value.replace('T00:00:00', '') || '∞'}
-          </Label>
+          <Label style={{ cursor: 'pointer' }}>{value.replace('T00:00:00', '') || '∞'}</Label>
         </OverlayTrigger>
       </div>
     );

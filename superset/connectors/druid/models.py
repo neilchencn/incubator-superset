@@ -397,12 +397,17 @@ class DruidColumn(Model, BaseColumn):
     def refresh_metrics(self):
         """Refresh metrics based on the column metadata"""
         metrics = self.get_metrics()
+        del metrics['druid_row_count']
+
+        if self.datasource_id in [1, 19, 24] and 'count' in metrics:
+            del metrics['count']
         dbmetrics = (
             db.session.query(DruidMetric)
             .filter(DruidMetric.datasource_id == self.datasource_id)
             .filter(DruidMetric.metric_name.in_(metrics.keys()))
         )
         dbmetrics = {metric.metric_name: metric for metric in dbmetrics}
+
         for metric in metrics.values():
             dbmetric = dbmetrics.get(metric.metric_name)
             if dbmetric:

@@ -1,28 +1,29 @@
 """Loads datasets, dashboards and slices in a new superset instance"""
 # pylint: disable=C,R,W
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import datetime
 import gzip
 import json
 import os
 import random
-import textwrap
 import sqlite3
-import pandas as pd
-from sqlalchemy import func
-from sqlalchemy import BigInteger, Date, DateTime, Float, String, Text, Integer
-import geohash
-import polyline
+import textwrap
 from collections import OrderedDict
-from flask_appbuilder.security.sqla import models as ab_models
 
+import pandas as pd
+import polyline
+from docutils.parsers.rst.languages.eo import roles
+from flask_appbuilder.security.sqla import models as ab_models
 from superset import app, db, security_manager, utils
 from superset.connectors.connector_registry import ConnectorRegistry
 from superset.models import core as models
+from superset.models import dictionary
+
+import geohash
+from sqlalchemy import (BigInteger, Date, DateTime, Float, Integer, String,
+                        Text, func)
 
 # Shortcuts
 DB = models.Database
@@ -2054,7 +2055,6 @@ def load_companies(path):
         tbl.fetch_metadata()
 
 
-from superset.models import dictionary
 
 
 def is_datasource(pvm, perm):
@@ -2161,6 +2161,53 @@ def load_product(path):
     if not tbl:
         tbl = TBL(table_name=tbl_name)
     tbl.description = "product"
+    tbl.database = utils.get_or_create_main_db()
+    db.session.merge(tbl)
+    db.session.commit()
+    tbl.fetch_metadata()
+
+
+def load_role(path):
+    DATA_FOLDER = '/bi/'
+    if path:
+        DATA_FOLDER = path
+    tbl_name = 'customroles'
+    if not os.path.isfile(os.path.join(DATA_FOLDER, 'roles.json')):
+        print('can not find roles.json')
+        return
+    with open(os.path.join(DATA_FOLDER, 'roles.json')) as f:
+        roles = json.load(f)
+
+    ids= []
+    products = []
+    croles = []
+    idx = 0
+    for product, rs in roles.items():
+        products.append(product)
+        croles.append(rs)
+        ids.append(idx + 1)
+        idx += 1
+    df = pd.DataFrame(dict(id=ids, product=products, roles=croles))
+    sesh = security_manager.get_session()
+    sesh.query(dictionary.Customroles).delete()
+    sesh.commit()
+    df.to_sql(
+        tbl_name,
+        db.engine,
+        if_exists='append',
+        chunksize=500,
+        dtype={
+            'id': Integer(),
+            'product': String(255),
+            'roles': String(255),
+        },
+        index=False
+    )
+    print("Creating table {} reference".format(tbl_name))
+    tbl = db.session.query(TBL).filter_by(table_name=tbl_name).first()
+    if not tbl:
+        tbl = TBL(table_name=tbl_name)
+    tbl.description = "customroles"
     tbl.database = utils.get_or_create_main_db()
     db.session.merge(tbl)
     db.session.commit()

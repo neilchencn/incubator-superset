@@ -10,6 +10,7 @@ import { t } from '../../locales';
 
 const propTypes = {
   dashboard: PropTypes.object.isRequired,
+  datasources: PropTypes.object,
   filters: PropTypes.object.isRequired,
   userId: PropTypes.string.isRequired,
   isStarred: PropTypes.bool,
@@ -57,9 +58,7 @@ class Header extends React.PureComponent {
     if (!this.props.dashboard.dash_save_perm) {
       return null;
     }
-    const btnText = this.props.editMode
-      ? 'Switch to View Mode'
-      : 'Edit Dashboard';
+    const btnText = this.props.editMode ? 'Switch to View Mode' : 'Edit Dashboard';
     return (
       <Button
         bsStyle="default"
@@ -73,6 +72,12 @@ class Header extends React.PureComponent {
   }
   render() {
     const dashboard = this.props.dashboard;
+    let hasLocal = false;
+    Object.values(this.props.datasources).map((el) => {
+      if (el.name.toLowerCase().indexOf('localtime') != -1) {
+        hasLocal = true;
+      }
+    });
     return (
       <div className="title">
         <div className="pull-left">
@@ -93,9 +98,9 @@ class Header extends React.PureComponent {
             </span>
             {this.renderUnsaved()}
           </h1>
-          <p style={{ marginLeft: '8px', color: '#777272', fontSize: '14px' }}>
-            Time Zone: UTC
-          </p>
+          {!hasLocal && (
+            <p style={{ marginLeft: '8px', color: '#777272', fontSize: '14px' }}>Time Zone: UTC</p>
+          )}
         </div>
         <div className="pull-right" style={{ marginTop: '35px' }}>
           {this.renderEditButton()}

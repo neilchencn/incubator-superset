@@ -12,7 +12,7 @@ from flask_babel import lazy_gettext
 from flask_login import login_user
 from wtforms import StringField, PasswordField
 from wtforms.validators import Required, Email
-from superset.models.dictionary import Company, Product
+from superset.models.dictionary import Company, Product, Customroles
 from .apiclient import client, SSO_API_AUTH_SETTING
 from . import REMOTE_REQUEST_TOKEN_URL, REMOTE_SSO_LOGIN_URL, REMOTE_AUTH_TOKEN_URL
 from flask import request
@@ -59,7 +59,8 @@ class MyAuthRemoteUserView(AuthDBView):
         print(
             'Fetching a set of all perms to lookup which ones are missing')
         all_pvs = set()
-        for pv in self.appbuilder.sm.get_session.query(self.appbuilder.sm.permissionview_model).all():
+        for pv in self.appbuilder.sm.get_session.query(
+                self.appbuilder.sm.permissionview_model).all():
             if pv.permission and pv.view_menu:
                 all_pvs.add((pv.permission.name, pv.view_menu.name))
 
@@ -71,7 +72,8 @@ class MyAuthRemoteUserView(AuthDBView):
             view_menu = self.appbuilder.sm.find_view_menu(view_menu_name)
             pv = None
             if permission and view_menu:
-                pv = self.appbuilder.sm.get_session.query(self.appbuilder.sm.permissionview_model).filter_by(
+                pv = self.appbuilder.sm.get_session.query(
+                    self.appbuilder.sm.permissionview_model).filter_by(
                     permission=permission, view_menu=view_menu).first()
             if not pv and permission_name and view_menu_name:
                 self.appbuilder.sm.add_permission_view_menu(
@@ -105,7 +107,8 @@ class MyAuthRemoteUserView(AuthDBView):
             # if my_user is authenticated
             # if my_user:
             user = self.appbuilder.sm.auth_user_db(
-                {'username': form.username.data, 'password': form.password.data})
+                {'username': form.username.data,
+                 'password': form.password.data})
 
             # print(dir(self))
             # print(dir(self.appbuilder))
@@ -133,7 +136,8 @@ class MyAuthRemoteUserView(AuthDBView):
 
     def authenticate(self, request_token, auth_token, **credentials):
         code, user_info = client.send_request(
-            REMOTE_AUTH_TOKEN_URL + "?" + urllib.urlencode({"request_token": request_token, "auth_token": auth_token}))
+            REMOTE_AUTH_TOKEN_URL + "?" + urllib.urlencode(
+                {"request_token": request_token, "auth_token": auth_token}))
         user = user_info["user"]
         return user
 
@@ -165,6 +169,9 @@ class MyAuthRemoteUserView(AuthDBView):
             cmc_product = res_product[1].get('data') if str(
                 res_product[0]) == '200' else []
             print('cmc_product:{}'.format(cmc_product))
+            print('bi_product:{}'.format(products))
+            c_roles = self.appbuilder.sm.get_session.query(Customroles).all()
+            print('custom_roles:{}'.format(c_roles))
             for p in cmc_product:
                 pname = [pb.bi_name for pb in products if str(pb.cmc_id) ==
                          str(p.get('id'))]
@@ -176,25 +183,35 @@ class MyAuthRemoteUserView(AuthDBView):
 
                 if pname:
                     roles.append('DATASOURCE[{}]'.format(pname))
-                    if pname == 'GreenT':
-                        roles.append('DATASOURCE[GreenT-hourly]')
-                        roles.append('DICT[GreenT]')
-                    if pname == 'iRT':
-                        roles.append('DATASOURCE[iRT-hourly]')
-                        roles.append('DICT[iRT]')
-                    if pname == 'GreenT_asia':
-                        roles.append('DATASOURCE[GreenT-asia-hourly]')
-                    if pname == 'iRT_asia':
-                        roles.append('DATASOURCE[iRT-asia-hourly]')
-                    if pname == 'DSE':
-                        roles.append('DICT[DSE]')
-                    if pname == 'DSED':
-                        roles.append('DICT[DSED]')
+                    for crs in c_roles:
+
+                        if pname == crs.product:
+                            print('pname - c_role: {}'.format(pname))
+                            [roles.append(r.strip())
+                             for r in crs.roles.split(',')]
+                    # if pname == 'GreenT':
+                    #     roles.append('DATASOURCE[GreenT-hourly]')
+                    #     roles.append('DICT[GreenT]')
+                    # if pname == 'iRT':
+                    #     roles.append('DATASOURCE[iRT-hourly]')
+                    #     roles.append('DICT[iRT]')
+                    # if pname == 'GreenT_asia':
+                    #     roles.append('DATASOURCE[GreenT-asia-hourly]')
+                    # if pname == 'iRT_asia':
+                    #     roles.append('DATASOURCE[iRT-asia-hourly]')
+                    # if pname == 'DSE':
+                    #     roles.append('DICT[DSE]')
+                    # if pname == 'DSED':
+                    #     roles.append('DICT[DSED]')
+                    # if pname == 'RADI':
+                    #     roles.append('DATASOURCE[RADI-hourly]')
+                    #     roles.append('DATASOURCE[RADI-localtime]')
+                    #     roles.append('DATASOURCE[RADI-localtime-hourly]')
 
             res_company = client.send_request('/restapi/company/')
             cmc_company = res_company[1].get('data') if str(
                 res_company[0]) == '200' else []
-            print('cmc_company:{}'.format(cmc_company))
+            # print('cmc_company:{}'.format(cmc_company))
             user_company = [
                 c['name'] for c in cmc_company if c['id'] == user['company']][0]
             roles.append('COMPANY[{}]'.format(user_company))
@@ -226,10 +243,13 @@ class MyAuthRemoteUserView(AuthDBView):
 
             restserver = SSO_API_AUTH_SETTING["url"]
             url_parts = list(urlparse.urlparse(restserver))
-            query = {"api_key": SSO_API_AUTH_SETTING["apikey"],
-                     "request_token": request_token,
-                     "next": build_absolute_uri(
-                '{}auth/'.format(request.host_url) + "?redirect=%s" % request.args.get("next", '/login/'))}
+            query = {
+                "api_key": SSO_API_AUTH_SETTING["apikey"],
+                "request_token": request_token,
+                "next":
+                build_absolute_uri(
+                    '{}auth/'.format(request.host_url) + "?redirect=%s" %
+                    request.args.get("next", '/login/'))}
             url_parts[2] = REMOTE_SSO_LOGIN_URL
             url_parts[4] = urllib.urlencode(query)
             ssoLoginURL = urlparse.urlunparse(url_parts)

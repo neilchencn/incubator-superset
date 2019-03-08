@@ -111,7 +111,17 @@ const groupByControl = {
   mapStateToProps: (state, control) => {
     const newState = {};
     if (state.datasource) {
-      newState.options = state.datasource.columns.filter(c => c.groupby);
+      newState.options = state.datasource.columns.filter(c => c.groupby).sort((a, b) => {
+        if (typeof a === 'object' && a.hasOwnProperty('label')) {
+          return a.label > b.label ? 1 : -1;
+        } else if (typeof a === 'object' && a.hasOwnProperty('column_name')) {
+          return (a.verbose_name ? a.verbose_name : a.column_name) >
+            (b.verbose_name ? b.verbose_name : b.column_name)
+            ? 1
+            : -1;
+        }
+        return a > b ? 1 : -1;
+      });
       if (control && control.includeTime) {
         newState.options.push(timeColumnOption);
       }
@@ -609,7 +619,17 @@ export const controls = {
     valueRenderer: c => <ColumnOption column={c} />,
     valueKey: 'column_name',
     mapStateToProps: state => ({
-      options: (state.datasource) ? state.datasource.columns.filter(c => c.groupby) : [],
+      options: (state.datasource) ? state.datasource.columns.filter(c => c.groupby).sort((a, b) => {
+            if (typeof a === 'object' && a.hasOwnProperty('label')) {
+              return a.label > b.label ? 1 : -1;
+            } else if (typeof a === 'object' && a.hasOwnProperty('column_name')) {
+              return (a.verbose_name ? a.verbose_name : a.column_name) >
+                (b.verbose_name ? b.verbose_name : b.column_name)
+                ? 1
+                : -1;
+            }
+            return a > b ? 1 : -1;
+          }) : [],
     }),
   },
 
@@ -775,6 +795,7 @@ export const controls = {
     default: 'P1D',
     choices: [
       ['all', 'all'],
+      ['PT1H', '1 hour'],
       ['P1D', '1 day'],
       ['P2D', '2 days'],
       ['P3D', '3 days'],

@@ -24,6 +24,7 @@ const propTypes = {
   can_overwrite: PropTypes.bool.isRequired,
   can_download: PropTypes.bool.isRequired,
   isStarred: PropTypes.bool.isRequired,
+  datasource: PropTypes.object,
   slice: PropTypes.object,
   table_name: PropTypes.string,
   form_data: PropTypes.object,
@@ -85,8 +86,7 @@ class ExploreChartHeader extends React.PureComponent {
       latestQueryFormData,
       queryResponse,
     } = this.props.chart;
-    const chartSucceeded =
-      ['success', 'rendered'].indexOf(this.props.chart.chartStatus) > 0;
+    const chartSucceeded = ['success', 'rendered'].indexOf(this.props.chart.chartStatus) > 0;
     return (
       <div id="slice-header" className="clearfix panel-title-large">
         <EditableTitle
@@ -94,8 +94,7 @@ class ExploreChartHeader extends React.PureComponent {
           canEdit={!this.props.slice || this.props.can_overwrite}
           onSaveTitle={this.updateChartTitleOrSaveSlice.bind(this)}
         />
-
-        {this.props.slice &&
+        {this.props.slice && (
           <span>
             <FaveStar
               itemId={this.props.slice.slice_id}
@@ -104,10 +103,7 @@ class ExploreChartHeader extends React.PureComponent {
               isStarred={this.props.isStarred}
             />
 
-            <TooltipWrapper
-              label="edit-desc"
-              tooltip={t('Edit chart properties')}
-            >
+            <TooltipWrapper label="edit-desc" tooltip={t('Edit chart properties')}>
               <a
                 className="edit-desc-icon"
                 href={`/slicemodelview/edit/${this.props.slice.slice_id}`}
@@ -115,26 +111,27 @@ class ExploreChartHeader extends React.PureComponent {
                 <i className="fa fa-edit" />
               </a>
             </TooltipWrapper>
-          </span>}
-        {this.props.chart.sliceFormData &&
+          </span>
+        )}
+        {this.props.chart.sliceFormData && (
           <AlteredSliceTag
             origFormData={this.props.chart.sliceFormData}
             currentFormData={formData}
-          />}
+          />
+        )}
         <div className="pull-right">
-          {chartSucceeded &&
-            queryResponse &&
+          {chartSucceeded && queryResponse && (
             <RowCountLabel
               rowcount={queryResponse.rowcount}
               limit={+(formData.row_limit || formData.row_limit_low)}
-            />}
-          {chartSucceeded &&
-            queryResponse &&
-            queryResponse.is_cached &&
+            />
+          )}
+          {chartSucceeded && queryResponse && queryResponse.is_cached && (
             <CachedLabel
               onClick={this.runQuery.bind(this)}
               cachedTimestamp={queryResponse.cached_dttm}
-            />}
+            />
+          )}
           <Timer
             startTime={chartUpdateStartTime}
             endTime={chartUpdateEndTime}
@@ -150,9 +147,10 @@ class ExploreChartHeader extends React.PureComponent {
             queryResponse={queryResponse}
           />
         </div>
-        <p style={{ marginLeft: '8px', color: '#777272', fontSize: '14px' }}>
-          Time Zone: UTC
-        </p>
+
+        {!(this.props.datasource.name.toLowerCase().indexOf('localtime') != -1) && (
+          <p style={{ marginLeft: '8px', color: '#777272', fontSize: '14px' }}>Time Zone: UTC</p>
+        )}
       </div>
     );
   }

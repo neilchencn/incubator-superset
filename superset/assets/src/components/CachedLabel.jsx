@@ -1,9 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Label } from 'react-bootstrap';
-import moment from 'moment';
+// import dayjs from 'dayjs';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import TooltipWrapper from './TooltipWrapper';
 import { t } from '../locales';
+
+dayjs.extend(relativeTime);
+dayjs.extend(utc);
 
 const propTypes = {
   onClick: PropTypes.func,
@@ -24,9 +30,11 @@ class CacheLabel extends React.PureComponent {
     const cachedText = this.props.cachedTimestamp ? (
       <span>
         {t('Loaded data cached')}
-        <b> {moment.utc(this.props.cachedTimestamp).fromNow()}</b>
-      </span>) :
-      t('Loaded from cache');
+        <b> {dayjs.utc(this.props.cachedTimestamp).fromNow()}</b>
+      </span>
+    ) : (
+      t('Loaded from cache')
+    );
 
     const tooltipContent = (
       <span>
@@ -48,10 +56,7 @@ class CacheLabel extends React.PureComponent {
   render() {
     const labelStyle = this.state.hovered ? 'primary' : 'default';
     return (
-      <TooltipWrapper
-        tooltip={this.state.tooltipContent}
-        label="cache-desc"
-      >
+      <TooltipWrapper tooltip={this.state.tooltipContent} label="cache-desc">
         <Label
           className={this.props.className}
           bsStyle={labelStyle}
@@ -62,7 +67,8 @@ class CacheLabel extends React.PureComponent {
         >
           cached <i className="fa fa-refresh" />
         </Label>
-      </TooltipWrapper>);
+      </TooltipWrapper>
+    );
   }
 }
 CacheLabel.propTypes = propTypes;

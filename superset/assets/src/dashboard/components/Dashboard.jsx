@@ -6,8 +6,13 @@ import GridLayout from './GridLayout';
 import Header from './Header';
 import { exportChart } from '../../explore/exploreUtils';
 import { areObjectsEqual } from '../../reduxUtils';
-import { Logger, ActionLog, LOG_ACTIONS_PAGE_LOAD,
-  LOG_ACTIONS_LOAD_EVENT, LOG_ACTIONS_RENDER_EVENT } from '../../logger';
+import {
+  Logger,
+  ActionLog,
+  LOG_ACTIONS_PAGE_LOAD,
+  LOG_ACTIONS_LOAD_EVENT,
+  LOG_ACTIONS_RENDER_EVENT,
+} from '../../logger';
 import { t } from '../../locales';
 
 import '../../../stylesheets/dashboard.css';
@@ -68,6 +73,7 @@ class Dashboard extends React.PureComponent {
     this.fetchSlice = this.fetchSlice.bind(this);
     this.getFormDataExtra = this.getFormDataExtra.bind(this);
     this.exploreChart = this.exploreChart.bind(this);
+    // this.save2Image = this.save2Image.bind(this);
     this.exportCSV = this.exportCSV.bind(this);
     this.props.actions.fetchFaveStar = this.props.actions.fetchFaveStar.bind(this);
     this.props.actions.saveFaveStar = this.props.actions.saveFaveStar.bind(this);
@@ -86,9 +92,11 @@ class Dashboard extends React.PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.firstLoad &&
-      Object.values(nextProps.slices)
-        .every(slice => (['rendered', 'failed', 'stopped'].indexOf(slice.chartStatus) > -1))
+    if (
+      this.firstLoad &&
+      Object.values(nextProps.slices).every(
+        slice => ['rendered', 'failed', 'stopped'].indexOf(slice.chartStatus) > -1,
+      )
     ) {
       Logger.end(this.loadingLog);
       this.firstLoad = false;
@@ -101,8 +109,10 @@ class Dashboard extends React.PureComponent {
       const prevFiltersKeySet = new Set(Object.keys(prevProps.filters));
       Object.keys(this.props.filters).some((key) => {
         prevFiltersKeySet.delete(key);
-        if (prevProps.filters[key] === undefined ||
-          !areObjectsEqual(prevProps.filters[key], this.props.filters[key])) {
+        if (
+          prevProps.filters[key] === undefined ||
+          !areObjectsEqual(prevProps.filters[key], this.props.filters[key])
+        ) {
           changedFilterKey = key;
           return true;
         }
@@ -174,7 +184,8 @@ class Dashboard extends React.PureComponent {
     if (
       sliceId &&
       metadata.filter_immune_slice_fields &&
-      metadata.filter_immune_slice_fields[sliceId]) {
+      metadata.filter_immune_slice_fields[sliceId]
+    ) {
       immuneToFields = metadata.filter_immune_slice_fields[sliceId];
     }
     for (const filteringSliceId in filters) {
@@ -199,10 +210,9 @@ class Dashboard extends React.PureComponent {
     const immune = this.props.dashboard.metadata.filter_immune_slices || [];
     let slices = this.getAllSlices();
     if (filterKey) {
-      slices = slices.filter(slice => (
-        String(slice.slice_id) !== filterKey &&
-        immune.indexOf(slice.slice_id) === -1
-      ));
+      slices = slices.filter(
+        slice => String(slice.slice_id) !== filterKey && immune.indexOf(slice.slice_id) === -1,
+      );
     }
     this.fetchSlices(slices);
   }
@@ -218,8 +228,9 @@ class Dashboard extends React.PureComponent {
     this.stopPeriodicRender();
     const immune = this.props.dashboard.metadata.timed_refresh_immune_slices || [];
     const refreshAll = () => {
-      const affectedSlices = this.getAllSlices()
-        .filter(slice => immune.indexOf(slice.slice_id) === -1);
+      const affectedSlices = this.getAllSlices().filter(
+        slice => immune.indexOf(slice.slice_id) === -1,
+      );
       this.fetchSlices(affectedSlices, true, interval * 0.2);
     };
     const fetchAndRender = () => {
@@ -253,7 +264,10 @@ class Dashboard extends React.PureComponent {
 
   fetchSlice(slice, force = false) {
     return this.props.actions.runQuery(
-      this.getFormDataExtra(slice), force, this.props.timeout, slice.chartKey,
+      this.getFormDataExtra(slice),
+      force,
+      this.props.timeout,
+      slice.chartKey,
     );
   }
 
@@ -261,19 +275,23 @@ class Dashboard extends React.PureComponent {
   fetchSlices(slc, force = false, interval = 0) {
     const slices = slc || this.getAllSlices();
     if (!interval) {
-      slices.forEach((slice) => { this.fetchSlice(slice, force); });
+      slices.forEach((slice) => {
+        this.fetchSlice(slice, force);
+      });
       return;
     }
 
     const meta = this.props.dashboard.metadata;
     const refreshTime = Math.max(interval, meta.stagger_time || 5000); // default 5 seconds
     if (typeof meta.stagger_refresh !== 'boolean') {
-      meta.stagger_refresh = meta.stagger_refresh === undefined ?
-        true : meta.stagger_refresh === 'true';
+      meta.stagger_refresh =
+        meta.stagger_refresh === undefined ? true : meta.stagger_refresh === 'true';
     }
     const delay = meta.stagger_refresh ? refreshTime / (slices.length - 1) : 0;
     slices.forEach((slice, i) => {
-      setTimeout(() => { this.fetchSlice(slice, force); }, delay * i);
+      setTimeout(() => {
+        this.fetchSlice(slice, force);
+      }, delay * i);
     });
   }
 
@@ -281,6 +299,10 @@ class Dashboard extends React.PureComponent {
     const formData = this.getFormDataExtra(slice);
     exportChart(formData);
   }
+
+  // save2Image(slice_id, filename) {
+  //   save2IMG(slice_id, filename);
+  // }
 
   exportCSV(slice) {
     const formData = this.getFormDataExtra(slice);
@@ -303,6 +325,7 @@ class Dashboard extends React.PureComponent {
           <AlertsWrapper initMessages={this.props.initMessages} />
           <Header
             dashboard={this.props.dashboard}
+            datasources={this.props.datasources}
             unsavedChanges={this.state.unsavedChanges}
             filters={this.props.filters}
             userId={this.props.userId}
@@ -330,6 +353,7 @@ class Dashboard extends React.PureComponent {
             onChange={this.onChange}
             getFormDataExtra={this.getFormDataExtra}
             exploreChart={this.exploreChart}
+            // save2Image={this.save2Image}
             exportCSV={this.exportCSV}
             fetchSlice={this.fetchSlice}
             saveSlice={this.props.actions.saveSlice}

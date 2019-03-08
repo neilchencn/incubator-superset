@@ -1,8 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import moment from 'moment';
+// import dayjs from 'dayjs';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import TableLoader from './TableLoader';
 import { t } from '../../locales';
+
+dayjs.extend(relativeTime);
+dayjs.extend(utc);
 
 const propTypes = {
   user: PropTypes.object.isRequired,
@@ -23,7 +29,7 @@ export default class Favorites extends React.PureComponent {
       data.map(slice => ({
         chart: <a href={slice.url}>{slice.title}</a>,
         creator: <span>{slice.creator}</span>,
-        favorited: moment.utc(slice.dttm).fromNow(),
+        favorited: dayjs.utc(slice.dttm).fromNow(),
         _favorited: slice.dttm,
         _chart: slice.title,
         _creator: slice.creator,
@@ -44,7 +50,7 @@ export default class Favorites extends React.PureComponent {
       data.map(dash => ({
         dashboard: <a href={dash.url}>{dash.title}</a>,
         creator: <span>{dash.creator}</span>,
-        favorited: moment.utc(dash.dttm).fromNow(),
+        favorited: dayjs.utc(dash.dttm).fromNow(),
         _favorited: dash.dttm,
         _dashboard: dash.title,
         _creator: dash.creator,

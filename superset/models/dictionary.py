@@ -45,3 +45,10 @@ class Product(Model):
     id = Column(Integer, primary_key=True)
     cmc_id = Column(Text, unique=False, nullable=False)
     bi_name = Column(Text, unique=False, nullable=False)
+
+
+class Customroles(Model):
+    __tablename__ = 'customroles'
+    id = Column(Integer, primary_key=True)
+    product = Column(Text, unique=False, nullable=False)
+    roles = Column(Text, unique=False, nullable=False)

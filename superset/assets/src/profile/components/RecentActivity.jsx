@@ -1,9 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import moment from 'moment';
+// import dayjs from 'dayjs';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 import TableLoader from './TableLoader';
 
+dayjs.extend(relativeTime);
+dayjs.extend(utc);
 const propTypes = {
   user: PropTypes.object,
 };
@@ -17,7 +22,7 @@ export default class RecentActivity extends React.PureComponent {
         .map(row => ({
           name: <a href={row.item_url}>{row.item_title}</a>,
           type: row.action,
-          time: moment.utc(row.time).fromNow(),
+          time: dayjs.utc(row.time).fromNow(),
           _time: row.time,
         }));
     };

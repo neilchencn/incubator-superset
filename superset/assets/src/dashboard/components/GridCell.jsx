@@ -25,6 +25,7 @@ const propTypes = {
   updateSliceName: PropTypes.func,
   toggleExpandSlice: PropTypes.func,
   exploreChart: PropTypes.func,
+  // save2Image: PropTypes.func,
   exportCSV: PropTypes.func,
   addFilter: PropTypes.func,
   getFilters: PropTypes.func,
@@ -40,6 +41,7 @@ const defaultProps = {
   updateSliceName: () => ({}),
   toggleExpandSlice: () => ({}),
   exploreChart: () => ({}),
+  // save2Image: () => ({}),
   exportCSV: () => ({}),
   addFilter: () => ({}),
   getFilters: () => ({}),
@@ -90,10 +92,23 @@ class GridCell extends React.PureComponent {
 
   render() {
     const {
-      isExpanded, isLoading, isCached, cachedDttm,
-      removeSlice, updateSliceName, toggleExpandSlice, forceRefresh,
-      chartKey, slice, datasource, formData, timeout, annotationQuery,
-      exploreChart, exportCSV,
+      isExpanded,
+      isLoading,
+      isCached,
+      cachedDttm,
+      removeSlice,
+      updateSliceName,
+      toggleExpandSlice,
+      forceRefresh,
+      chartKey,
+      slice,
+      datasource,
+      formData,
+      timeout,
+      annotationQuery,
+      exploreChart,
+      // save2Image,
+      exportCSV,
     } = this.props;
     return (
       <div
@@ -113,11 +128,11 @@ class GridCell extends React.PureComponent {
             editMode={this.props.editMode}
             annotationQuery={annotationQuery}
             exploreChart={exploreChart}
+            // save2Image={save2Image}
             exportCSV={exportCSV}
           />
         </div>
-        {
-        /* This usage of dangerouslySetInnerHTML is safe since it is being used to render
+        {/* This usage of dangerouslySetInnerHTML is safe since it is being used to render
            markdown that is sanitized with bleach. See:
              https://github.com/apache/incubator-superset/pull/4390
            and

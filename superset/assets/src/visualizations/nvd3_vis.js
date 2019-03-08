@@ -5,7 +5,9 @@ import d3 from 'd3';
 import nv from 'nvd3';
 import 'nvd3/build/nv.d3.min.css';
 import mathjs from 'mathjs';
-import moment from 'moment';
+// import dayjs from 'dayjs';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import d3tip from 'd3-tip';
 import dompurify from 'dompurify';
 
@@ -22,6 +24,7 @@ import { t } from '../locales';
 import './nvd3_vis.css';
 import { VIZ_TYPES } from './';
 
+dayjs.extend(utc);
 const minBarWidth = 15;
 // Limit on how large axes margins can grow as the chart window is resized
 const maxMarginPad = 30;
@@ -676,7 +679,7 @@ export default function nvd3Vis(slice, payload) {
 
             const tip = tipFactory(e);
             const records = (slice.annotationData[e.name].records || []).map((r) => {
-              const timeValue = new Date(moment.utc(r[e.timeColumn]));
+              const timeValue = new Date(dayjs.utc(r[e.timeColumn]));
 
               return {
                 ...r,
@@ -734,8 +737,8 @@ export default function nvd3Vis(slice, payload) {
             const tip = tipFactory(e);
 
             const records = (slice.annotationData[e.name].records || []).map((r) => {
-              const timeValue = new Date(moment.utc(r[e.timeColumn]));
-              const intervalEndValue = new Date(moment(r[e.intervalEndColumn]));
+              const timeValue = new Date(dayjs.utc(r[e.timeColumn]));
+              const intervalEndValue = new Date(dayjs(r[e.intervalEndColumn]));
               return {
                 ...r,
                 [e.timeColumn]: timeValue,

@@ -71,6 +71,7 @@ class ExploreChartPanel extends React.PureComponent {
         can_overwrite={this.props.can_overwrite}
         can_download={this.props.can_download}
         isStarred={this.props.isStarred}
+        datasource={this.props.datasource}
         slice={this.props.slice}
         table_name={this.props.table_name}
         form_data={this.props.form_data}

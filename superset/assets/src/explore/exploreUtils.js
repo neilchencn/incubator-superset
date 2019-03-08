@@ -1,5 +1,7 @@
 /* eslint camelcase: 0 */
 import URI from 'urijs';
+// import { saveSvgAsPng } from 'save-svg-as-png';
+// import html2canvas from 'html2canvas';
 
 export function getChartKey(explore) {
   const slice = explore.slice;
@@ -15,10 +17,7 @@ export function getAnnotationJsonUrl(slice_id, form_data, isNative) {
   return uri
     .pathname(`/superset/${endpoint}/${slice_id}`)
     .search({
-      form_data: JSON.stringify(
-        form_data,
-        (key, value) => (value === null ? undefined : value),
-      ),
+      form_data: JSON.stringify(form_data, (key, value) => (value === null ? undefined : value)),
     })
     .toString();
 }
@@ -44,7 +43,10 @@ export function getExploreLongUrl(formData, endpointType) {
   if (endpointType === 'standalone') {
     search.standalone = 'true';
   }
-  return uri.directory(directory).search(search).toString();
+  return uri
+    .directory(directory)
+    .search(search)
+    .toString();
 }
 
 export function getExploreUrlAndPayload({
@@ -124,3 +126,19 @@ export function exportChart(formData, endpointType) {
   exploreForm.submit();
   document.body.removeChild(exploreForm);
 }
+
+// export function save2IMG(slice_id, filename) {
+//   let el = document.querySelector('#slice_' + slice_id).getElementsByClassName('nvd3-svg')[0];
+//   if (el) {
+//     saveSvgAsPng(el, filename + '.png', { backgroundColor: '#ffffff' });
+//   } else {
+//     el = document.getElementById('slice-container-' + slice_id);
+//     html2canvas(el).then(function (canvas) {
+//       const canvasbase = canvas.toDataURL();
+//       const a = document.createElement('a');
+//       a.href = canvasbase;
+//       a.download = filename;
+//       a.click();
+//     });
+//   }
+// }

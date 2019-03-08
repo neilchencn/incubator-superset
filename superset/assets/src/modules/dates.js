@@ -1,5 +1,8 @@
-import moment from 'moment';
+// import dayjs from 'dayjs';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
+dayjs.extend(utc);
 const d3 = require('d3');
 
 export function UTC(dttm) {
@@ -136,25 +139,36 @@ export const formatDateThunk = function (format) {
   };
 };
 
-export const fDuration = function (t1, t2, format = 'HH:mm:ss.SS') {
+export const fDuration = function (t1, t2, format = 'HH:mm:ss.SSS') {
   const diffSec = t2 - t1;
-  const duration = moment.utc(new Date(diffSec));
+  const duration = dayjs.utc(new Date(diffSec));
   return duration.format(format);
 };
 
 export const now = function () {
   // seconds from EPOCH as a float
-  return moment().utc().valueOf();
+  return dayjs()
+    .utc()
+    .valueOf();
 };
 
 export const epochTimeXHoursAgo = function (h) {
-  return moment().subtract(h, 'hours').utc().valueOf();
+  return dayjs()
+    .subtract(h, 'hours')
+    .utc()
+    .valueOf();
 };
 
 export const epochTimeXDaysAgo = function (d) {
-  return moment().subtract(d, 'days').utc().valueOf();
+  return dayjs()
+    .subtract(d, 'days')
+    .utc()
+    .valueOf();
 };
 
 export const epochTimeXYearsAgo = function (y) {
-  return moment().subtract(y, 'years').utc().valueOf();
+  return dayjs()
+    .subtract(y, 'years')
+    .utc()
+    .valueOf();
 };

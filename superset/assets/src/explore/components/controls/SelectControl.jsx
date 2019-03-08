@@ -4,8 +4,7 @@ import VirtualizedSelect from 'react-virtualized-select';
 import Select, { Creatable } from 'react-select';
 import ControlHeader from '../ControlHeader';
 import { t } from '../../../locales';
-import VirtualizedRendererWrap
-  from '../../../components/VirtualizedRendererWrap';
+import VirtualizedRendererWrap from '../../../components/VirtualizedRendererWrap';
 import OnPasteSelect from '../../../components/OnPasteSelect';
 
 const propTypes = {
@@ -20,11 +19,7 @@ const propTypes = {
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
-  value: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-    PropTypes.array,
-  ]),
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.array]),
   showHeader: PropTypes.bool,
   optionRenderer: PropTypes.func,
   valueRenderer: PropTypes.func,
@@ -85,14 +80,10 @@ const equalsObj = function (object1, object2) {
     }
     if (!object1.hasOwnProperty(propName)) continue;
 
-    if (
-      object1[propName] instanceof Array && object2[propName] instanceof Array
-    ) {
+    if (object1[propName] instanceof Array && object2[propName] instanceof Array) {
       // recurse into the nested arrays
       if (!object1[propName].equals(object2[propName])) return false;
-    } else if (
-      object1[propName] instanceof Object && object2[propName] instanceof Object
-    ) {
+    } else if (object1[propName] instanceof Object && object2[propName] instanceof Object) {
       if (!object1[propName].equals(object2[propName])) return false;
     } else if (object1[propName] !== object2[propName]) {
       // Normal value comparison for strings and numbers
@@ -111,9 +102,8 @@ export default class SelectControl extends React.PureComponent {
   }
   componentWillReceiveProps(nextProps) {
     if (
-      ['groupby', 'columns', 'percent_metrics', 'x', 'y', 'size'].indexOf(
-        this.props.name,
-      ) >= 0 && !equals(nextProps.options, this.props.options)
+      ['groupby', 'columns', 'percent_metrics', 'x', 'y', 'size'].indexOf(this.props.name) >= 0 &&
+      !equals(nextProps.options, this.props.options)
     ) {
       const options = this.getOptions(nextProps);
       this.setState({ options, value: [] });
@@ -129,11 +119,7 @@ export default class SelectControl extends React.PureComponent {
       ) {
         this.props.onChange(nextProps.value[0]);
       }
-      if (
-        nextProps.multi &&
-        nextProps.value &&
-        typeof nextProps.value === 'string'
-      ) {
+      if (nextProps.multi && nextProps.value && typeof nextProps.value === 'string') {
         this.props.onChange([nextProps.value]);
       }
     }
@@ -169,6 +155,7 @@ export default class SelectControl extends React.PureComponent {
       }
       return option;
     });
+
     if (props.freeForm) {
       // For FreeFormSelect, insert value into options if not exist
       const values = options.map(c => c.value);
@@ -184,17 +171,11 @@ export default class SelectControl extends React.PureComponent {
         });
       }
     }
-    return options.sort((a, b) => {
-      if (typeof a === 'object' && a.hasOwnProperty('label')) {
-        return a.label > b.label ? 1 : -1;
-      }
-      return a > b ? 1 : -1;
-    });
+    return options;
   }
   render() {
     //  Tab, comma or Enter will trigger a new option created for FreeFormSelect
-    const placeholder =
-      this.props.placeholder || t('%s option(s)', this.state.options.length);
+    const placeholder = this.props.placeholder || t('%s option(s)', this.state.options.length);
 
     const selectProps = {
       multi: this.props.multi,

@@ -18,6 +18,7 @@ const propTypes = {
   onChange: PropTypes.func,
   getFormDataExtra: PropTypes.func,
   exploreChart: PropTypes.func,
+  save2Image: PropTypes.func,
   exportCSV: PropTypes.func,
   fetchSlice: PropTypes.func,
   saveSlice: PropTypes.func,
@@ -36,6 +37,7 @@ const defaultProps = {
   onChange: () => ({}),
   getFormDataExtra: () => ({}),
   exploreChart: () => ({}),
+  // save2Image: () => ({}),
   exportCSV: () => ({}),
   fetchSlice: () => ({}),
   saveSlice: () => ({}),
@@ -57,8 +59,9 @@ class GridLayout extends React.Component {
     this.onDragStop = this.onDragStop.bind(this);
     this.forceRefresh = this.forceRefresh.bind(this);
     this.removeSlice = this.removeSlice.bind(this);
-    this.updateSliceName = this.props.dashboard.dash_edit_perm ?
-      this.updateSliceName.bind(this) : null;
+    this.updateSliceName = this.props.dashboard.dash_edit_perm
+      ? this.updateSliceName.bind(this)
+      : null;
   }
 
   onResizeStop(layout) {
@@ -92,8 +95,7 @@ class GridLayout extends React.Component {
   }
 
   findSliceIndexById(sliceId) {
-    return this.props.dashboard.slices
-      .map(slice => (slice.slice_id)).indexOf(sliceId);
+    return this.props.dashboard.slices.map(slice => slice.slice_id).indexOf(sliceId);
   }
 
   forceRefresh(sliceId) {
@@ -126,8 +128,10 @@ class GridLayout extends React.Component {
   }
 
   isExpanded(slice) {
-    return this.props.dashboard.metadata.expanded_slices &&
-      this.props.dashboard.metadata.expanded_slices[slice.slice_id];
+    return (
+      this.props.dashboard.metadata.expanded_slices &&
+      this.props.dashboard.metadata.expanded_slices[slice.slice_id]
+    );
   }
 
   render() {
@@ -153,6 +157,7 @@ class GridLayout extends React.Component {
             widgetHeight={this.getWidgetHeight(slice)}
             widgetWidth={this.getWidgetWidth(slice)}
             exploreChart={this.props.exploreChart}
+            // save2Image={this.props.save2Image}
             exportCSV={this.props.exportCSV}
             isExpanded={!!this.isExpanded(slice)}
             isLoading={currentChart.chartStatus === 'loading'}
@@ -170,7 +175,8 @@ class GridLayout extends React.Component {
             annotationQuery={currentChart.annotationQuery}
             annotationError={currentChart.annotationError}
           />
-        </div>);
+        </div>
+      );
     });
 
     return (

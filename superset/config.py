@@ -225,8 +225,10 @@ CSV_EXPORT = {
 #  VIZ_TYPE_BLACKLIST = ['pivot_table', 'treemap']
 # ---------------------------------------------------
 
-VIZ_TYPE_BLACKLIST = ['bullet', 'iframe', 'deck_multi', 'deck_scatter', 'deck_screengrid',
-                      'deck_grid', 'deck_path', 'deck_polygon', 'deck_hex', 'deck_geojson', 'deck_arc', ]
+VIZ_TYPE_BLACKLIST = [
+    'bullet', 'iframe', 'deck_multi', 'deck_scatter', 'deck_screengrid',
+    'deck_grid', 'deck_path', 'deck_polygon', 'deck_hex', 'deck_geojson',
+    'deck_arc', ]
 
 # ---------------------------------------------------
 # List of data sources not to be refreshed in druid cluster

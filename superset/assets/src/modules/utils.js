@@ -141,9 +141,7 @@ export const fixDataTableBodyHeight = function ($tableDom, height) {
   const filterHeight = $tableDom.find('.dataTables_filter').height() || 0;
   const pageLengthHeight = $tableDom.find('.dataTables_length').height() || 0;
   const paginationHeight = $tableDom.find('.dataTables_paginate').height() || 0;
-  const controlsHeight = pageLengthHeight > filterHeight
-    ? pageLengthHeight
-    : filterHeight;
+  const controlsHeight = pageLengthHeight > filterHeight ? pageLengthHeight : filterHeight;
   $tableDom
     .find('.dataTables_scrollBody')
     .css('max-height', height - headHeight - controlsHeight - paginationHeight);
@@ -242,10 +240,7 @@ export function initJQueryAjax() {
   if (token) {
     $.ajaxSetup({
       beforeSend(xhr, settings) {
-        if (
-          !/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) &&
-          !this.crossDomain
-        ) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
           xhr.setRequestHeader('X-CSRFToken', token);
         }
       },
@@ -267,14 +262,24 @@ export function getParam(name) {
   const formattedName = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
   const regex = new RegExp('[\\?&]' + formattedName + '=([^&#]*)');
   const results = regex.exec(location.search);
-  return results === null
-    ? ''
-    : decodeURIComponent(results[1].replace(/\+/g, ' '));
+  return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
 
 export function mainMetric(savedMetrics) {
   // Using 'count' as default metric if it exists, otherwise using whatever one shows up first
   let metric;
+  savedMetrics.sort((a, b) => {
+    if (typeof a === 'object' && a.hasOwnProperty('label')) {
+      return a.label > b.label ? 1 : -1;
+    }
+    if (typeof a === 'object' && a.hasOwnProperty('metric_name')) {
+      return (a.verbose_name ? a.verbose_name : a.metric_name) >
+        (b.verbose_name ? b.verbose_name : b.metric_name)
+        ? 1
+        : -1;
+    }
+    return a > b ? 1 : -1;
+  });
   if (savedMetrics && savedMetrics.length > 0) {
     savedMetrics.forEach((m) => {
       if (m.metric_name === 'count') {
