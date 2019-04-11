@@ -190,6 +190,22 @@ def check_ownership(obj, raise_if_false=True):
         return False
 
 
+def get_same_company_users_ids(user):
+    session = security_manager.get_session
+    same_company_user_ids = set([])
+
+    for role in user.roles:
+        if 'COMPANY' in role.name:
+            results = session.query(security_manager.user_model).filter(
+        security_manager.user_model.roles.any(id=role.id)).all()
+            for u in results:
+                same_company_user_ids.add(u.id)
+
+    if len(same_company_user_ids) < 1:
+        same_company_user_ids.add(user.id)
+    return same_company_user_ids
+
+
 class SliceFilter(SupersetFilter):
     def apply(self, query, func):  # noqa
         if self.has_all_datasource_access():
@@ -200,9 +216,13 @@ class SliceFilter(SupersetFilter):
         session = security_manager.get_session
         sampleID = session.query(security_manager.user_model).filter_by(
             username='sample').first().get_id()
+
         if not self.has_role(['Admin', 'Alpha']):
+            same_company_user_ids = get_same_company_users_ids(g.user)
+            same_company_user_ids.add(sampleID)
             query = query.filter(
-                Slice.created_by_fk.in_([g.user.id, sampleID]))
+                Slice.created_by_fk.in_(same_company_user_ids))
+
         return query
 
 
@@ -236,8 +256,11 @@ class DashboardFilter(SupersetFilter):
         session = security_manager.get_session
         sampleID = session.query(security_manager.user_model).filter_by(
             username='sample').first().get_id()
+
         if not self.has_role(['Admin', 'Alpha']):
-            query = query.filter(Dash.created_by_fk.in_([g.user.id, sampleID]))
+            same_company_user_ids = get_same_company_users_ids(g.user)
+            same_company_user_ids.add(sampleID)
+            query = query.filter(Dash.created_by_fk.in_(same_company_user_ids))
         return query
 
 
@@ -1762,7 +1785,7 @@ class Superset(BaseSupersetView):
                 .filter_by(id=int(request.args.get('save_to_dashboard_id')))
                 .one()
             )
-            
+
             # check edit dashboard permissions
             dash_overwrite_perm = check_ownership(dash, raise_if_false=False)
             if not dash_overwrite_perm:
@@ -1772,7 +1795,7 @@ class Superset(BaseSupersetView):
                     status=400)
 
             dash.changed_on = datetime.now()
-            
+
             flash(
                 'Slice [{}] was added to dashboard [{}]'.format(
                     slc.slice_name,
