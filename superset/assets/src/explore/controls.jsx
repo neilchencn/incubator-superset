@@ -1391,9 +1391,7 @@ export const controls = {
       'mean',
       'min',
       'max',
-      'median',
-      'stdev',
-      'var',
+      'median'
     ]),
     default: 'sum',
     description: t('Aggregate function to apply when pivoting and ' +
