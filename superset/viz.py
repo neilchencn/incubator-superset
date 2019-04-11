@@ -697,12 +697,25 @@ class PivotTableViz(BaseViz):
                 self.form_data.get('granularity') == 'all' and
                 DTTM_ALIAS in df):
             del df[DTTM_ALIAS]
+
+        margins_name = 'All'
+        if self.form_data.get('pivot_margins') and self.form_data.get('pandas_aggfunc') == 'mean':
+            margins_name = 'Avg'
+        elif self.form_data.get('pivot_margins') and self.form_data.get('pandas_aggfunc') == 'max':
+            margins_name = 'Max'
+        elif self.form_data.get('pivot_margins') and self.form_data.get('pandas_aggfunc') == 'min':
+            margins_name = 'Min'
+        elif self.form_data.get('pivot_margins') and self.form_data.get('pandas_aggfunc') == 'median':
+            margins_name = 'Median'
+
+
         df = df.pivot_table(
             index=self.form_data.get('groupby'),
             columns=self.form_data.get('columns'),
             values=self.form_data.get('metrics'),
             aggfunc=self.form_data.get('pandas_aggfunc'),
             margins=self.form_data.get('pivot_margins'),
+            margins_name=margins_name,
         )
         # Display metrics side by side with each column
         if self.form_data.get('combine_metric'):
