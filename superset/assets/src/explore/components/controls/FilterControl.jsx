@@ -32,9 +32,7 @@ export default class FilterControl extends React.Component {
   }
 
   componentDidMount() {
-    this.state.filters.forEach((filter, index) =>
-      this.fetchFilterValues(index),
-    );
+    this.state.filters.forEach((filter, index) => this.fetchFilterValues(index));
   }
 
   componentWillReceiveProps(nextProps) {
@@ -56,12 +54,7 @@ export default class FilterControl extends React.Component {
     const datasource = this.props.datasource;
     const col = column || this.props.value[index].col;
     const having = this.props.name === 'having_filters';
-    if (
-      col &&
-      this.props.datasource &&
-      this.props.datasource.filter_select &&
-      !having
-    ) {
+    if (col && this.props.datasource && this.props.datasource.filter_select && !having) {
       this.setState((prevState) => {
         const newStateFilters = Object.assign([], prevState.filters);
         newStateFilters[index].valuesLoading = true;
@@ -92,15 +85,30 @@ export default class FilterControl extends React.Component {
 
   addFilter() {
     const newFilters = Object.assign([], this.props.value);
-    const col = this.props.datasource &&
-      this.props.datasource.filterable_cols.length > 0
-      ? this.props.datasource.filterable_cols[0][0]
-      : null;
-    newFilters.push({
-      col,
-      op: 'in',
-      val: this.props.datasource.filter_select ? [] : '',
-    });
+    let col = null;
+    const having = this.props.name === 'having_filters';
+    if (having) {
+      col =
+        this.props.datasource && this.props.datasource.metrics_combo.length > 0
+          ? this.props.datasource.metrics_combo[0][0]
+          : null;
+      newFilters.push({
+        col,
+        op: '==',
+        val: '',
+      });
+    } else {
+      col =
+        this.props.datasource && this.props.datasource.filterable_cols.length > 0
+          ? this.props.datasource.filterable_cols[0][0]
+          : null;
+
+      newFilters.push({
+        col,
+        op: 'in',
+        val: this.props.datasource.filter_select ? [] : '',
+      });
+    }
     this.props.onChange(newFilters);
     const nextIndex = this.state.filters.length;
     this.setState((prevState) => {
@@ -162,11 +170,7 @@ export default class FilterControl extends React.Component {
         {filters}
         <Row className="space-2">
           <Col md={2}>
-            <Button
-              id="add-button"
-              bsSize="sm"
-              onClick={this.addFilter.bind(this)}
-            >
+            <Button id="add-button" bsSize="sm" onClick={this.addFilter.bind(this)}>
               <i className="fa fa-plus" /> &nbsp; {t('Add Filter')}
             </Button>
           </Col>

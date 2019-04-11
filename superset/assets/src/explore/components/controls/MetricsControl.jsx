@@ -315,7 +315,7 @@ export default class MetricsControl extends React.PureComponent {
           labelKey="label"
           valueKey="optionName"
           clearable
-          closeOnSelect
+          closeOnSelect={!this.props.multi}
           onChange={this.onChange}
           optionRenderer={this.optionRenderer}
           valueRenderer={this.valueRenderer}

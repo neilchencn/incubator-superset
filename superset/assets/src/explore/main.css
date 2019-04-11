@@ -16,30 +16,32 @@
   margin-bottom: 40px;
 }
 
-.fave-unfave-icon, .edit-desc-icon {
+.fave-unfave-icon,
+.edit-desc-icon {
   padding: 0 0 0 .5em;
   font-size: 14px;
 }
 
 .checkbox {
-    float: left;
-    margin-top: 0px;
-    margin-right: 3px;
+  float: left;
+  margin-top: 0px;
+  margin-right: 3px;
 }
 
 .control-panel-section {
   margin-bottom: 0;
   box-shadow: none;
 }
+
 .control-panel-section:last-child {
   padding-bottom: 40px;
- }
+}
 
-.control-panel-section .Select-multi-value-wrapper .Select-input > input {
+.control-panel-section .Select-multi-value-wrapper .Select-input>input {
   width: 100px;
 }
 
-.control-panel-section .metrics-select .Select-multi-value-wrapper .Select-input > input {
+.control-panel-section .metrics-select .Select-multi-value-wrapper .Select-input>input {
   width: 300px;
 }
 
@@ -68,6 +70,7 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
+
 .viztype-selector-container.selected {
   cursor: not-allowed;
   border: 1px solid #aaa;
@@ -80,48 +83,60 @@
   display: flex;
   align-items: center;
 }
+
 .color-scheme-container li {
   flex-basis: 9px;
   height: 10px;
   margin: 9px 1px;
 }
+
 .control-panel-section .panel-body {
   margin-left: 15px;
   padding-bottom: 0px;
 }
+
 .control-panel-section .control-label {
   margin-bottom: 0px;
 }
+
 .fa.expander {
   width: 15px;
 }
+
 .control-panel-section span.label {
   display: inline-block;
 }
+
 .input-inline {
   float: left;
   display: inline-block;
   padding-right: 3px;
 }
+
 .input-inline .Select-control {
   display: flex;
 }
+
 .input-inline .Select-control .Select-arrow-zone {
   width: auto;
   position: absolute;
   right: 0;
   top: 12px;
 }
+
 .save-modal-selector {
   margin: 10px 0;
 }
+
 .list-group {
   margin-bottom: 10px;
 }
+
 .color-popover.popover {
   border: none;
   background-color: transparent;
 }
+
 .color-popover .popover-content {
   padding: 0;
   background-color: transparent;
@@ -139,11 +154,11 @@
   overflow: auto;
 }
 
-.adhoc-metric-edit-tabs > .nav-tabs {
+.adhoc-metric-edit-tabs>.nav-tabs {
   margin-bottom: 6px;
 }
 
-.adhoc-metric-edit-tabs > .nav-tabs > li > a {
+.adhoc-metric-edit-tabs>.nav-tabs>li>a {
   padding: 4px 4px 4px 4px;
 }
 
@@ -160,4 +175,17 @@
 
 #metrics-edit-popover {
   max-width: none;
+}
+
+.filter .pull-left {
+  float: none !important;
+}
+
+.filter>.ControlHeader {
+  display: inline-block !important;
+  margin-top: 4px;
+}
+
+#remove-button {
+  padding: 8px 10px !important;
 }
