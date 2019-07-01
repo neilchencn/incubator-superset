@@ -18,7 +18,7 @@ registerLanguage('html', html);
 registerLanguage('sql', sql);
 registerLanguage('json', json);
 
-const $ = window.$ = require('jquery');
+const $ = (window.$ = require('jquery'));
 
 const propTypes = {
   animation: PropTypes.bool,
@@ -44,11 +44,22 @@ export default class DisplayQueryButton extends React.PureComponent {
   }
   setStateFromQueryResponse() {
     const qr = this.props.queryResponse;
-    this.setState({
-      language: qr.language,
-      query: qr.query,
-      isLoading: false,
-    });
+
+    if (qr && ['stopped'].indexOf(this.props.chartStatus) < 0) {
+      this.setState({
+        language: qr.language,
+        query: qr.query,
+        isLoading: false,
+        error: qr.error,
+      });
+    } else {
+      this.setState({
+        language: null,
+        query: null,
+        isLoading: false,
+        error: 'Updating chart was stopped',
+      });
+    }
   }
   fetchQuery() {
     this.setState({ isLoading: true });
@@ -67,7 +78,7 @@ export default class DisplayQueryButton extends React.PureComponent {
           language: data.language,
           query: data.query,
           isLoading: false,
-          error: null,
+          error: '',
         });
       },
       error: (data) => {
@@ -80,8 +91,10 @@ export default class DisplayQueryButton extends React.PureComponent {
   }
   beforeOpen() {
     if (
-      ['loading', null].indexOf(this.props.chartStatus) >= 0
-      || !this.props.queryResponse || !this.props.queryResponse.query
+      (['loading', null].indexOf(this.props.chartStatus) >= 0 ||
+        !this.props.queryResponse ||
+        !this.props.queryResponse.query) &&
+      ['stopped'].indexOf(this.props.chartStatus) < 0
     ) {
       this.fetchQuery();
     } else {
@@ -90,11 +103,7 @@ export default class DisplayQueryButton extends React.PureComponent {
   }
   renderModalBody() {
     if (this.state.isLoading) {
-      return (<img
-        className="loading"
-        alt="Loading..."
-        src="/static/assets/images/loading.gif"
-      />);
+      return <img className="loading" alt="Loading..." src="/static/assets/images/loading.gif" />;
     } else if (this.state.error) {
       return <pre>{this.state.error}</pre>;
     } else if (this.state.query) {
