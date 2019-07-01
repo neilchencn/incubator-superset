@@ -399,7 +399,7 @@ class DruidColumn(Model, BaseColumn):
         metrics = self.get_metrics()
         del metrics['druid_row_count']
 
-        if self.datasource_id in [1, 19, 24] and 'count' in metrics:
+        if self.datasource_id in [1, 3, 4, 12, 13, 19, 24] and 'count' in metrics:
             del metrics['count']
         dbmetrics = (
             db.session.query(DruidMetric)
