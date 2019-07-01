@@ -29,14 +29,16 @@ module.exports = function (slice, payload) {
 
   // jQuery hack to format number
   slice.container.find('tbody tr').each(function () {
-    $(this).find('td').each(function (i) {
-      const metric = cols[i];
-      const format = slice.datasource.column_formats[metric] || fd.number_format || '.3s';
-      const tdText = $(this)[0].textContent;
-      if (!isNaN(tdText) && tdText !== '') {
-        $(this)[0].textContent = d3format(format, tdText);
-      }
-    });
+    $(this)
+      .find('td')
+      .each(function (i) {
+        const metric = cols[i];
+        const format = slice.datasource.column_formats[metric] || fd.number_format || '.3s';
+        const tdText = $(this)[0].textContent;
+        if (!isNaN(tdText) && tdText !== '') {
+          $(this)[0].textContent = d3format(format, tdText);
+        }
+      });
   });
 
   if (fd.groupby.length === 1) {
@@ -47,13 +49,14 @@ module.exports = function (slice, payload) {
     container.css('overflow', 'hidden');
     const table = container.find('table').DataTable({
       paging: false,
+      order: [],
       searching: false,
       bInfo: false,
       scrollY: `${height}px`,
       scrollCollapse: true,
       scrollX: true,
     });
-    table.column('-1').order('desc').draw();
+    // table.column('-1').order('desc').draw();
     fixDataTableBodyHeight(container.find('.dataTables_wrapper'), height);
   } else {
     // When there is more than 1 group by column we just render the table, without using

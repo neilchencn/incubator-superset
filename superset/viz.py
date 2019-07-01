@@ -669,6 +669,7 @@ class PivotTableViz(BaseViz):
     verbose_name = _('Pivot Table')
     credits = 'a <a href="https://github.com/airbnb/superset">Superset</a> original'
     is_timeseries = False
+    alias = ['All', 'Max', 'Min','Median', 'Avg']
 
     def query_obj(self):
         d = super(PivotTableViz, self).query_obj()
@@ -689,12 +690,66 @@ class PivotTableViz(BaseViz):
             raise Exception(_("Group by and Columns can't overlap"))
         return d
 
+
+    def sort_index(self, idx):
+        for c in idx:
+            if c in self.alias:
+                idx.remove(c)
+                idx.insert(0, str(c))
+        return idx
+
+    def pop_col(self,cols, tps):
+        for t in tps:
+            cols.pop(cols.index(t))
+        return cols
+
+    def get_tuple(self, cols):
+        tuples = []
+        for col in cols:
+            if type(col) is 'str':
+                return [cols.pop(col)] if col in self.alias else []
+            else:
+                for c in col:
+                    if c in self.alias:
+                        tuples.append(col)
+        return tuples
+
+    def get_tuples(self, cols):
+        cols_obj = {}
+        for col in cols:
+            if type(col) is 'str':
+                return self.get_cols(cols)
+            else:
+                if not cols_obj.get(col[0]):
+                    cols_obj[col[0]]=[]
+                cols_obj[col[0]].append(col)
+
+        new_cols = []
+        for k,v in cols_obj.items():
+            v = self.get_cols(v)
+            new_cols = new_cols + v
+        return new_cols
+
+    def get_cols(self, cols):
+        agg_col = self.get_tuple(cols)
+        if agg_col:
+            cols = self.pop_col(cols, agg_col)
+            cols = agg_col + cols
+        return cols
+
+    def sort_column(self, cols):
+        if self.form_data.get('combine_metric'):
+            cols = self.get_cols(cols)
+        else:
+            cols = self.get_tuples(cols)
+        return cols
+
+
     def get_data(self, df):
         if df is None or (isinstance(df, pd.DataFrame) and df.empty):
             raise Exception(_('No data was returned'))
 
-        if (
-                self.form_data.get('granularity') == 'all' and
+        if (self.form_data.get('granularity') == 'all' and
                 DTTM_ALIAS in df):
             del df[DTTM_ALIAS]
 
@@ -708,7 +763,6 @@ class PivotTableViz(BaseViz):
         elif self.form_data.get('pivot_margins') and self.form_data.get('pandas_aggfunc') == 'median':
             margins_name = 'Median'
 
-
         df = df.pivot_table(
             index=self.form_data.get('groupby'),
             columns=self.form_data.get('columns'),
@@ -717,9 +771,41 @@ class PivotTableViz(BaseViz):
             margins=self.form_data.get('pivot_margins'),
             margins_name=margins_name,
         )
-        # Display metrics side by side with each column
+
+
         if self.form_data.get('combine_metric'):
             df = df.stack(0).unstack()
+
+        if self.form_data.get('pivot_margins'):
+
+            df = df.rename(columns={'':'empty','None':'empty'})
+            print('df.index:{}'.format(df.index))
+            if type(df.index) is pd.core.indexes.base.Index:
+                cols = list(df)
+                cols = self.sort_column(cols)
+                idx = list(df.index)
+                idx = self.sort_index(idx)
+                df = df.reindex(idx)
+                df=df.ix[:,cols]
+
+            elif type(df.index) is pd.core.indexes.multi.MultiIndex:
+                print('df.index: {}'.format(df.index))
+                cols = list(df)
+                cols = self.sort_column(cols)
+                df = df.reindex(columns=cols)
+                lbs = df.index.labels
+                new_lbs = []
+                for lb in lbs:
+                    new_lb = []
+                    for ll in lb:
+                        if ll == 0:
+                            new_lb.insert(0,0)
+                        else:
+                            new_lb.append(ll)
+                    new_lbs.append(new_lb)
+                df = df.reindex(df.index.set_labels(new_lbs))
+            # Display metrics side by side with each column
+
         return dict(
             columns=list(df.columns),
             html=df.to_html(
