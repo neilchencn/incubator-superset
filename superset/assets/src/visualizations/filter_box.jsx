@@ -194,13 +194,13 @@ class FilterBox extends React.Component {
             placeholder={t('Select [%s]', filterVerbose)}
             key={filter}
             multi
+            closeOnSelect={false}
             value={this.state.selectedValues[filter]}
             options={data.map((opt) => {
               const perc = Math.round((opt.metric / maxes[opt.filter]) * 100);
-              const backgroundImage = (
+              const backgroundImage =
                 'linear-gradient(to right, lightgrey, ' +
-                `lightgrey ${perc}%, rgba(0,0,0,0) ${perc}%`
-              );
+                `lightgrey ${perc}%, rgba(0,0,0,0) ${perc}%`;
               const style = {
                 backgroundImage,
                 padding: '2px 5px',
@@ -221,7 +221,7 @@ class FilterBox extends React.Component {
           {dateFilter}
           {datasourceFilters}
           {filters}
-          {!this.props.instantFiltering &&
+          {!this.props.instantFiltering && (
             <Button
               bsSize="small"
               bsStyle="primary"
@@ -230,7 +230,7 @@ class FilterBox extends React.Component {
             >
               {t('Apply')}
             </Button>
-          }
+          )}
         </div>
       </div>
     );
