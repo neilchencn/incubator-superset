@@ -89,6 +89,9 @@ class Dashboard extends React.PureComponent {
 
   componentDidMount() {
     window.addEventListener('resize', this.rerenderCharts);
+    window.setTimeout(() => {
+      this.startPeriodicRender(300 * 1000);
+    }, 300 * 1000);
   }
 
   componentWillReceiveProps(nextProps) {
