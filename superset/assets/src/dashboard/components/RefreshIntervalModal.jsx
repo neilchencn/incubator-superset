@@ -11,12 +11,12 @@ const propTypes = {
 };
 
 const defaultProps = {
-  initialRefreshFrequency: 0,
+  initialRefreshFrequency: 300,
   onChange: () => {},
 };
 
 const options = [
-  [0, t('Don\'t refresh')],
+  [0, t("Don't refresh")],
   [10, t('10 seconds')],
   [30, t('30 seconds')],
   [60, t('1 minute')],
