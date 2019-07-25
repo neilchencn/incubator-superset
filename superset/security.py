@@ -24,6 +24,7 @@ READ_ONLY_MODEL_VIEWS = {
     'DruidClusterModelView',
     'IRTView',
     'GreenTView',
+    'ErrorCodeView',
     'DSEDView',
     'DSEView',
     'CompanyView',
@@ -64,6 +65,7 @@ ALPHA_ONLY_VIEW_MENUS = {
     'GreenT',
     'DSED',
     'DSE',
+    'ErrorCode'
 }
 
 ADMIN_ONLY_PERMISSIONS = {

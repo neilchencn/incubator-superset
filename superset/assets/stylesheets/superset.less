@@ -1,5 +1,5 @@
 @import './less/index.less';
-@import "./less/cosmo/variables.less";
+@import './less/cosmo/variables.less';
 
 body {
   margin: 0px !important;
@@ -54,8 +54,8 @@ input.form-control {
 .slice_description {
   padding: 8px;
   margin: 5px;
-  border: 1px solid #DDD;
-  background-color: #F8F8F8;
+  border: 1px solid #ddd;
+  background-color: #f8f8f8;
   border-radius: 5px;
   font-size: 12px;
 }
@@ -77,7 +77,7 @@ input.form-control {
   text-align: left;
 }
 
-input[type="checkbox"] {
+input[type='checkbox'] {
   display: inline-block;
   width: 16px;
   height: 16px;
@@ -109,7 +109,7 @@ hr {
 }
 
 span.title-block {
-  background-color: #EEE;
+  background-color: #eee;
   border-radius: 4px;
   padding: 6px 12px;
   margin: 0px 10px;
@@ -165,7 +165,6 @@ img.viz-thumb-option {
   max-height: 700px;
 }
 
-
 li.widget:hover {
   z-index: 1000;
 }
@@ -187,7 +186,6 @@ div.widget .chart-header {
   margin-right: 10px;
 }
 
-
 div.widget .chart-header a {
   margin-left: 5px;
 }
@@ -197,7 +195,7 @@ div.widget .chart-header a {
 }
 
 .slice_container.faded {
-  opacity: .2;
+  opacity: 0.2;
 }
 
 div.widget {
@@ -231,7 +229,7 @@ div.widget {
   font-size: 12px;
 }
 
-.table-condensed input[type="checkbox"] {
+.table-condensed input[type='checkbox'] {
   float: left;
 }
 
@@ -243,18 +241,18 @@ table.table-no-hover tr:hover {
   padding: 2px 6px 3px 6px;
 }
 
-.editable-title input[type="button"] {
+.editable-title input[type='button'] {
   border-color: transparent;
   background: transparent;
   white-space: normal;
   text-align: left;
 }
 
-.editable-title input[type="button"]:hover {
+.editable-title input[type='button']:hover {
   cursor: text;
 }
 
-.editable-title input[type="button"]:focus {
+.editable-title input[type='button']:focus {
   outline: none;
 }
 
@@ -447,7 +445,7 @@ g.annotation-container {
 
 .reactable-header-sortable::before {
   font: normal normal normal 14px/1 FontAwesome;
-  content: "\f0dc";
+  content: '\f0dc';
   position: absolute;
   top: 17px;
   right: 15px;
@@ -455,12 +453,12 @@ g.annotation-container {
 }
 
 .reactable-header-sort-asc::before {
-  content: "\f0de";
+  content: '\f0de';
   color: @brand-primary;
 }
 
 .reactable-header-sort-desc::before {
-  content: "\f0dd";
+  content: '\f0dd';
   color: @brand-primary;
 }
 
@@ -491,7 +489,23 @@ g.annotation-container {
   padding-left: 10px;
 }
 
-
 td.filtered {
   background-color: lighten(desaturate(@brand-primary, 50%), 50%);
 }
+
+// .fa {
+//   color: #0ea9e2;
+// }
+
+// .dropdown-menu>li>a:hover .fa,
+// .dropdown-menu>li>a:focus .fa {
+//   color: white !important;
+// }
+
+// .text-muted {
+//   color: #b3b3b3 !important;
+// }
+
+// .btn-primary .fa {
+//   color: white !important;
+// }

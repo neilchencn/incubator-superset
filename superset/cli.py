@@ -148,15 +148,23 @@ def version(verbose):
 def load_dict(path):
     """Loads dictionay data for futuredial database field """
     from superset import data
-    print('Loading examples into {}'.format(db))
+    print('Loading dictionays into {}'.format(db))
     data.load_dictionarys(path)
+
+
+@manager.option('-p', '--path', help=('Load errorcode data'))
+def load_error_code(path):
+    """Loads error code data for futuredial database field """
+    from superset import data
+    print('Loading error codes into {}'.format(db))
+    data.load_error_code(path)
 
 
 @manager.option('-p', '--path', help=('Load product data'))
 def load_product(path):
     """Loads product data for futuredial database field """
     from superset import data
-    print('Loading examples into {}'.format(db))
+    print('Loading products into {}'.format(db))
     data.load_product(path)
 
 

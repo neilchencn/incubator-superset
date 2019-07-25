@@ -2107,7 +2107,7 @@ def set_custom_role():
             c_role.permissions = c_role_pvms
             sesh.merge(c_role)
 
-    dicts = ['GreenT', 'iRT', 'DSE', 'DSED']
+    dicts = ['GreenT', 'iRT', 'DSE', 'DSED', 'ErrorCode']
     for d in dicts:
         role_name = 'DICT[{}]'.format(d)
         if not security_manager.find_role(role_name):
@@ -2208,6 +2208,55 @@ def load_role(path):
     if not tbl:
         tbl = TBL(table_name=tbl_name)
     tbl.description = "customroles"
+    tbl.database = utils.get_or_create_main_db()
+    db.session.merge(tbl)
+    db.session.commit()
+    tbl.fetch_metadata()
+
+
+
+def load_error_code(path):
+    DATA_FOLDER = '/bi/'
+    if path:
+        DATA_FOLDER = path
+    tbl_name = 'errorcode'
+    if not os.path.isfile(os.path.join(DATA_FOLDER, 'error_codes.json')):
+        print('can not find error_codes.json')
+        return
+    with open(os.path.join(DATA_FOLDER, 'error_codes.json')) as f:
+        codes = json.load(f)
+    print(codes)
+    ids = []
+    code = []
+    desc = []
+    idx = 0
+    for c in codes:
+        print(c)
+        code.append(c.get('code'))
+        desc.append(c.get('description'))
+        ids.append(idx + 1)
+        idx += 1
+    df = pd.DataFrame(dict(id=ids, code=code, description=desc))
+    sesh = security_manager.get_session()
+    sesh.query(dictionary.ErrorCode).delete()
+    sesh.commit()
+    df.to_sql(
+        tbl_name,
+        db.engine,
+        if_exists='append',
+        chunksize=500,
+        dtype={
+            'id': Integer(),
+            'code': String(255),
+            'description': String(255),
+        },
+        index=False
+    )
+    print("Creating table {} reference".format(tbl_name))
+    tbl = db.session.query(TBL).filter_by(table_name=tbl_name).first()
+    if not tbl:
+        tbl = TBL(table_name=tbl_name)
+    tbl.description = "errorcodes"
     tbl.database = utils.get_or_create_main_db()
     db.session.merge(tbl)
     db.session.commit()

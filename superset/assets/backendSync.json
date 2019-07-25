@@ -1663,8 +1663,12 @@
       "freeForm": true,
       "label": "Number format",
       "renderTrigger": true,
-      "default": ".3s",
+      "default": ",.0f",
       "choices": [
+        [
+          ",.0f",
+          ",.0f (12345.432 => 12,345)"
+        ],
         [
           ".1s",
           ".1s (12345.432 => 10k)"
@@ -2160,8 +2164,12 @@
       "freeForm": true,
       "label": "X Axis Format",
       "renderTrigger": true,
-      "default": ".3s",
+      "default": ",.0f",
       "choices": [
+        [
+          ",.0f",
+          ",.0f (12345.432 => 12,345)"
+        ],
         [
           ".1s",
           ".1s (12345.432 => 10k)"
@@ -2244,8 +2252,12 @@
       "freeForm": true,
       "label": "Y Axis Format",
       "renderTrigger": true,
-      "default": ".3s",
+      "default": ",.0f",
       "choices": [
+        [
+          ",.0f",
+          ",.0f (12345.432 => 12,345)"
+        ],
         [
           ".1s",
           ".1s (12345.432 => 10k)"
@@ -2285,8 +2297,12 @@
       "type": "SelectControl",
       "freeForm": true,
       "label": "Right Axis Format",
-      "default": ".3s",
+      "default": ",.0f",
       "choices": [
+        [
+          ",.0f",
+          ",.0f (12345.432 => 12,345)"
+        ],
         [
           ".1s",
           ".1s (12345.432 => 10k)"

@@ -6,7 +6,7 @@ import { Table, Tr, Td, Thead, Th, unsafe } from 'reactable';
 
 import '../../stylesheets/reactable-pagination.css';
 
-const $ = window.$ = require('jquery');
+const $ = (window.$ = require('jquery'));
 
 const propTypes = {
   search: PropTypes.string,
@@ -20,16 +20,17 @@ export default class DashboardTable extends React.PureComponent {
     };
   }
   componentDidMount() {
-    const url = (
+    const url =
       '/dashboardmodelviewasync/api/read' +
       '?_oc_DashboardModelViewAsync=changed_on' +
-      '&_od_DashboardModelViewAsync=desc');
+      '&_od_DashboardModelViewAsync=desc';
     $.getJSON(url, (data) => {
       this.setState({ dashboards: data.result });
     });
   }
   render() {
     if (this.state.dashboards) {
+      console.info(this.state.dashboards);
       return (
         <Table
           className="table"
@@ -56,16 +57,12 @@ export default class DashboardTable extends React.PureComponent {
               <Td column="modified" value={o.changed_on} className="text-muted">
                 {unsafe(o.modified)}
               </Td>
-            </Tr>))}
+            </Tr>
+          ))}
         </Table>
       );
     }
-    return (
-      <img
-        className="loading"
-        alt="Loading..."
-        src="/static/assets/images/loading.gif"
-      />);
+    return <img className="loading" alt="Loading..." src="/static/assets/images/loading.gif" />;
   }
 }
 DashboardTable.propTypes = propTypes;

@@ -20,7 +20,7 @@ export default class RecentActivity extends React.PureComponent {
       return data
         .filter(row => row.action === 'dashboard' || row.action === 'explore')
         .map(row => ({
-          name: <a href={row.item_url}>{row.item_title}</a>,
+          name: row.item_url ? <a href={row.item_url}>{row.item_title}</a> : '',
           type: row.action,
           time: dayjs.utc(row.time).fromNow(),
           _time: row.time,

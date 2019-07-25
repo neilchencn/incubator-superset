@@ -805,7 +805,7 @@ class PivotTableViz(BaseViz):
                     new_lbs.append(new_lb)
                 df = df.reindex(df.index.set_labels(new_lbs))
             # Display metrics side by side with each column
-
+        print(df)
         return dict(
             columns=list(df.columns),
             html=df.to_html(
@@ -1429,7 +1429,7 @@ class NVD3TimeSeriesViz(NVD3Viz):
         if self._extra_chart_data:
             chart_data += self._extra_chart_data
             chart_data = sorted(chart_data, key=lambda x: tuple(x['key']))
-
+        print("chart_data:{}".format(chart_data))
         return chart_data
 
 

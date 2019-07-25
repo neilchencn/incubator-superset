@@ -1,6 +1,7 @@
 import d3 from 'd3';
 
-export const brandColor = '#00A699';
+export const brandColor = '#0ea9e2';
+// export const brandColor = '#00A699';
 export const colorPrimary = { r: 0, g: 122, b: 135, a: 1 };
 
 // Color related utility functions go in this object
@@ -100,15 +101,7 @@ const fdColorOrange = ['#FF6633', '#FF9966', '#FF9900'];
 const fdColorPink = ['#FF6699', '#FF9999', '#FFCCCC'];
 const fdColorGrey = ['#CCCCCC', '#999999'];
 const fdColorBrown = ['#660000', '#663300', '#993300'];
-const fdColorRainbow = [
-  '#FF3333',
-  '#FF9933',
-  '#FFFF33',
-  '#99FF33',
-  '#33CCCC',
-  '#33CCFF',
-  '9933FF',
-];
+const fdColorRainbow = ['#FF3333', '#FF9933', '#FFFF33', '#99FF33', '#33CCCC', '#33CCFF', '9933FF'];
 
 export const ALL_COLOR_SCHEMES = {
   bnbColors,
@@ -131,73 +124,18 @@ export const ALL_COLOR_SCHEMES = {
 };
 
 export const spectrums = {
-  blue_white_yellow: [
-    '#00d1c1',
-    'white',
-    '#ffb400',
-  ],
-  fire: [
-    'white',
-    'yellow',
-    'red',
-    'black',
-  ],
-  white_black: [
-    'white',
-    'black',
-  ],
-  black_white: [
-    'black',
-    'white',
-  ],
-  dark_blue: [
-    '#EBF5F8',
-    '#6BB1CC',
-    '#357E9B',
-    '#1B4150',
-    '#092935',
-  ],
-  pink_grey: [
-    '#E70B81',
-    '#FAFAFA',
-    '#666666',
-  ],
-  greens: [
-    '#ffffcc',
-    '#78c679',
-    '#006837',
-  ],
-  purples: [
-    '#f2f0f7',
-    '#9e9ac8',
-    '#54278f',
-  ],
-  oranges: [
-    '#fef0d9',
-    '#fc8d59',
-    '#b30000',
-  ],
-  red_yellow_blue: [
-    '#d7191c',
-    '#fdae61',
-    '#ffffbf',
-    '#abd9e9',
-    '#2c7bb6',
-  ],
-  brown_white_green: [
-    '#a6611a',
-    '#dfc27d',
-    '#f5f5f5',
-    '#80cdc1',
-    '#018571',
-  ],
-  purple_white_green: [
-    '#7b3294',
-    '#c2a5cf',
-    '#f7f7f7',
-    '#a6dba0',
-    '#008837',
-  ],
+  blue_white_yellow: ['#00d1c1', 'white', '#ffb400'],
+  fire: ['white', 'yellow', 'red', 'black'],
+  white_black: ['white', 'black'],
+  black_white: ['black', 'white'],
+  dark_blue: ['#EBF5F8', '#6BB1CC', '#357E9B', '#1B4150', '#092935'],
+  pink_grey: ['#E70B81', '#FAFAFA', '#666666'],
+  greens: ['#ffffcc', '#78c679', '#006837'],
+  purples: ['#f2f0f7', '#9e9ac8', '#54278f'],
+  oranges: ['#fef0d9', '#fc8d59', '#b30000'],
+  red_yellow_blue: ['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6'],
+  brown_white_green: ['#a6611a', '#dfc27d', '#f5f5f5', '#80cdc1', '#018571'],
+  purple_white_green: ['#7b3294', '#c2a5cf', '#f7f7f7', '#a6dba0', '#008837'],
 };
 
 /**
@@ -218,9 +156,7 @@ export const getColorFromScheme = (function () {
     if (!s) {
       return;
     }
-    const selectedScheme = scheme
-      ? ALL_COLOR_SCHEMES[scheme]
-      : ALL_COLOR_SCHEMES.bnbColors;
+    const selectedScheme = scheme ? ALL_COLOR_SCHEMES[scheme] : ALL_COLOR_SCHEMES.bnbColors;
     let stringifyS = String(s).toLowerCase();
     // next line is for superset series that should have the same color
     stringifyS = stringifyS.replace('---', '');
@@ -236,14 +172,10 @@ export const getColorFromScheme = (function () {
       seen[selectedScheme] = {};
     }
     if (seen[selectedScheme][stringifyS] === undefined) {
-      seen[selectedScheme][stringifyS] = Object.keys(
-        seen[selectedScheme],
-      ).length;
+      seen[selectedScheme][stringifyS] = Object.keys(seen[selectedScheme]).length;
     }
     /* eslint consistent-return: 0 */
-    return selectedScheme[
-      seen[selectedScheme][stringifyS] % selectedScheme.length
-    ];
+    return selectedScheme[seen[selectedScheme][stringifyS] % selectedScheme.length];
   };
 }());
 
@@ -262,7 +194,11 @@ export const colorScalerFactory = function (colors, data, accessor, extents) {
   }
   const chunkSize = (ext[1] - ext[0]) / (colors.length - 1);
   const points = colors.map((col, i) => ext[0] + i * chunkSize);
-  return d3.scale.linear().domain(points).range(colors).clamp(true);
+  return d3.scale
+    .linear()
+    .domain(points)
+    .range(colors)
+    .clamp(true);
 };
 
 export function hexToRGB(hex, alpha = 255) {

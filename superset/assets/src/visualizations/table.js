@@ -45,10 +45,13 @@ function tableVis(slice, payload) {
 
   const div = d3.select(slice.selector);
   div.html('');
-  const table = div.append('table')
+  const table = div
+    .append('table')
     .classed(
       'dataframe dataframe table table-striped ' +
-      'table-condensed table-hover dataTable no-footer', true)
+        'table-condensed table-hover dataTable no-footer',
+      true,
+    )
     .attr('width', '100%');
 
   const verboseMap = slice.datasource.verbose_map;
@@ -64,7 +67,9 @@ function tableVis(slice, payload) {
     return c;
   });
 
-  table.append('thead').append('tr')
+  table
+    .append('thead')
+    .append('tr')
     .selectAll('th')
     .data(cols)
     .enter()
@@ -74,40 +79,45 @@ function tableVis(slice, payload) {
     });
 
   const filters = slice.getFilters();
-  table.append('tbody')
+  table
+    .append('tbody')
     .selectAll('tr')
     .data(data.records)
     .enter()
     .append('tr')
     .selectAll('td')
-    .data(row => data.columns.map((c) => {
-      const val = row[c];
-      let html;
-      const isMetric = metrics.indexOf(c) >= 0;
-      if (c === '__timestamp') {
-        html = tsFormatter(val);
-      }
-      if (typeof (val) === 'string') {
-        html = `<span class="like-pre">${dompurify.sanitize(val)}</span>`;
-      }
-      if (isMetric) {
-        html = slice.d3format(c, val);
-      }
-      if (c[0] === '%') {
-        html = d3.format('.3p')(val);
-      }
-      return {
-        col: c,
-        val,
-        html,
-        isMetric,
-      };
-    }))
+    .data(row =>
+      data.columns.map((c) => {
+        const val = row[c];
+        const format = slice.datasource.column_formats[val] || fd.number_format || ',.0f';
+        let html;
+        const isMetric = metrics.indexOf(c) >= 0;
+        if (c === '__timestamp') {
+          html = tsFormatter(val);
+        }
+        if (typeof val === 'string') {
+          html = `<span class="like-pre">${dompurify.sanitize(val)}</span>`;
+        }
+        console.info(format);
+        if (isMetric) {
+          html = slice.d3format(c, val);
+        }
+        if (c[0] === '%') {
+          html = d3.format('.3p')(val);
+        }
+        return {
+          col: c,
+          val,
+          html,
+          isMetric,
+        };
+      }),
+    )
     .enter()
     .append('td')
     .style('background-image', function (d) {
       if (d.isMetric) {
-        const r = (fd.color_pn && d.val < 0) ? 150 : 0;
+        const r = fd.color_pn && d.val < 0 ? 150 : 0;
         if (fd.align_pn) {
           const perc = Math.abs(Math.round((d.val / maxes[d.col]) * 100));
           // The 0.01 to 0.001 is a workaround for what appears to be a
@@ -140,14 +150,10 @@ function tableVis(slice, payload) {
       return null;
     })
     .attr('data-sort', function (d) {
-      return (d.isMetric) ? d.val : null;
+      return d.isMetric ? d.val : null;
     })
     // Check if the dashboard currently has a filter for each row
-    .classed('filtered', d =>
-      filters &&
-      filters[d.col] &&
-      filters[d.col].indexOf(d.val) >= 0,
-    )
+    .classed('filtered', d => filters && filters[d.col] && filters[d.col].indexOf(d.val) >= 0)
     .on('click', function (d) {
       if (!d.isMetric && fd.table_filter) {
         const td = d3.select(this);
@@ -161,9 +167,9 @@ function tableVis(slice, payload) {
       }
     })
     .style('cursor', function (d) {
-      return (!d.isMetric) ? 'pointer' : '';
+      return !d.isMetric ? 'pointer' : '';
     })
-    .html(d => d.html ? d.html : d.val);
+    .html(d => (d.html ? d.html : d.val));
   const height = slice.height();
   let paging = false;
   let pageLength;
@@ -181,8 +187,7 @@ function tableVis(slice, payload) {
     scrollCollapse: true,
     scrollX: true,
   });
-  fixDataTableBodyHeight(
-      container.find('.dataTables_wrapper'), height);
+  fixDataTableBodyHeight(container.find('.dataTables_wrapper'), height);
   // Sorting table by main column
   let sortBy;
   if (fd.timeseries_limit_metric) {
@@ -200,7 +205,10 @@ function tableVis(slice, payload) {
     datatable.column(data.columns.indexOf(sortBy)).visible(false);
   }
   datatable.draw();
-  container.parents('.widget').find('.tooltip').remove();
+  container
+    .parents('.widget')
+    .find('.tooltip')
+    .remove();
 }
 
 module.exports = tableVis;

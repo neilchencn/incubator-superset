@@ -1,6 +1,7 @@
 const { assign } = Object;
 
-const A11Y_BABU = '#00A699';
+const A11Y_BABU = '#0ea9e2';
+// const A11Y_BABU = '#00A699';
 const AXIS_LINE_GRAY = '#484848';
 
 // Colors

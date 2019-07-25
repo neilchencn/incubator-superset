@@ -76,7 +76,9 @@ class Chart extends React.PureComponent {
 
   componentDidMount() {
     if (this.props.triggerQuery) {
-      this.props.actions.runQuery(this.props.formData, false,
+      this.props.actions.runQuery(
+        this.props.formData,
+        false,
         this.props.timeout,
         this.props.chartKey,
       );
@@ -93,10 +95,10 @@ class Chart extends React.PureComponent {
 
   componentDidUpdate(prevProps) {
     if (
-        this.props.queryResponse &&
-        ['success', 'rendered'].indexOf(this.props.chartStatus) > -1 &&
-        !this.props.queryResponse.error && (
-        prevProps.annotationData !== this.props.annotationData ||
+      this.props.queryResponse &&
+      ['success', 'rendered'].indexOf(this.props.chartStatus) > -1 &&
+      !this.props.queryResponse.error &&
+      (prevProps.annotationData !== this.props.annotationData ||
         prevProps.queryResponse !== this.props.queryResponse ||
         prevProps.height !== this.props.height ||
         prevProps.width !== this.props.width ||
@@ -143,9 +145,11 @@ class Chart extends React.PureComponent {
   }
 
   d3format(col, number) {
-    const { datasource } = this.props;
-    const format = (datasource.column_formats && datasource.column_formats[col]) || '0.3s';
-
+    const { datasource, formData } = this.props;
+    const format =
+      (datasource.column_formats && datasource.column_formats[col]) ||
+      formData.number_format ||
+      ',.0f';
     return d3format(format, number);
   }
 
@@ -214,29 +218,27 @@ class Chart extends React.PureComponent {
     return (
       <div className={`token col-md-12 ${isLoading ? 'is-loading' : ''}`}>
         {this.renderTooltip()}
-        {isLoading &&
-          <Loading size={25} />
-        }
-        {this.props.chartAlert &&
-        <StackTraceMessage
-          message={this.props.chartAlert}
-          queryResponse={this.props.queryResponse}
-        />
-        }
+        {isLoading && <Loading size={25} />}
+        {this.props.chartAlert && (
+          <StackTraceMessage
+            message={this.props.chartAlert}
+            queryResponse={this.props.queryResponse}
+          />
+        )}
 
         {!isLoading &&
           !this.props.chartAlert &&
           this.props.refreshOverlayVisible &&
           !this.props.errorMessage &&
-          this.container &&
-          <RefreshChartOverlay
-            height={this.height()}
-            width={this.width()}
-            onQuery={this.props.onQuery}
-            onDismiss={this.props.onDismissRefreshOverlay}
-          />
-        }
-        {!isLoading && !this.props.chartAlert &&
+          this.container && (
+            <RefreshChartOverlay
+              height={this.height()}
+              width={this.width()}
+              onQuery={this.props.onQuery}
+              onDismiss={this.props.onDismissRefreshOverlay}
+            />
+          )}
+        {!isLoading && !this.props.chartAlert && (
           <ChartBody
             containerId={this.containerId}
             vizType={this.props.vizType}
@@ -247,7 +249,7 @@ class Chart extends React.PureComponent {
               this.container = inner;
             }}
           />
-        }
+        )}
       </div>
     );
   }

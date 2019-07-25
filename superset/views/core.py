@@ -218,11 +218,14 @@ class SliceFilter(SupersetFilter):
             username='sample').first().get_id()
 
         if not self.has_role(['Admin', 'Alpha']):
-            same_company_user_ids = get_same_company_users_ids(g.user)
-            same_company_user_ids.add(sampleID)
-            query = query.filter(
-                Slice.created_by_fk.in_(same_company_user_ids))
-
+            if not self.has_role(['READONLY']):
+                same_company_user_ids = get_same_company_users_ids(g.user)
+                same_company_user_ids.add(sampleID)
+                query = query.filter(
+                    Slice.created_by_fk.in_(same_company_user_ids))
+            else:
+                query = query.filter(
+                    Slice.created_by_fk.in_([g.user.id]))
         return query
 
 
@@ -258,9 +261,12 @@ class DashboardFilter(SupersetFilter):
             username='sample').first().get_id()
 
         if not self.has_role(['Admin', 'Alpha']):
-            same_company_user_ids = get_same_company_users_ids(g.user)
-            same_company_user_ids.add(sampleID)
-            query = query.filter(Dash.created_by_fk.in_(same_company_user_ids))
+            if not self.has_role(['READONLY']):
+                same_company_user_ids = get_same_company_users_ids(g.user)
+                same_company_user_ids.add(sampleID)
+                query = query.filter(Dash.created_by_fk.in_(same_company_user_ids))
+            else:
+                query = query.filter(Dash.created_by_fk.in_([g.user.id]))
         return query
 
 
@@ -996,6 +1002,23 @@ class CompanyView(SupersetModelView, DeleteMixin):
     #     return redirect('/companyview/list/')
 
 
+
+class ErrorCodeView(SupersetModelView, DeleteMixin):
+    datamodel = SQLAInterface(dicts.ErrorCode)
+    list_title = _('List ErrorCode Data Fields Dictionary')
+    show_title = _('Show GrErrorCodeeenT Data Fields Dictionary')
+    add_title = _('Add ErrorCode Data Fields Dictionary')
+    edit_title = _('Edit ErrorCode Data Fields Dictionary')
+    list_columns = ['code', 'my_description']
+
+
+    label_columns = {
+        'code': _('ErrorCode'),
+        'my_description': _('Description'),
+    }
+
+
+
 appbuilder.add_view(
     IRTView,
     'iRT',
@@ -1028,6 +1051,15 @@ appbuilder.add_view(
     'DSE',
     category="Sources",
     label=__('DSE Data Fields Dictionary'),
+    category_label=__('Sources'),
+    category_icon='fa-cubes',
+    icon='fa-list-alt')
+
+appbuilder.add_view(
+    ErrorCodeView,
+    'ErrorCode',
+    category="Sources",
+    label=__('ErrorCode Data Fields Dictionary'),
     category_label=__('Sources'),
     category_icon='fa-cubes',
     icon='fa-list-alt')
@@ -2129,10 +2161,16 @@ class Superset(BaseSupersetView):
             item_url = None
             item_title = None
             if log.Dashboard:
-                item_url = log.Dashboard.url
+                if g.user in log.Dashboard.owners:
+                    item_url = log.Dashboard.url
+                else:
+                    item_url = None
                 item_title = log.Dashboard.dashboard_title
             elif log.Slice:
-                item_url = log.Slice.slice_url
+                if g.user in log.Slice.owners:
+                    item_url = log.Slice.slice_url
+                else:
+                    item_url = None
                 item_title = log.Slice.slice_name
 
             payload.append({

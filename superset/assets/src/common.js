@@ -12,15 +12,14 @@ $(document).ready(function () {
     utils.toggleCheckbox(prefix, '#' + id);
   });
 
-  // for language picker dropdown
+  // for language picker dropdown 
   $('#language-picker a').click(function (ev) {
     ev.preventDefault();
 
     const targetUrl = ev.currentTarget.href;
-    $.ajax(targetUrl)
-      .then(() => {
-        location.reload();
-      });
+    $.ajax(targetUrl).then(() => {
+      location.reload();
+    });
   });
 });
 
