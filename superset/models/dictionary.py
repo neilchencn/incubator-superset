@@ -64,5 +64,14 @@ class ErrorCode(Model):
 
     @renders('description')
     def my_description(self):
-    # will render this columns as bold on ListWidget
-        return Markup('<script>$("th:eq(3)").css("width","78%")</script>' + self.description)
+        # will render this columns as bold on ListWidget
+        return Markup(
+            '''<script>$("th:contains('Description')").css("width","75%");</script>'''
+            + self.description)
+
+    @renders('code')
+    def my_code(self):
+        # will render this columns as bold on ListWidget
+        return Markup(
+            '''<script>$("th:contains('ErrorCode')").css("width","15%");</script>'''
+            + self.code)

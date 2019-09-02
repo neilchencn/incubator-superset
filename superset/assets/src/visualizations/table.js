@@ -89,7 +89,6 @@ function tableVis(slice, payload) {
     .data(row =>
       data.columns.map((c) => {
         const val = row[c];
-        const format = slice.datasource.column_formats[val] || fd.number_format || ',.0f';
         let html;
         const isMetric = metrics.indexOf(c) >= 0;
         if (c === '__timestamp') {
@@ -98,7 +97,7 @@ function tableVis(slice, payload) {
         if (typeof val === 'string') {
           html = `<span class="like-pre">${dompurify.sanitize(val)}</span>`;
         }
-        console.info(format);
+
         if (isMetric) {
           html = slice.d3format(c, val);
         }

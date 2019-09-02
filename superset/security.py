@@ -64,8 +64,7 @@ ALPHA_ONLY_VIEW_MENUS = {
     'Product',
     'GreenT',
     'DSED',
-    'DSE',
-    'ErrorCode'
+    'DSE'
 }
 
 ADMIN_ONLY_PERMISSIONS = {

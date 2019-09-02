@@ -2252,7 +2252,7 @@
       "freeForm": true,
       "label": "Y Axis Format",
       "renderTrigger": true,
-      "default": ",.0f",
+      "default": ".3s",
       "choices": [
         [
           ",.0f",

@@ -1009,11 +1009,11 @@ class ErrorCodeView(SupersetModelView, DeleteMixin):
     show_title = _('Show GrErrorCodeeenT Data Fields Dictionary')
     add_title = _('Add ErrorCode Data Fields Dictionary')
     edit_title = _('Edit ErrorCode Data Fields Dictionary')
-    list_columns = ['code', 'my_description']
+    list_columns = ['my_code', 'my_description']
 
 
     label_columns = {
-        'code': _('ErrorCode'),
+        'my_code': _('ErrorCode'),
         'my_description': _('Description'),
     }
 

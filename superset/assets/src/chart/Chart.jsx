@@ -146,10 +146,12 @@ class Chart extends React.PureComponent {
 
   d3format(col, number) {
     const { datasource, formData } = this.props;
+    console.info(formData);
     const format =
       (datasource.column_formats && datasource.column_formats[col]) ||
       formData.number_format ||
       ',.0f';
+    console.info(format)
     return d3format(format, number);
   }
 
